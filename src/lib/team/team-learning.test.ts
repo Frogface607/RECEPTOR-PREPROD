@@ -119,6 +119,14 @@ describe("team learning catalog", () => {
     expect(shiftBrief?.sections).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
+          title: "После смены собери полевой факт",
+          bullets: expect.arrayContaining([
+            expect.stringContaining("Факт:"),
+            expect.stringContaining("Масштаб:"),
+            expect.stringContaining("Действие:"),
+          ]),
+        }),
+        expect.objectContaining({
           title: "Разбор: факт, вопрос, проверка, действие",
         }),
         expect.objectContaining({
