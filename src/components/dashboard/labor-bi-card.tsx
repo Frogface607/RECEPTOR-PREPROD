@@ -148,9 +148,7 @@ export function LaborBiCard({
         </span>
       </div>
 
-      {nextAction.kind !== "ready" ? (
-        <LaborNextActionCard action={nextAction} href={nextActionHref} />
-      ) : null}
+      <LaborNextActionCard action={nextAction} href={nextActionHref} />
 
       {setupProgress ? (
         <LaborSetupProgressStrip
@@ -329,6 +327,10 @@ function buildLaborActionHref(
   }
 
   if (action.kind === "missing-shifts") {
+    return null;
+  }
+
+  if (action.kind === "ready") {
     return null;
   }
 
@@ -568,6 +570,9 @@ function LaborNextActionCard({
         </p>
         <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
           {action.detail}
+        </p>
+        <p className="mt-2 text-[12px] leading-relaxed text-foreground/80">
+          {action.action}
         </p>
       </div>
       {href ? (

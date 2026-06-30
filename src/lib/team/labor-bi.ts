@@ -457,8 +457,9 @@ export function buildLaborNextAction(
   return {
     kind: "ready",
     title: "ФОТ можно анализировать",
-    detail: `Ставки закрыты, ФОТ ${formatPct(labor.laborCostPct)} от выручки периода.`,
-    action: "Сравните ФОТ с маржей блюд и загрузкой смен.",
+    detail: `Ставки закрыты: ФОТ ${formatPct(labor.laborCostPct)} от выручки, ${formatMoney(labor.revenuePerLaborHour)} на человеко-час, ${labor.averageStaffPerShift.toLocaleString("ru-RU")} человека на смену.`,
+    action:
+      "Следующий контроль: сравнить ФОТ с маржей топ-блюд и разобрать смены, где команда стоит дорого к выручке.",
     blocker: null,
     shift: null,
   };

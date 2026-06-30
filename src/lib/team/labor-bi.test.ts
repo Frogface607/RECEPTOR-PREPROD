@@ -587,4 +587,46 @@ describe("buildLaborBi", () => {
       }),
     });
   });
+
+  test("keeps a concrete next control when FOT is ready", () => {
+    const labor = buildLaborBi({
+      staff,
+      rates: [
+        { roleId: "venue_manager", shiftPay: 4000 },
+        { roleId: "service", hourlyRate: 350, revenueBonusPct: 1 },
+      ],
+      shifts: [
+        {
+          shiftId: "ready-shift",
+          openTime: "2026-06-26T12:00:00",
+          closeTime: "2026-06-26T23:00:00",
+          revenue: 120000,
+          items: 300,
+          employee: "Смена",
+          workers: [
+            {
+              memberId: "manager",
+              name: "Мария",
+              startedAt: "2026-06-26T12:00:00",
+              endedAt: "2026-06-26T23:00:00",
+              sales: 0,
+            },
+            {
+              memberId: "waiter",
+              name: "Илья",
+              hours: 8,
+              sales: 120000,
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(buildLaborNextAction(labor)).toMatchObject({
+      kind: "ready",
+      title: "ФОТ можно анализировать",
+      detail: expect.stringContaining("на человеко-час"),
+      action: expect.stringContaining("Следующий контроль"),
+    });
+  });
 });
