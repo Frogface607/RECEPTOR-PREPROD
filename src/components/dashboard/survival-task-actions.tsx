@@ -60,13 +60,7 @@ function sourceLabel(draft: SurvivalTaskDraft): string {
 
 function createdMessage(draft: SurvivalTaskDraft, message: string): string {
   const impact = draft.impactLabel ? ` Вес: ${draft.impactLabel}.` : "";
-  const learning = draft.learningModuleTitle
-    ? ` Стандарт: ${draft.learningModuleTitle}.`
-    : "";
-  const checklist = draft.learningChecklistTitle
-    ? ` Чеклист: ${draft.learningChecklistTitle}.`
-    : "";
-  return `${message} Контур: ${sourceLabel(draft)}.${impact}${learning}${checklist} Адресат: ${audiencePrefix(draft).toLowerCase()} ${audienceLabel(draft)}.`;
+  return `${message} Контур: ${sourceLabel(draft)}.${impact} Адресат: ${audiencePrefix(draft).toLowerCase()} ${audienceLabel(draft)}.`;
 }
 
 export function SurvivalTaskActions({
@@ -204,7 +198,7 @@ export function SurvivalTaskActions({
                   <p className="mt-1 flex items-start gap-2 text-[11px] leading-relaxed text-sky-100/90">
                     <BookOpenCheck className="mt-0.5 size-3.5 shrink-0 text-sky-200" />
                     <span>
-                      Стандарт задачи: {draft.learningModuleTitle}
+                      Стандарт: {draft.learningModuleTitle}
                       {checklistTitle ? `. Чеклист: ${checklistTitle}` : ""}
                       {learningHref ? (
                         <>
