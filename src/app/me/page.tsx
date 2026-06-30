@@ -55,6 +55,7 @@ import {
 import { AnnouncementReadButton } from "./announcement-read-button";
 import { getPersonalTeamWorkspace } from "@/lib/team/team-store";
 import { TaskStatusButtons } from "./task-status-buttons";
+import { FieldNoteForm } from "./field-note-form";
 import {
   formatPeriodLabel,
   parsePeriodSearchParams,
@@ -537,6 +538,8 @@ export default async function MyCabinetPage({
             </div>
 
             <div className="space-y-6">
+              <FieldNoteForm />
+
               <div>
                 <div className="flex items-center gap-3">
                   <Megaphone className="size-5 text-brand" />
