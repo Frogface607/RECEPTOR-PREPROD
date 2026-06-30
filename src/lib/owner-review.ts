@@ -234,6 +234,12 @@ function revenueDropImpactLabel(brief: DailyBrief): string | undefined {
   return gap > 0 ? formatRubles(gap) : undefined;
 }
 
+function revenueGrowthImpactLabel(brief: DailyBrief): string | undefined {
+  if (!brief.revenue.comparisonAvailable) return undefined;
+  const growth = brief.revenue.current - brief.revenue.previous;
+  return growth > 0 ? formatRubles(growth) : undefined;
+}
+
 function dayRevenueGapText(
   weakestDay: RevenuePoint | null,
   strongestDay: RevenuePoint | null,
@@ -2896,6 +2902,36 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     : null;
   if (planVarianceHypothesis) {
     hypotheses.push(planVarianceHypothesis);
+  }
+
+  if (
+    input.brief.revenue.comparisonAvailable &&
+    input.brief.revenue.deltaPct >= 10
+  ) {
+    hypotheses.push({
+      title: "Рост нужно превратить в повторяемый сценарий",
+      why: joinSentences([
+        `Динамика к базе: ${deltaText(input.brief)}.`,
+        revenueGrowthImpactLabel(input.brief)
+          ? `Прирост к базе: ${revenueGrowthImpactLabel(input.brief)}.`
+          : null,
+        strongestDay
+          ? `Самый сильный день: ${strongestDay.date}, ${formatRubles(strongestDay.revenue)}.`
+          : "Сильный день нужно уточнить по сменам.",
+      ]),
+      check:
+        "Зафиксировать, что сработало: смена, промо, посадка, команда, хит меню, погода или апсейл.",
+      role: "manager",
+      tone: "good",
+      taskTitle: "Зафиксировать, что сработало в росте выручки",
+      taskSourceLabel: "Выручка и смены",
+      impactLabel: revenueGrowthImpactLabel(input.brief),
+      learningModuleId: "shift-open-close",
+      learningModuleTitle: "Открытие и закрытие смены без хаоса",
+      learningChecklistTitle: "Если период вырос к базе",
+      briefingQuestion:
+        "что именно сработало и как повторить это в следующей похожей смене",
+    });
   }
 
   if (

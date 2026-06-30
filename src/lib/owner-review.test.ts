@@ -2226,6 +2226,92 @@ describe("buildOwnerReview", () => {
     );
   });
 
+  test("turns revenue growth into a repeatable shift playbook task", () => {
+    const review = buildOwnerReview({
+      summary: {
+        ...summary,
+        revenue: 150000,
+        points: [
+          { date: "2026-06-25", revenue: 70000 },
+          { date: "2026-06-26", revenue: 80000 },
+        ],
+      },
+      dishes: [],
+      categories: [],
+      shifts: [
+        {
+          shiftId: "growth-1",
+          openTime: "2026-06-25T12:00:00",
+          closeTime: "2026-06-25T22:00:00",
+          revenue: 75000,
+          items: 90,
+          employee: "День 1",
+        },
+        {
+          shiftId: "growth-2",
+          openTime: "2026-06-26T12:00:00",
+          closeTime: "2026-06-26T22:00:00",
+          revenue: 75000,
+          items: 95,
+          employee: "День 2",
+        },
+      ],
+      brief: {
+        ...brief,
+        revenue: {
+          ...brief.revenue,
+          current: 150000,
+          previous: 100000,
+          deltaPct: 50,
+        },
+      },
+      dataQuality: quality,
+      dataMode: "live",
+      teamTasks: [],
+      teamAuditEvents: [],
+    });
+
+    expect(review.verdict).toContain("Период выглядит сильнее базы");
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Рост нужно превратить в повторяемый сценарий",
+          taskTitle: "Зафиксировать, что сработало в росте выручки",
+          role: "manager",
+          tone: "good",
+          taskSourceLabel: "Выручка и смены",
+          learningModuleId: "shift-open-close",
+          learningChecklistTitle: "Если период вырос к базе",
+          briefingQuestion:
+            "что именно сработало и как повторить это в следующей похожей смене",
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Зафиксировать, что сработало в росте выручки",
+          sourceLabel: "Выручка и смены",
+          learningModuleId: "shift-open-close",
+          learningChecklistTitle: "Если период вырос к базе",
+          contextNote: expect.stringContaining(
+            "Вопрос: что именно сработало и как повторить это в следующей похожей смене.",
+          ),
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          sourceLabel: "Выручка и смены",
+          contextNote: expect.stringContaining(
+            "Чеклист: Если период вырос к базе.",
+          ),
+        }),
+      ]),
+    );
+  });
+
   test("marks profit readiness ready when data, economics and loops are closed", () => {
     const review = buildOwnerReview({
       summary,
