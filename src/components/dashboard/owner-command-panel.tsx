@@ -15,6 +15,7 @@ import type {
   OwnerReviewRole,
   OwnerReviewTone,
 } from "@/lib/owner-review";
+import { buildOwnerMorningReviewRows } from "@/lib/owner-morning-review";
 import { buildTeamHref, type TeamPeriodParams } from "@/lib/team/team-links";
 import type { TeamTaskQueueSummary } from "@/lib/team/team-task-queue";
 import { LinkButton } from "@/components/ui/link-button";
@@ -231,6 +232,7 @@ export function OwnerCommandPanel({
 }) {
   const mainAction = primaryAction(review);
   const proof = review.evidence.slice(0, 4);
+  const morningReview = buildOwnerMorningReviewRows({ review, mainAction });
   const nextTeamTask = teamTaskQueue?.openTasks[0]?.task;
   const secondaryActions = review.actions.slice(
     mainAction ? 1 : 0,
@@ -265,6 +267,35 @@ export function OwnerCommandPanel({
           <p className="mt-4 max-w-3xl text-[15px] leading-relaxed text-muted-foreground">
             {review.summary}
           </p>
+
+          <div className="mt-5 divide-y divide-border/45 border-y border-border/45">
+            {morningReview.map((row) => (
+              <div
+                key={row.label}
+                className="grid gap-2 py-3 sm:grid-cols-[120px_minmax(0,0.8fr)_minmax(0,1.2fr)] sm:items-start"
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className={
+                      "inline-flex size-6 items-center justify-center rounded-md border " +
+                      TONE_CLASS[row.tone]
+                    }
+                  >
+                    <ToneIcon tone={row.tone} />
+                  </span>
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                    {row.label}
+                  </p>
+                </div>
+                <p className="min-w-0 text-sm font-medium leading-relaxed text-foreground">
+                  {row.value}
+                </p>
+                <p className="min-w-0 text-[13px] leading-relaxed text-muted-foreground">
+                  {row.detail}
+                </p>
+              </div>
+            ))}
+          </div>
 
           <div className="mt-5 flex flex-wrap gap-3">
             {mainAction ? (
