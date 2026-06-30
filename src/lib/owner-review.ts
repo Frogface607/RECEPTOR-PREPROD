@@ -1669,10 +1669,17 @@ function fieldContextHypothesis(
   const signal = digest?.signals[0];
   if (!signal) return null;
   const task = fieldContextTaskFor(signal.kind);
+  const relatedSignals = digest.signals.slice(1);
+  const relatedLine =
+    relatedSignals.length > 0
+      ? ` Связанные факты: ${relatedSignals
+          .map((item) => `${item.title} (${item.sourceCount})`)
+          .join(", ")}.`
+      : "";
 
   return {
     title: task.title,
-    why: signal.detail,
+    why: `${signal.detail}${relatedLine}`,
     check: task.check,
     role: "manager",
     tone:
@@ -1684,7 +1691,7 @@ function fieldContextHypothesis(
     taskSourceLabel: "Полевой контекст",
     taskTitle: task.title,
     impactLabel:
-      signal.sourceCount > 1 ? `${signal.sourceCount} сигнала` : "1 сигнал",
+      digest.signalCount > 1 ? `${digest.signalCount} сигнала` : "1 сигнал",
     learningModuleId: "shift-brief",
     learningModuleTitle: "Брифинг смены и передача контекста",
   };

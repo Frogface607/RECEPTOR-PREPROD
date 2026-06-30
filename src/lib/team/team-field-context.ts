@@ -93,6 +93,22 @@ function signalWeight(kind: TeamFieldSignalKind): number {
   return 100;
 }
 
+function relatedSignalsLine(signals: TeamFieldSignal[]): string {
+  const related = signals.slice(1);
+  if (related.length === 0) return "";
+
+  return ` Связанные факты: ${related
+    .map((signal) => `${signal.title} (${signal.sourceCount})`)
+    .join(", ")}.`;
+}
+
+function fieldSummary(signals: TeamFieldSignal[]): string {
+  if (signals.length === 0) return "";
+  return `${signals[0].title}: ${signals[0].detail}${relatedSignalsLine(
+    signals,
+  )}`;
+}
+
 export function buildTeamFieldContextDigest({
   comments,
   tasks = [],
@@ -137,7 +153,7 @@ export function buildTeamFieldContextDigest({
   );
   const summary =
     signals.length > 0
-      ? `${signals[0].title}: ${signals[0].detail}`
+      ? fieldSummary(signals)
       : `Команда оставила ${fieldComments.length} заметок без явного BI-тега.`;
 
   return {

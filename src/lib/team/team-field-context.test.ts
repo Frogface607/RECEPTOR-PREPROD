@@ -55,6 +55,8 @@ describe("buildTeamFieldContextDigest", () => {
         }),
       ]),
     });
+    expect(digest?.summary).toContain("Связанные факты:");
+    expect(digest?.summary).toContain("Стоп-лист и заготовки");
   });
 
   test("ignores Receptor system task context", () => {

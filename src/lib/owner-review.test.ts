@@ -2332,6 +2332,8 @@ describe("buildOwnerReview", () => {
           title: "Разобрать конфликт смены с цифрами",
           check: expect.stringContaining("возвраты"),
           taskSourceLabel: "Полевой контекст",
+          impactLabel: "3 сигнала",
+          why: expect.stringContaining("Связанные факты:"),
           learningModuleId: "shift-brief",
         }),
       ]),
@@ -2350,6 +2352,8 @@ describe("buildOwnerReview", () => {
       (task) => task.sourceLabel === "Полевой контекст",
     )?.contextNote;
     expect(fieldTaskContext).toContain("Проверка: На брифинге");
+    expect(fieldTaskContext).toContain("Связанные факты:");
+    expect(fieldTaskContext).toContain("Стоп-лист и заготовки");
     expect(fieldTaskContext).toContain(
       "Зачем: связать факты смены с BI, назначить ответственного и убрать повторяемую причину.",
     );
