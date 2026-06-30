@@ -71,6 +71,9 @@ describe("team learning catalog", () => {
         expect.objectContaining({
           title: "Если BI показал слабую смену",
         }),
+        expect.objectContaining({
+          title: "Если план и факт смен не совпали",
+        }),
       ]),
     );
     expect(getLearningItem("sales-eight-upsell")?.sections).toEqual(

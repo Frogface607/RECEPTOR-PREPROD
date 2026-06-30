@@ -1082,19 +1082,43 @@ describe("buildOwnerReview", () => {
           tone: "risk",
           learningModuleId: "shift-open-close",
           learningModuleTitle: "Открытие и закрытие смены без хаоса",
+          learningChecklistTitle: "Если план и факт смен не совпали",
+          briefingQuestion:
+            "какое отклонение графика изменило ФОТ или нагрузку смены",
+        }),
+      ]),
+    );
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Разобрать выход в выходной",
+          taskSourceLabel: "ФОТ и смены",
+          taskTitle: "Разобрать выход в выходной",
+          learningModuleId: "shift-open-close",
+          learningChecklistTitle: "Если план и факт смен не совпали",
+          briefingQuestion:
+            "какое отклонение графика изменило ФОТ или нагрузку смены",
         }),
       ]),
     );
     expect(review.tasks[0]).toMatchObject({
+      title: "Разобрать выход в выходной",
       roleId: "venue_manager",
       priority: "high",
       sourceLabel: "ФОТ и смены",
       learningModuleId: "shift-open-close",
       learningModuleTitle: "Открытие и закрытие смены без хаоса",
+      learningChecklistTitle: "Если план и факт смен не совпали",
       contextNote: expect.stringContaining(
         "Урок для команды: Открытие и закрытие смены без хаоса.",
       ),
     });
+    expect(review.tasks[0].contextNote).toContain(
+      "Вопрос: какое отклонение графика изменило ФОТ или нагрузку смены.",
+    );
+    expect(review.tasks[0].contextNote).toContain(
+      "Чеклист: Если план и факт смен не совпали.",
+    );
   });
 
   test("surfaces Team OS readiness as owner evidence and action", () => {

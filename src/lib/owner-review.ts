@@ -524,6 +524,13 @@ function taskChecklistForSource(
 
 function actionChecklistTitle(action: OwnerReviewAction): string | null {
   if (
+    action.learningModuleId === "shift-open-close" &&
+    action.target === "shift-plan-variance"
+  ) {
+    return "Если план и факт смен не совпали";
+  }
+
+  if (
     action.learningModuleId === "tech-card-discipline" &&
     action.target === "margin-diagnostics" &&
     action.detail.includes("ингредиент")
@@ -599,7 +606,7 @@ function actionContextNote(action: OwnerReviewAction): string {
     checklistTitle:
       action.learningChecklistTitle ??
       taskChecklistForSource(sourceLabel, action.learningModuleId),
-    question: taskQuestionForSource(sourceLabel),
+    question: action.briefingQuestion ?? taskQuestionForSource(sourceLabel),
     reason: taskReasonForSource(sourceLabel, action.impactLabel),
     limit: sourceLabel === "Полевой контекст" ? 900 : undefined,
   });
@@ -669,7 +676,7 @@ function taskFromHypothesis(item: OwnerReviewHypothesis): SurvivalTaskDraft {
       context,
       learningModuleTitle: item.learningModuleTitle,
       checklistTitle: hypothesisChecklistTitle(item),
-      question: taskQuestionForSource(item.taskSourceLabel),
+      question: item.briefingQuestion ?? taskQuestionForSource(item.taskSourceLabel),
       reason: taskReasonForSource(item.taskSourceLabel, item.impactLabel),
       limit: item.taskSourceLabel === "Полевой контекст" ? 900 : undefined,
     }),
@@ -2023,12 +2030,16 @@ function ownerActionFromShiftPlanVariance(
     role: "manager",
     tone: ownerToneFromShiftPlanVariance(primaryIssue.tone),
     target: "shift-plan-variance",
+    taskTitle: shiftPlanVarianceActionTitle(primaryIssue),
     impactLabel:
       primaryIssue.laborDelta !== 0
         ? formatRubles(Math.abs(primaryIssue.laborDelta))
         : primaryIssue.dateLabel,
     learningModuleId: "shift-open-close",
     learningModuleTitle: "Открытие и закрытие смены без хаоса",
+    learningChecklistTitle: "Если план и факт смен не совпали",
+    briefingQuestion:
+      "какое отклонение графика изменило ФОТ или нагрузку смены",
   };
 }
 
@@ -2045,10 +2056,17 @@ function shiftPlanVarianceHypothesis(
       "Сверить график с фактическими сменами, отметить исключения и обновить ставку/план на следующую неделю.",
     role: "manager",
     tone: ownerToneFromShiftPlanVariance(primaryIssue.tone),
+    taskSourceLabel: "ФОТ и смены",
+    taskTitle: shiftPlanVarianceActionTitle(primaryIssue),
     impactLabel:
       primaryIssue.laborDelta !== 0
         ? formatRubles(Math.abs(primaryIssue.laborDelta))
         : primaryIssue.dateLabel,
+    learningModuleId: "shift-open-close",
+    learningModuleTitle: "Открытие и закрытие смены без хаоса",
+    learningChecklistTitle: "Если план и факт смен не совпали",
+    briefingQuestion:
+      "какое отклонение графика изменило ФОТ или нагрузку смены",
   };
 }
 
