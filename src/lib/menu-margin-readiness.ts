@@ -77,6 +77,9 @@ export type MenuMarginReadiness = {
   blockedRevenue: number;
   missingLinkRevenue: number;
   missingCostRevenue: number;
+  missingProductCostRevenue: number;
+  missingTechCardPriceRevenue: number;
+  missingTechCardIngredientPriceRows: number;
   revenueCoveragePct: number;
   blockedRevenuePct: number;
   matchCoveragePct: number;
@@ -216,6 +219,21 @@ export function buildMenuMarginReadiness(input: {
   const missingCostRevenue = items
     .filter((item) => item.product && !item.hasCost)
     .reduce((sum, item) => sum + item.revenue, 0);
+  const missingTechCardPriceItems = items.filter(
+    (item) => item.product && !item.hasCost && item.hasUsableTechCard,
+  );
+  const missingTechCardPriceRevenue = missingTechCardPriceItems.reduce(
+    (sum, item) => sum + item.revenue,
+    0,
+  );
+  const missingTechCardIngredientPriceRows = missingTechCardPriceItems.reduce(
+    (sum, item) => sum + (item.techCard?.unpricedIngredientRows ?? 0),
+    0,
+  );
+  const missingProductCostRevenue = Math.max(
+    0,
+    missingCostRevenue - missingTechCardPriceRevenue,
+  );
   const blockedRevenue = missingLinkRevenue + missingCostRevenue;
   const revenueCoveragePct = pct(revenueWithCost, totalRevenue);
   const blockedRevenuePct = pct(blockedRevenue, totalRevenue);
@@ -301,6 +319,9 @@ export function buildMenuMarginReadiness(input: {
     blockedRevenue,
     missingLinkRevenue,
     missingCostRevenue,
+    missingProductCostRevenue,
+    missingTechCardPriceRevenue,
+    missingTechCardIngredientPriceRows,
     revenueCoveragePct,
     blockedRevenuePct,
     matchCoveragePct,
@@ -391,8 +412,11 @@ function diagnoseIngredientCost(
   const product = findIngredientProduct(ingredient, products);
   const cost = calculateIngredientCost(ingredient, products);
   const hasAmount = positive(ingredient.amount) !== null;
+  const hasIngredientIdentity = Boolean(
+    product || ingredient.productId || ingredient.productName || ingredient.article,
+  );
   const missingPrice =
-    hasAmount && Boolean(product) && getProductCostReference(product) === null;
+    hasAmount && hasIngredientIdentity && cost === null;
 
   return {
     cost,

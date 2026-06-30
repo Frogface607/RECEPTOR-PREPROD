@@ -49,6 +49,7 @@ export function MarginReadinessCard({
   const topBlockers = readiness.topBlockers.slice(0, 3);
   const nextAction = buildMenuMarginNextAction(readiness);
   const diagnosticsHref = `/settings#iiko-diagnostics-${encodeURIComponent(venueId)}`;
+  const diagnosis = marginDiagnosisText(readiness);
 
   return (
     <section className="rounded-xl border border-border/60 bg-card/50 p-5 sm:p-6">
@@ -93,14 +94,14 @@ export function MarginReadinessCard({
                 Топ-позиции без доказанной себестоимости
               </h3>
             </div>
-            <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
-              Эти блюда сильнее всего искажают прибыльность периода.
+            <p className="max-w-lg text-xs leading-relaxed text-muted-foreground">
+              {diagnosis}
             </p>
           </div>
 
-          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
             <MarginDebtMetric
-              label="Не покрыто выручки"
+              label="Без себестоимости"
               value={`${readiness.blockedRevenuePct}%`}
               detail={formatRubles(readiness.blockedRevenue)}
             />
@@ -110,9 +111,18 @@ export function MarginReadinessCard({
               detail="связать блюда с iiko"
             />
             <MarginDebtMetric
-              label="Нет цены RMS"
-              value={formatRubles(readiness.missingCostRevenue)}
-              detail="проверить закупочные цены"
+              label="Цена товара"
+              value={formatRubles(readiness.missingProductCostRevenue)}
+              detail="purchasePrice/cost"
+            />
+            <MarginDebtMetric
+              label="Цены в техкартах"
+              value={formatRubles(readiness.missingTechCardPriceRevenue)}
+              detail={
+                readiness.missingTechCardIngredientPriceRows > 0
+                  ? `${formatInteger(readiness.missingTechCardIngredientPriceRows)} строк без цены`
+                  : "ингредиенты RMS"
+              }
             />
           </div>
 
@@ -139,6 +149,29 @@ export function MarginReadinessCard({
       />
     </section>
   );
+}
+
+function marginDiagnosisText(readiness: MenuMarginReadiness): string {
+  if (
+    readiness.missingTechCardPriceRevenue > 0 &&
+    readiness.missingProductCostRevenue > 0
+  ) {
+    return "Проблема смешанная: часть блюд связана с товарами без закупочной цены, часть имеет техкарты, но внутри не хватает цен ингредиентов.";
+  }
+
+  if (readiness.missingTechCardPriceRevenue > 0) {
+    return `RMS отдал техкарты, но ${formatInteger(readiness.missingTechCardIngredientPriceRows)} строк ингредиентов без закупочной цены. Сначала закрываем эти цены, потом считаем food cost.`;
+  }
+
+  if (readiness.missingProductCostRevenue > 0) {
+    return "Блюда уже связаны с товарами iiko, но у товаров нет закупочной цены. Нужно проверить права RMS и поля purchasePrice/cost.";
+  }
+
+  if (readiness.missingLinkRevenue > 0) {
+    return "Главный блокер сейчас не цены, а связи: продажи есть, но блюда еще не привязаны к номенклатуре iiko.";
+  }
+
+  return "Ключевые блюда имеют доказанную себестоимость. Дальше можно разбирать слабую маржу и прибыльность меню.";
 }
 
 function MarginNextActionCard({

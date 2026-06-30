@@ -150,6 +150,9 @@ describe("buildMenuMarginReadiness", () => {
       blockedRevenuePct: 100,
       missingLinkRevenue: 54000,
       missingCostRevenue: 20000,
+      missingProductCostRevenue: 20000,
+      missingTechCardPriceRevenue: 0,
+      missingTechCardIngredientPriceRows: 0,
       revenueWithCost: 0,
     });
     expect(readiness.topBlockers[0]).toMatchObject({
@@ -296,6 +299,8 @@ describe("buildMenuMarginReadiness", () => {
     expect(readiness).toMatchObject({
       missingLinkRevenue: 50000,
       missingCostRevenue: 75000,
+      missingProductCostRevenue: 75000,
+      missingTechCardPriceRevenue: 0,
     });
     expect(buildMenuMarginNextAction(readiness)).toMatchObject({
       kind: "missing-cost",
@@ -352,6 +357,9 @@ describe("buildMenuMarginReadiness", () => {
       usableTechCardDishes: 1,
       revenueWithTechCards: 30000,
       usableTechCardCoveragePct: 100,
+      missingProductCostRevenue: 0,
+      missingTechCardPriceRevenue: 30000,
+      missingTechCardIngredientPriceRows: 2,
     });
     expect(readiness.items[0]).toMatchObject({
       hasCost: false,
@@ -791,6 +799,11 @@ describe("buildMenuMarginReadiness", () => {
       techCardPricedIngredientRows: 1,
       techCardUnpricedIngredientRows: 1,
       missingIngredientPriceNames: ["Egg"],
+    });
+    expect(readiness).toMatchObject({
+      missingProductCostRevenue: 0,
+      missingTechCardPriceRevenue: 30000,
+      missingTechCardIngredientPriceRows: 1,
     });
     const nextAction = buildMenuMarginNextAction(readiness);
     expect(nextAction).toMatchObject({
