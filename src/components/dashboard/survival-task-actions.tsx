@@ -22,7 +22,7 @@ import type { SurvivalTaskDraft } from "@/lib/survival-score";
 import { buildTeamHref } from "@/lib/team/team-links";
 import { learningModuleHref } from "@/lib/team/team-learning";
 import {
-  taskContextBriefFromContext,
+  taskContextBriefDisplayFromContext,
   taskChecklistHintFromContext,
   type TeamRoleId,
   type TeamTask,
@@ -133,7 +133,9 @@ export function SurvivalTaskActions({
             })
           : null;
         const AudienceIcon = draft.audienceMemberName ? UserRound : UsersRound;
-        const contextBrief = taskContextBriefFromContext(draft.contextNote);
+        const contextBrief = taskContextBriefDisplayFromContext(
+          draft.contextNote,
+        );
         const checklistTitle =
           draft.learningChecklistTitle ??
           taskChecklistHintFromContext(draft.contextNote);

@@ -11,6 +11,7 @@ import {
   listTasksForRole,
   roleCan,
   taskChecklistHintFromContext,
+  taskContextBriefDisplayFromContext,
   taskContextBriefFromContext,
   taskContextWithoutLearningHint,
   taskLearningHintFromContext,
@@ -118,6 +119,12 @@ describe("Team OS roles and permissions", () => {
     expect(taskContextWithoutLearningHint(context)).toBe(
       "Полевой факт: Маша: Выручка и смены — закончилась мята к 21:00. Вопрос: что в смене объясняет эту цифру? Проверка: Сверить стоп-лист и потерянные продажи. Зачем: связать факты смены с BI.",
     );
+    expect(taskContextBriefDisplayFromContext(context)).toEqual({
+      fieldFact: "Маша: Выручка и смены — закончилась мята к 21:00.",
+      question: "что в смене объясняет эту цифру?",
+      check: "Сверить стоп-лист и потерянные продажи.",
+      reason: "связать факты смены с BI.",
+    });
   });
 
   test("filters announcements by role visibility", () => {

@@ -40,7 +40,7 @@ import {
   TEAM_ROLES,
   listCommentsForTask,
   taskChecklistHintFromContext,
-  taskContextBriefFromContext,
+  taskContextBriefDisplayFromContext,
   taskContextWithoutLearningHint,
   taskLearningHintFromContext,
   type StaffMember,
@@ -851,7 +851,7 @@ export function TeamActionsPanel({
                   const contextBody = taskContextWithoutLearningHint(
                     context?.body,
                   );
-                  const contextBrief = taskContextBriefFromContext(
+                  const contextBrief = taskContextBriefDisplayFromContext(
                     context?.body,
                   );
                   const hasContextBrief = Boolean(

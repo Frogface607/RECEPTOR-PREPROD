@@ -50,7 +50,7 @@ import {
   hasAnnouncementRead,
   listCommentsForTask,
   taskChecklistHintFromContext,
-  taskContextBriefFromContext,
+  taskContextBriefDisplayFromContext,
   taskContextWithoutLearningHint,
   taskLearningHintFromContext,
   type TeamAnnouncement,
@@ -849,7 +849,7 @@ function TaskCard({
 
 function TaskContextBlock({ context }: { context: TeamTaskComment | null }) {
   const contextBody = taskContextWithoutLearningHint(context?.body);
-  const contextBrief = taskContextBriefFromContext(context?.body);
+  const contextBrief = taskContextBriefDisplayFromContext(context?.body);
   const hasContextBrief = Boolean(
     contextBrief.fieldFact ||
     contextBrief.question ||

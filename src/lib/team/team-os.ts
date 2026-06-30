@@ -651,6 +651,25 @@ export function taskContextBriefFromContext(
   };
 }
 
+function stripContextMarker(value: string | null, marker: string): string | null {
+  if (!value) return null;
+  const stripped = value.replace(new RegExp(`^${marker}\\s*`, "i"), "").trim();
+  return stripped || null;
+}
+
+export function taskContextBriefDisplayFromContext(
+  context: string | null | undefined,
+): TeamTaskContextBrief {
+  const brief = taskContextBriefFromContext(context);
+
+  return {
+    fieldFact: stripContextMarker(brief.fieldFact, "Полевой факт:"),
+    question: stripContextMarker(brief.question, "Вопрос:"),
+    check: stripContextMarker(brief.check, "Проверка:"),
+    reason: stripContextMarker(brief.reason, "Зачем:"),
+  };
+}
+
 export function listAnnouncementsForRole(
   roleId: TeamRoleId,
   venueId = "dev-venue",
