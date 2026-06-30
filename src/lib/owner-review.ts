@@ -1371,6 +1371,23 @@ function uniqueTaskDrafts(drafts: SurvivalTaskDraft[]): SurvivalTaskDraft[] {
   });
 }
 
+function keepFieldContextTaskVisible(
+  drafts: SurvivalTaskDraft[],
+): SurvivalTaskDraft[] {
+  const fieldIndex = drafts.findIndex(
+    (draft) => draft.sourceLabel === "Полевой контекст",
+  );
+  if (fieldIndex === -1 || fieldIndex < 3) return drafts;
+
+  const fieldTask = drafts[fieldIndex];
+  return [
+    ...drafts.slice(0, 2),
+    fieldTask,
+    ...drafts.slice(2, fieldIndex),
+    ...drafts.slice(fieldIndex + 1),
+  ];
+}
+
 function ownerToneFromLabor(tone: LaborInsightTone): OwnerReviewTone {
   if (tone === "risk") return "risk";
   if (tone === "good") return "good";
@@ -2646,17 +2663,19 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
   const genericHypotheses = visibleHypotheses.filter(
     (item) => !item.taskSourceLabel,
   );
-  const tasks = withoutAlreadyOpenTeamTasks(
-    uniqueTaskDrafts([
-      ...(() => {
-        const task = taskFromLaborSetupProgress(input.laborSetupProgress);
-        return task ? [task] : [];
-      })(),
-      ...actions.map(taskFromOwnerAction),
-      ...bridgeHypotheses.map(taskFromHypothesis),
-      ...genericHypotheses.map(taskFromHypothesis),
-    ]),
-    input.teamTasks,
+  const tasks = keepFieldContextTaskVisible(
+    withoutAlreadyOpenTeamTasks(
+      uniqueTaskDrafts([
+        ...(() => {
+          const task = taskFromLaborSetupProgress(input.laborSetupProgress);
+          return task ? [task] : [];
+        })(),
+        ...actions.map(taskFromOwnerAction),
+        ...bridgeHypotheses.map(taskFromHypothesis),
+        ...genericHypotheses.map(taskFromHypothesis),
+      ]),
+      input.teamTasks,
+    ),
   ).slice(0, 3);
 
   return {

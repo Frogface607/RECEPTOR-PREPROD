@@ -1685,6 +1685,15 @@ describe("buildOwnerReview", () => {
         }),
       ]),
     );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Проверить стоп-лист и потерянные продажи",
+          sourceLabel: "Полевой контекст",
+          roleId: "venue_manager",
+        }),
+      ]),
+    );
   });
 
   test("connects sales hypotheses with the upsell learning module", () => {
