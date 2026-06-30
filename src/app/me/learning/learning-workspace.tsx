@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   calculateLearningScore,
+  learningModuleHref,
   type TeamLearningItem,
   type TeamLearningScore,
 } from "@/lib/team/team-learning";
@@ -47,7 +48,10 @@ function saveProgress(progress: ProgressMap) {
   }
 }
 
-function mergeProgress(primary: ProgressMap, secondary: ProgressMap): ProgressMap {
+function mergeProgress(
+  primary: ProgressMap,
+  secondary: ProgressMap,
+): ProgressMap {
   const merged: ProgressMap = { ...secondary };
 
   for (const [moduleId, progress] of Object.entries(primary)) {
@@ -72,13 +76,19 @@ function formatProgressDate(value: string): string {
   }).format(date);
 }
 
-function progressLabel(item: TeamLearningItem, progress?: StoredProgress): string {
+function progressLabel(
+  item: TeamLearningItem,
+  progress?: StoredProgress,
+): string {
   if (!progress) return "не пройдено";
   if (progress.bestPercentage >= item.passPercentage) return "сдано";
   return "повторить";
 }
 
-function progressClass(item: TeamLearningItem, progress?: StoredProgress): string {
+function progressClass(
+  item: TeamLearningItem,
+  progress?: StoredProgress,
+): string {
   if (!progress) return "border-border bg-muted/35 text-muted-foreground";
   if (progress.bestPercentage >= item.passPercentage) {
     return "border-brand/30 bg-brand/10 text-brand";
@@ -86,9 +96,14 @@ function progressClass(item: TeamLearningItem, progress?: StoredProgress): strin
   return "border-amber-400/30 bg-amber-400/10 text-amber-200";
 }
 
+function normalizedTitle(value: string | null | undefined): string {
+  return value?.trim().toLocaleLowerCase("ru-RU") ?? "";
+}
+
 export function LearningWorkspace({
   items,
   initialModuleId,
+  initialChecklistTitle,
   initialProgress,
   memberName,
   roleTitle,
@@ -97,6 +112,7 @@ export function LearningWorkspace({
 }: {
   items: TeamLearningItem[];
   initialModuleId: string;
+  initialChecklistTitle?: string;
   initialProgress: ProgressMap;
   memberName: string;
   roleTitle: string;
@@ -105,6 +121,9 @@ export function LearningWorkspace({
 }) {
   const [pending, startTransition] = useTransition();
   const [activeItemId, setActiveItemId] = useState(initialModuleId);
+  const [activeChecklistTitle, setActiveChecklistTitle] = useState(
+    initialChecklistTitle?.trim() ?? "",
+  );
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submittedScore, setSubmittedScore] =
     useState<TeamLearningScore | null>(null);
@@ -121,9 +140,9 @@ export function LearningWorkspace({
 
   useEffect(() => {
     if (!activeItemUrlId) return;
-    const nextUrl = `/me/learning?module=${encodeURIComponent(activeItemUrlId)}`;
+    const nextUrl = learningModuleHref(activeItemUrlId, activeChecklistTitle);
     window.history.replaceState(null, "", nextUrl);
-  }, [activeItemUrlId]);
+  }, [activeItemUrlId, activeChecklistTitle]);
 
   const answeredCount = activeItem
     ? activeItem.quiz.filter((_, index) => answers[index] !== undefined).length
@@ -154,6 +173,7 @@ export function LearningWorkspace({
 
   function selectModule(moduleId: string) {
     setActiveItemId(moduleId);
+    setActiveChecklistTitle("");
     setAnswers({});
     setSubmittedScore(null);
     setSaveMessage("");
@@ -170,7 +190,10 @@ export function LearningWorkspace({
     const nextProgress: ProgressMap = {
       ...progress,
       [activeItem.id]: {
-        bestPercentage: Math.max(previous?.bestPercentage ?? 0, score.percentage),
+        bestPercentage: Math.max(
+          previous?.bestPercentage ?? 0,
+          score.percentage,
+        ),
         lastPercentage: score.percentage,
         correct: score.correct,
         total: score.total,
@@ -226,6 +249,12 @@ export function LearningWorkspace({
   }
 
   const activeProgress = progress[activeItem.id];
+  const activeChecklistNormalized = normalizedTitle(activeChecklistTitle);
+  const checklistExists =
+    activeChecklistNormalized.length > 0 &&
+    activeItem.sections.some(
+      (section) => normalizedTitle(section.title) === activeChecklistNormalized,
+    );
 
   return (
     <section className="mx-auto grid max-w-7xl gap-6 px-6 py-8 lg:grid-cols-[0.34fr_0.66fr]">
@@ -235,7 +264,10 @@ export function LearningWorkspace({
             Прогресс роли
           </p>
           <div className="mt-4 grid grid-cols-3 gap-2">
-            <Metric label="модули" value={`${completedCount}/${items.length}`} />
+            <Metric
+              label="модули"
+              value={`${completedCount}/${items.length}`}
+            />
             <Metric label="средний" value={`${averageScore}%`} />
             <Metric label="роль" value={roleTitle} compact />
           </div>
@@ -275,7 +307,8 @@ export function LearningWorkspace({
                         {item.timeLabel} · {item.quiz.length} вопроса
                       </p>
                     </div>
-                    {(itemProgress?.bestPercentage ?? 0) >= item.passPercentage ? (
+                    {(itemProgress?.bestPercentage ?? 0) >=
+                    item.passPercentage ? (
                       <CheckCircle2 className="size-4 shrink-0 text-brand" />
                     ) : (
                       <Circle className="size-4 shrink-0 text-muted-foreground" />
@@ -315,6 +348,12 @@ export function LearningWorkspace({
               <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
                 {activeItem.description}
               </p>
+              {checklistExists ? (
+                <div className="mt-3 inline-flex items-center gap-2 rounded-md border border-brand/30 bg-brand/10 px-3 py-1.5 text-[12px] leading-relaxed text-brand">
+                  <ListChecks className="size-3.5" />
+                  <span>Фокус BI: {activeChecklistTitle}</span>
+                </div>
+              ) : null}
             </div>
             {activeProgress ? (
               <div className="rounded-lg border border-border/60 bg-background/35 p-3 text-right">
@@ -329,30 +368,47 @@ export function LearningWorkspace({
           </div>
 
           <div className="mt-6 grid gap-4">
-            {activeItem.sections.map((section) => (
-              <section
-                key={section.title}
-                className="rounded-lg border border-border/45 bg-background/35 p-4"
-              >
-                <h3 className="text-sm font-medium">{section.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {section.body}
-                </p>
-                {section.bullets?.length ? (
-                  <ul className="mt-3 grid gap-2">
-                    {section.bullets.map((bullet) => (
-                      <li
-                        key={bullet}
-                        className="flex gap-3 text-sm leading-relaxed text-foreground/85"
-                      >
-                        <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-brand" />
-                        <span>{bullet}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </section>
-            ))}
+            {activeItem.sections.map((section) => {
+              const focused =
+                activeChecklistNormalized.length > 0 &&
+                normalizedTitle(section.title) === activeChecklistNormalized;
+
+              return (
+                <section
+                  key={section.title}
+                  className={cn(
+                    "rounded-lg border p-4 transition-colors",
+                    focused
+                      ? "border-brand/45 bg-brand/10"
+                      : "border-border/45 bg-background/35",
+                  )}
+                >
+                  {focused ? (
+                    <div className="mb-3 inline-flex items-center gap-2 rounded-md border border-brand/30 bg-background/35 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-brand">
+                      <ListChecks className="size-3" />
+                      Чеклист из BI-задачи
+                    </div>
+                  ) : null}
+                  <h3 className="text-sm font-medium">{section.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {section.body}
+                  </p>
+                  {section.bullets?.length ? (
+                    <ul className="mt-3 grid gap-2">
+                      {section.bullets.map((bullet) => (
+                        <li
+                          key={bullet}
+                          className="flex gap-3 text-sm leading-relaxed text-foreground/85"
+                        >
+                          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-brand" />
+                          <span>{bullet}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </section>
+              );
+            })}
           </div>
         </article>
 

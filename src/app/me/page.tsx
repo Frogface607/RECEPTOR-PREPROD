@@ -25,6 +25,7 @@ import {
   getLearningItem,
   getLearningItemByTitle,
   getRoleDayFocus,
+  learningModuleHref,
   listShiftChecklistForRole,
   type TeamLearningItem,
 } from "@/lib/team/team-learning";
@@ -452,7 +453,10 @@ export default async function MyCabinetPage({
                           </span>
                           {nextActionLearningItem ? (
                             <Link
-                              href={`/me/learning?module=${encodeURIComponent(nextActionLearningItem.id)}`}
+                              href={learningModuleHref(
+                                nextActionLearningItem.id,
+                                nextActionContextChecklistTitle,
+                              )}
                               className="font-medium text-sky-100 underline-offset-4 hover:underline"
                             >
                               Открыть
@@ -831,7 +835,7 @@ function TaskCard({
           </span>
           {learningItem ? (
             <Link
-              href={`/me/learning?module=${encodeURIComponent(learningItem.id)}`}
+              href={learningModuleHref(learningItem.id, contextChecklistTitle)}
               className="font-medium text-sky-100 underline-offset-4 hover:underline"
             >
               Открыть

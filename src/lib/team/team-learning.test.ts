@@ -3,6 +3,7 @@ import {
   calculateLearningScore,
   getLearningItem,
   getLearningItemByTitle,
+  learningModuleHref,
   listLearningItemsForRole,
 } from "./team-learning";
 
@@ -77,6 +78,20 @@ describe("team learning catalog", () => {
           title: "Если BI показал недобор валовой прибыли",
         }),
       ]),
+    );
+  });
+
+  test("builds learning links with focused BI checklist titles", () => {
+    expect(
+      learningModuleHref(
+        "restaurant-numbers-basics",
+        "Если BI показал перерасход ФОТ",
+      ),
+    ).toBe(
+      "/me/learning?module=restaurant-numbers-basics&checklist=%D0%95%D1%81%D0%BB%D0%B8+BI+%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7%D0%B0%D0%BB+%D0%BF%D0%B5%D1%80%D0%B5%D1%80%D0%B0%D1%81%D1%85%D0%BE%D0%B4+%D0%A4%D0%9E%D0%A2",
+    );
+    expect(learningModuleHref("shift-open-close")).toBe(
+      "/me/learning?module=shift-open-close",
     );
   });
 

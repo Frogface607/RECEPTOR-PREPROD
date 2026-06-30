@@ -97,6 +97,7 @@ export default async function EmployeeLearningPage({
     workspace.learningStandards,
   );
   const requestedModule = parseParam(sp.module);
+  const requestedChecklist = parseParam(sp.checklist);
   const initialModule =
     learningItems.find((item) => item.id === requestedModule) ??
     getLearningItem(requestedModule) ??
@@ -158,6 +159,7 @@ export default async function EmployeeLearningPage({
         <LearningWorkspace
           items={learningItems}
           initialModuleId={initialModule?.id ?? learningItems[0]?.id ?? ""}
+          initialChecklistTitle={requestedChecklist}
           initialProgress={progressToSnapshotMap(workspace.learningProgress)}
           memberName={workspace.member.name}
           roleTitle={role.title}

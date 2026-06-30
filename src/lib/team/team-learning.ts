@@ -923,6 +923,16 @@ export function getLearningItemByTitle(
   );
 }
 
+export function learningModuleHref(
+  moduleId: string,
+  checklistTitle?: string | null,
+): string {
+  const params = new URLSearchParams({ module: moduleId });
+  const checklist = checklistTitle?.trim();
+  if (checklist) params.set("checklist", checklist);
+  return `/me/learning?${params.toString()}`;
+}
+
 export function calculateLearningScore(
   item: TeamLearningItem,
   answers: readonly number[],

@@ -16,6 +16,7 @@ import {
 import { createTeamTaskAction } from "@/app/team/actions";
 import { Button } from "@/components/ui/button";
 import type { SurvivalTaskDraft } from "@/lib/survival-score";
+import { learningModuleHref } from "@/lib/team/team-learning";
 import {
   taskChecklistHintFromContext,
   type TeamRoleId,
@@ -131,13 +132,13 @@ export function SurvivalTaskActions({
         const state = states[index] ?? "idle";
         const saved = state === "saved";
         const AudienceIcon = draft.audienceMemberName ? UserRound : UsersRound;
-        const learningHref = draft.learningModuleId
-          ? `/me/learning?module=${encodeURIComponent(draft.learningModuleId)}`
-          : null;
         const businessReason = businessReasonFromContext(draft.contextNote);
         const checklistTitle =
           draft.learningChecklistTitle ??
           taskChecklistHintFromContext(draft.contextNote);
+        const learningHref = draft.learningModuleId
+          ? learningModuleHref(draft.learningModuleId, checklistTitle)
+          : null;
         return (
           <div
             key={`${draft.roleId}-${index}-${draft.title}`}
