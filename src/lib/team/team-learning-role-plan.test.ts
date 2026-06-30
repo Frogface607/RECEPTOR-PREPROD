@@ -6,6 +6,7 @@ import {
 } from "./team-learning-progress";
 import {
   buildLearningAdmissionTaskDraft,
+  buildTeamLearningFocusPlan,
   buildTeamLearningRolePlans,
   findOpenLearningAdmissionTask,
 } from "./team-learning-role-plan";
@@ -169,6 +170,48 @@ describe("buildTeamLearningRolePlans", () => {
       totalItems: 5,
       admissionPct: 100,
       requiredProgressPct: 100,
+    });
+  });
+
+  test("turns field service signals into a concrete learning focus", () => {
+    const summaries = buildTeamLearningSummaries(staff, progress);
+    const plans = buildTeamLearningRolePlans(summaries);
+    const focus = buildTeamLearningFocusPlan({
+      plans,
+      fieldContext: {
+        totalNotes: 1,
+        signalCount: 1,
+        summary: "Вопросы гостей: Маша — гости просили безалкогольный коктейль.",
+        signals: [
+          {
+            kind: "service",
+            title: "Сервис и продажи",
+            detail:
+              "Маша — гости просили безалкогольный коктейль, официанты не знали что предложить.",
+            sourceCount: 1,
+            latestAtLabel: "23:10",
+          },
+        ],
+      },
+    });
+
+    expect(focus[0]).toMatchObject({
+      title: "Усилить сервис и продажи: Официант",
+      roleTitle: "Официант",
+      moduleTitle: "Как рекомендовать блюдо без давления",
+      tone: "field",
+    });
+  });
+
+  test("falls back to admission blockers when field context is empty", () => {
+    const summaries = buildTeamLearningSummaries(staff, progress);
+    const plans = buildTeamLearningRolePlans(summaries);
+    const focus = buildTeamLearningFocusPlan({ plans });
+
+    expect(focus[0]).toMatchObject({
+      title: "Официант: закрыть допуск",
+      moduleTitle: "Как рекомендовать блюдо без давления",
+      tone: "risk",
     });
   });
 });

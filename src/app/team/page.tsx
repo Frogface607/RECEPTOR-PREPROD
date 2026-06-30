@@ -79,10 +79,14 @@ import {
 } from "@/lib/team/team-learning-progress";
 import {
   buildLearningAdmissionTaskDraft,
+  buildTeamLearningFocusPlan,
   buildTeamLearningRolePlans,
   findOpenLearningAdmissionTask,
+  type TeamLearningFocusItem,
+  type TeamLearningFocusTone,
   type TeamLearningRolePlan,
 } from "@/lib/team/team-learning-role-plan";
+import { buildTeamFieldContextDigest } from "@/lib/team/team-field-context";
 import { buildTeamLaborReadiness } from "@/lib/team/team-labor-readiness";
 import {
   buildTeamOpsReadiness,
@@ -245,6 +249,14 @@ export default async function TeamPage({
     learningSummaries,
     workspace.learningStandards,
   );
+  const learningFieldContext = buildTeamFieldContextDigest({
+    comments: workspace.comments,
+    tasks: workspace.tasks,
+  });
+  const learningFocusPlan = buildTeamLearningFocusPlan({
+    plans: learningRolePlans,
+    fieldContext: learningFieldContext,
+  });
   const laborLoad = await loadTeamLabor({
     venueId,
     staff: workspace.staff,
@@ -755,6 +767,10 @@ export default async function TeamPage({
                   ))}
                 </div>
               </div>
+            </div>
+
+            <div className="mt-6">
+              <LearningFocusPanel items={learningFocusPlan} />
             </div>
 
             <div className="mt-6">
@@ -2492,6 +2508,94 @@ function ShiftCoverageRow({ coverage }: { coverage: ShiftRoleCoverage }) {
       </div>
     </div>
   );
+}
+
+function LearningFocusPanel({ items }: { items: TeamLearningFocusItem[] }) {
+  return (
+    <div className="rounded-lg border border-brand/25 bg-card/55 p-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-start gap-3">
+          <GraduationCap className="mt-0.5 size-5 text-brand" />
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
+              Что учить сегодня
+            </p>
+            <h2 className="mt-2 text-xl font-medium">Фокус обучения</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              Система поднимает стандарты из заметок смены, задач и допуска к
+              работе.
+            </p>
+          </div>
+        </div>
+        <Badge variant="outline">
+          {formatInteger(items.length)} приоритета
+        </Badge>
+      </div>
+
+      <div className="mt-5 grid gap-3 lg:grid-cols-2">
+        {items.map((item) => (
+          <LearningFocusCard key={item.id} item={item} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LearningFocusCard({ item }: { item: TeamLearningFocusItem }) {
+  return (
+    <Link
+      href={item.href}
+      className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-4 transition-colors hover:border-brand/40 hover:bg-background/55"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className={
+                "rounded-md border px-2 py-1 text-[10px] uppercase tracking-[0.12em] " +
+                learningFocusToneClass(item.tone)
+              }
+            >
+              {learningFocusToneLabel(item.tone)}
+            </span>
+            <p className="text-sm font-medium text-foreground">{item.title}</p>
+          </div>
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+            {item.reason}
+          </p>
+        </div>
+        <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+      </div>
+
+      <div className="rounded-lg border border-border/35 bg-card/40 p-3">
+        <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+          Материал
+        </p>
+        <p className="mt-1 text-sm font-medium text-foreground">
+          {item.moduleTitle}
+        </p>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+          {item.detail}
+        </p>
+      </div>
+    </Link>
+  );
+}
+
+function learningFocusToneLabel(tone: TeamLearningFocusTone): string {
+  if (tone === "risk") return "допуск";
+  if (tone === "field") return "поле";
+  if (tone === "setup") return "стандарт";
+  return "развитие";
+}
+
+function learningFocusToneClass(tone: TeamLearningFocusTone): string {
+  if (tone === "risk")
+    return "border-destructive/30 bg-destructive/10 text-destructive";
+  if (tone === "field") return "border-brand/30 bg-brand/10 text-brand";
+  if (tone === "setup")
+    return "border-amber-400/30 bg-amber-400/10 text-amber-100";
+  return "border-[color:var(--pro)]/30 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
 }
 
 function LearningRolePlanGrid({
