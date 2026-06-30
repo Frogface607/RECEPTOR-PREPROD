@@ -66,6 +66,7 @@ describe("buildOwnerMorningReviewRows", () => {
         role: "manager",
         tone: "risk",
         taskSourceLabel: "Полевой контекст",
+        impactLabel: "2 сигнала",
       },
     ];
 
@@ -94,8 +95,8 @@ describe("buildOwnerMorningReviewRows", () => {
       }),
       expect.objectContaining({
         label: "Действие",
-        value: "Разобрать дорогую смену · 38% ФОТ",
-        detail: expect.stringContaining("состав смены"),
+        value: "Проверить стоп-лист и потерянные продажи · 2 сигнала",
+        detail: expect.stringContaining("сколько выручки"),
         tone: "risk",
       }),
     ]);
@@ -113,6 +114,11 @@ describe("buildOwnerMorningReviewRows", () => {
       tone: "watch",
     });
     expect(rows[1].detail).toContain("собрать короткий факт смены");
+    expect(rows[2]).toMatchObject({
+      label: "Действие",
+      value: "Разобрать дорогую смену · 38% ФОТ",
+      tone: "risk",
+    });
     expect(rows).toHaveLength(3);
   });
 });

@@ -117,6 +117,26 @@ function bridgeRow(
   };
 }
 
+function fieldActionRow(
+  review: OwnerReview,
+  bi: OwnerMorningReviewRow,
+): OwnerMorningReviewRow | null {
+  const field = review.evidence.find((item) => item.label === "Поле");
+  const hypothesis = fieldHypothesis(review);
+  if (!field || !hypothesis || bi.tone === "good") return null;
+
+  const title = hypothesis.taskTitle ?? hypothesis.title;
+  return {
+    label: "Действие",
+    value: hypothesis.impactLabel
+      ? `${title} · ${hypothesis.impactLabel}`
+      : title,
+    detail: `${hypothesis.why} Проверка: ${hypothesis.check}`,
+    tone:
+      hypothesis.tone === "risk" || field.tone === "risk" ? "risk" : "watch",
+  };
+}
+
 function actionRow(
   review: OwnerReview,
   mainAction: OwnerReviewAction | null,
@@ -158,11 +178,7 @@ export function buildOwnerMorningReviewRows({
 }): OwnerMorningReviewRow[] {
   const bi = primaryBiRow(review);
   const bridge = bridgeRow(review, bi);
+  const action = fieldActionRow(review, bi) ?? actionRow(review, mainAction);
 
-  return [
-    bi,
-    fieldRow(review),
-    ...(bridge ? [bridge] : []),
-    actionRow(review, mainAction),
-  ];
+  return [bi, fieldRow(review), ...(bridge ? [bridge] : []), action];
 }
