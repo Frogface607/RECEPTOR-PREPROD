@@ -1333,6 +1333,7 @@ function hypothesisSourceScore(sourceLabel: string | undefined): number {
   if (sourceLabel === "Данные iiko") return 900_000;
   if (sourceLabel === "Маржа и техкарты") return 70_000;
   if (sourceLabel === "ФОТ и смены") return 65_000;
+  if (sourceLabel === "Полевой контекст") return 62_000;
   if (sourceLabel === "Выручка и смены") return 60_000;
   if (sourceLabel === "Продажи и сервис") return 50_000;
   return 0;

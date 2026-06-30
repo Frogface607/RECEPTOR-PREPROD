@@ -1614,6 +1614,79 @@ describe("buildOwnerReview", () => {
     );
   });
 
+  test("keeps field context visible when several BI hypotheses compete", () => {
+    const labor = buildLaborBi({
+      shifts: [
+        {
+          ...shifts[0],
+          workers: [
+            {
+              name: "Официант",
+              hours: 8,
+              sales: 100000,
+            },
+          ],
+        },
+      ],
+    });
+    const teamTasks: TeamTask[] = [
+      {
+        id: "task-shift-context",
+        title: "Разобрать вечернюю смену",
+        source: "copilot",
+        sourceLabel: "Выручка и смены",
+        priority: "medium",
+        status: "in_progress",
+        venueId: "venue-1",
+        audience: { type: "role", roleId: "venue_manager" },
+        dueLabel: "сегодня",
+      },
+    ];
+    const teamComments: TeamTaskComment[] = [
+      {
+        id: "comment-field-risk",
+        venueId: "venue-1",
+        taskId: "task-shift-context",
+        authorName: "Маша",
+        body: "Стоп-лист / закончилось: мята к 21:00, гости жаловались на ожидание.",
+        createdAtLabel: "22:30",
+      },
+    ];
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief: {
+        ...brief,
+        revenue: {
+          ...brief.revenue,
+          previous: 130000,
+          deltaPct: -23.1,
+        },
+      },
+      dataQuality: quality,
+      dataMode: "live",
+      labor,
+      margin: buildMenuMarginReadiness({
+        dishes,
+        products: [],
+      }),
+      teamTasks,
+      teamComments,
+    });
+
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          taskSourceLabel: "Полевой контекст",
+          title: "Проверить стоп-лист и потерянные продажи",
+        }),
+      ]),
+    );
+  });
+
   test("connects sales hypotheses with the upsell learning module", () => {
     const review = buildOwnerReview({
       summary,
