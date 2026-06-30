@@ -423,6 +423,7 @@ describe("buildOwnerReview", () => {
           target: "iiko-settings",
           learningModuleId: "iiko-cash-discipline",
           learningModuleTitle: "iiko и кассовая дисциплина на смене",
+          learningChecklistTitle: "Если Receptor не видит смены iiko",
         }),
       ]),
     );
@@ -432,6 +433,7 @@ describe("buildOwnerReview", () => {
           title: "Смены пока не найдены",
           learningModuleId: "iiko-cash-discipline",
           learningModuleTitle: "iiko и кассовая дисциплина на смене",
+          learningChecklistTitle: "Если Receptor не видит смены iiko",
         }),
       ]),
     );
@@ -442,8 +444,19 @@ describe("buildOwnerReview", () => {
           sourceLabel: "Данные iiko",
           learningModuleId: "iiko-cash-discipline",
           learningModuleTitle: "iiko и кассовая дисциплина на смене",
+          learningChecklistTitle: "Если Receptor не видит смены iiko",
           contextNote: expect.stringContaining(
             "Урок для команды: iiko и кассовая дисциплина на смене.",
+          ),
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          sourceLabel: "Данные iiko",
+          contextNote: expect.stringContaining(
+            "Чеклист: Если Receptor не видит смены iiko.",
           ),
         }),
       ]),

@@ -511,6 +511,12 @@ function taskChecklistForSource(
   ) {
     return "Разбор: факт, вопрос, проверка, действие";
   }
+  if (
+    learningModuleId === "iiko-cash-discipline" &&
+    sourceLabel === "Данные iiko"
+  ) {
+    return "Если Receptor не видит смены iiko";
+  }
   if (learningModuleId === "restaurant-numbers-basics") {
     return "Если BI показал перерасход ФОТ";
   }
