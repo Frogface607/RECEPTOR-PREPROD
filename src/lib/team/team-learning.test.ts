@@ -70,6 +70,13 @@ describe("team learning catalog", () => {
       expect.arrayContaining([
         expect.objectContaining({
           title: "Если BI показал слабую смену",
+          body: expect.stringContaining("полевой факт"),
+          bullets: expect.arrayContaining([
+            expect.stringContaining("посадка"),
+            expect.stringContaining("стоп-лист"),
+            expect.stringContaining("апсейл"),
+            expect.stringContaining("брифа"),
+          ]),
         }),
         expect.objectContaining({
           title: "Если план и факт смен не совпали",
