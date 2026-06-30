@@ -457,7 +457,9 @@ export default async function MyCabinetPage({
                               )}
                               className="font-medium text-sky-100 underline-offset-4 hover:underline"
                             >
-                              Открыть
+                              {nextActionContextChecklistTitle
+                                ? "Открыть чеклист"
+                                : "Открыть"}
                             </Link>
                           ) : null}
                         </div>
@@ -834,7 +836,7 @@ function TaskCard({
               href={learningModuleHref(learningItem.id, contextChecklistTitle)}
               className="font-medium text-sky-100 underline-offset-4 hover:underline"
             >
-              Открыть
+              {contextChecklistTitle ? "Открыть чеклист" : "Открыть"}
             </Link>
           ) : null}
         </div>

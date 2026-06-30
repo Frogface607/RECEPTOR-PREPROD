@@ -196,7 +196,7 @@ export function SurvivalTaskActions({
                             href={learningHref}
                             className="font-medium text-sky-100 underline-offset-4 hover:underline"
                           >
-                            Открыть
+                            {checklistTitle ? "Открыть чеклист" : "Открыть"}
                           </Link>
                         </>
                       ) : null}
