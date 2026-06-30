@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Lightbulb,
   Loader2,
+  MessageSquareText,
   Plus,
   Send,
   Tags,
@@ -82,6 +83,24 @@ function businessReasonFromContext(
   return reason.replace(/\s+/g, " ").trim() || null;
 }
 
+function fieldFactFromContext(contextNote: string | undefined): string | null {
+  if (!contextNote) return null;
+  const marker = "Полевой факт:";
+  const start = contextNote.indexOf(marker);
+  if (start < 0) return null;
+  const raw = contextNote.slice(start);
+  const suffixStart = [
+    raw.indexOf("Проверка:"),
+    raw.indexOf("Зачем:"),
+    raw.indexOf("Урок для команды:"),
+    raw.indexOf("Чеклист:"),
+  ]
+    .filter((index) => index >= 0)
+    .sort((a, b) => a - b)[0];
+  const fact = suffixStart >= 0 ? raw.slice(0, suffixStart) : raw;
+  return fact.replace(/\s+/g, " ").trim() || null;
+}
+
 export function SurvivalTaskActions({
   venueId,
   drafts,
@@ -132,6 +151,7 @@ export function SurvivalTaskActions({
         const state = states[index] ?? "idle";
         const saved = state === "saved";
         const AudienceIcon = draft.audienceMemberName ? UserRound : UsersRound;
+        const fieldFact = fieldFactFromContext(draft.contextNote);
         const businessReason = businessReasonFromContext(draft.contextNote);
         const checklistTitle =
           draft.learningChecklistTitle ??
@@ -173,6 +193,12 @@ export function SurvivalTaskActions({
                 <p className="mt-2 text-[13px] leading-relaxed text-foreground/85">
                   {draft.title}
                 </p>
+                {fieldFact ? (
+                  <p className="mt-1 flex items-start gap-2 text-[11px] leading-relaxed text-foreground/75">
+                    <MessageSquareText className="mt-0.5 size-3.5 shrink-0 text-brand" />
+                    <span>{fieldFact}</span>
+                  </p>
+                ) : null}
                 {businessReason ? (
                   <p className="mt-1 flex items-start gap-2 text-[11px] leading-relaxed text-amber-100/90">
                     <Lightbulb className="mt-0.5 size-3.5 shrink-0 text-amber-200" />
