@@ -223,7 +223,7 @@ function actionCta(action: OwnerReviewAction): string {
   if (action.target === "shift-plan-variance") return "План/факт";
   if (action.target === "team-learning") return "Обучение";
   if (action.target === "team-journal") return "Журнал";
-  if (action.target === "team-actions") return "Team OS";
+  if (action.target === "team-actions") return "Команда";
   if (action.target === "margin-diagnostics") {
     return action.learningChecklistTitle === "Если в техкарте нет цен ингредиентов"
       ? "Цены техкарт"
@@ -450,7 +450,7 @@ export function OwnerCommandPanel({
                 {mainAction
                   ? "Один следующий шаг"
                   : nextTeamTask
-                    ? "Задача в Team OS"
+                    ? "Задача команды"
                     : "Контур спокойный"}
               </h3>
             </div>
@@ -486,7 +486,7 @@ export function OwnerCommandPanel({
                 ) : null}
                 {mainAction.existingTaskId ? (
                   <span className="rounded-md border border-border/45 bg-background/50 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                    Team OS
+                    Команда
                     {mainAction.existingTaskStatus
                       ? `: ${TASK_STATUS_LABEL[mainAction.existingTaskStatus]}`
                       : ""}
@@ -585,7 +585,7 @@ export function OwnerCommandPanel({
                   variant="outline"
                   className="h-8 shrink-0 px-3 text-[12px]"
                 >
-                  {nextTeamTask ? "Открыть задачу" : "Открыть Team OS"}
+                  {nextTeamTask ? "Открыть задачу" : "Открыть команду"}
                   <ArrowRight className="size-3.5" />
                 </LinkButton>
               </div>
@@ -593,7 +593,7 @@ export function OwnerCommandPanel({
               {!nextTeamTask ? (
                 <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
                   Если владелец создаст действие из рекомендаций, оно появится в
-                  Team OS и будет видно здесь.
+                  задачах команды и будет видно здесь.
                 </p>
               ) : null}
               {teamTaskQueue.openContours.length > 0 ? (

@@ -138,7 +138,7 @@ describe("team task queue", () => {
     expect(teamTaskContourLabel(task({ source: "copilot" }))).toBe("Receptor");
     expect(teamTaskContourLabel(task({ source: "chef" }))).toBe("Кухня");
     expect(teamTaskContourLabel(task({ source: "owner" }))).toBe("Владелец");
-    expect(teamTaskContourLabel(task({ source: "manager" }))).toBe("Team OS");
+    expect(teamTaskContourLabel(task({ source: "manager" }))).toBe("Команда");
   });
 });
 

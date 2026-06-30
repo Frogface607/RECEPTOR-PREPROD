@@ -256,7 +256,7 @@ describe("buildLaborBi", () => {
     const setupInsight = buildLaborInsights(labor)[0];
     expect(setupInsight).toMatchObject({
       title: "Не все ставки заведены",
-      action: "Добавьте этого сотрудника в Team OS или выровняйте имя с iiko.",
+      action: "Добавьте этого сотрудника в команду или выровняйте имя с iiko.",
     });
     expect(setupInsight.detail).toContain("ФОТ доказан на 0%");
     expect(setupInsight.detail).toMatch(/120\s000 ₽/);
@@ -460,7 +460,7 @@ describe("buildLaborBi", () => {
     });
     expect(buildLaborNextAction(labor)).toMatchObject({
       kind: "missing-member",
-      action: expect.stringContaining("Team OS"),
+      action: expect.stringContaining("команду"),
     });
   });
 

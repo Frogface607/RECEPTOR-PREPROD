@@ -215,7 +215,7 @@ export function SurvivalTaskActions({
                   </p>
                 ) : null}
                 <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-                  Создастся в Team OS как задача для{" "}
+                  Создастся в задачах команды для{" "}
                   {audiencePrefix(draft).toLowerCase()} {audienceLabel(draft)}
                   {draft.contextNote
                     ? " с первым комментарием от Receptor."
@@ -252,7 +252,7 @@ export function SurvivalTaskActions({
                     href={savedTaskHref}
                     className="text-[11px] font-medium text-brand underline-offset-4 hover:underline"
                   >
-                    Открыть в Team OS
+                    Открыть в команде
                   </Link>
                 ) : null}
               </div>

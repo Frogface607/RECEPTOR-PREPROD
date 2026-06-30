@@ -162,7 +162,7 @@ export function buildTeamLaborSetupProgress(
       tone: "watch",
       title: `Создать карточки из iiko: ${missingStaffCards}`,
       detail:
-        "Смены уже видны, но часть имен еще не связана с Team OS. После импорта ставки можно закрыть пачкой.",
+        "Смены уже видны, но часть имен еще не связана с командой. После импорта ставки можно закрыть пачкой.",
       ctaLabel: "Открыть импорт",
       target: "labor-rates",
     };
@@ -188,8 +188,8 @@ export function buildTeamLaborSetupProgress(
       tone: readiness.status === "blocked" ? "risk" : "watch",
       title: "Проверить ставки ФОТ",
       detail:
-        "Часть сменной выручки пока без точного ФОТ. Откройте Team OS и проверьте связку сотрудников со сменами.",
-      ctaLabel: "Открыть Team OS",
+        "Часть сменной выручки пока без точного ФОТ. Откройте команду и проверьте связку сотрудников со сменами.",
+      ctaLabel: "Открыть команду",
       target: "labor-rates",
     };
   }
@@ -200,7 +200,7 @@ export function buildTeamLaborSetupProgress(
     tone: "good",
     title: "ФОТ готов к управленческим выводам",
     detail:
-      "Ставки заведены, смены связаны с Team OS. Можно смотреть стоимость команды, график и производительность смен.",
+      "Ставки заведены, смены связаны с командой. Можно смотреть стоимость команды, график и производительность смен.",
     ctaLabel: null,
     target: null,
   };

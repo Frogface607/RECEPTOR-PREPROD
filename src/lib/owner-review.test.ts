@@ -1552,7 +1552,7 @@ describe("buildOwnerReview", () => {
         }),
       ],
       action: {
-        label: "Открыть Team OS",
+        label: "Открыть команду",
         target: "team-actions",
       },
     });
@@ -2082,7 +2082,7 @@ describe("buildOwnerReview", () => {
     expect(review.readiness.detail).toContain(
       "Покрытие: продажи 100%, ФОТ 100% выручки, себестоимость 100% выручки.",
     );
-    expect(review.readiness.detail).toContain("1 открытая задача Team OS");
+    expect(review.readiness.detail).toContain("1 открытая задача команды");
   });
 
   test("prioritizes money-weighted BI actions over communication chores", () => {
@@ -2824,7 +2824,7 @@ describe("buildOwnerReview", () => {
       score: 100,
       title: "Можно считать прибыль",
       detail:
-        "Реальные данные iiko, ФОТ, себестоимость и Team OS контуры закрыты.",
+        "Реальные данные iiko, ФОТ, себестоимость и командные контуры закрыты.",
       missing: [],
       action: null,
       tone: "good",

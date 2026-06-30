@@ -67,7 +67,7 @@ export function teamTaskContourLabel(task: TeamTask): string {
   if (task.source === "copilot") return "Receptor";
   if (task.source === "chef") return "Кухня";
   if (task.source === "owner") return "Владелец";
-  return "Team OS";
+  return "Команда";
 }
 
 export function buildTeamTaskQueue(

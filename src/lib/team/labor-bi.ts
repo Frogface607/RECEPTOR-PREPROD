@@ -286,8 +286,8 @@ export function buildLaborInsights(
         : `${labor.missingRates} ${plural(labor.missingRates, "сотрудник", "сотрудника", "сотрудников")} без ставки мешают точно считать ФОТ. ${formatLaborCoverageGap(labor)}`,
       action:
         blocker?.reason === "missing-member"
-          ? "Добавьте этого сотрудника в Team OS или выровняйте имя с iiko."
-          : "Заполните ставку сотрудника в Team OS и вернитесь к периоду.",
+          ? "Добавьте этого сотрудника в команду или выровняйте имя с iiko."
+          : "Заполните ставку сотрудника в команде и вернитесь к периоду.",
     });
   }
 
@@ -384,9 +384,9 @@ export function buildLaborNextAction(
     return {
       kind: "missing-member",
       title: "Добавить сотрудника из iiko",
-      detail: `${blocker.name}: ${formatMoney(blocker.sales)} выручки в сменах без карточки Team OS. ${formatLaborCoverageGap(labor)}`,
+      detail: `${blocker.name}: ${formatMoney(blocker.sales)} выручки в сменах без карточки сотрудника. ${formatLaborCoverageGap(labor)}`,
       action:
-        "Откройте Team OS, добавьте сотрудника с таким же именем и задайте ставку ФОТ.",
+        "Откройте команду, добавьте сотрудника с таким же именем и задайте ставку ФОТ.",
       blocker,
       shift: null,
     };
@@ -398,7 +398,7 @@ export function buildLaborNextAction(
       title: "Заполнить ставку ФОТ",
       detail: `${blocker.name}: ${formatMoney(blocker.sales)} выручки в сменах без точной стоимости. ${formatLaborCoverageGap(labor)}`,
       action:
-        "Откройте строку сотрудника в Team OS и заполните почасовую ставку, фикс за смену или процент.",
+        "Откройте карточку сотрудника и заполните почасовую ставку, фикс за смену или процент.",
       blocker,
       shift: null,
     };
@@ -749,7 +749,7 @@ function decorateShiftDiagnostic(
       kind: "missing-rates",
       tone: "setup",
       title: "ФОТ смены не доказан",
-      detail: `${shift.missingRates} ${plural(shift.missingRates, "сотрудник", "сотрудника", "сотрудников")} без ставки или карточки Team OS.`,
+      detail: `${shift.missingRates} ${plural(shift.missingRates, "сотрудник", "сотрудника", "сотрудников")} без ставки или карточки сотрудника.`,
       action: "Сначала закройте ставку, потом сравнивайте смену по прибыли.",
       laborOverTarget: null,
     };
@@ -814,7 +814,7 @@ function decorateEmployeeDiagnostic(
       title: "Сотрудник без ставки ФОТ",
       detail: `${employee.name}: ${formatMoney(employee.sales)} выручки и ${employee.shifts} ${plural(employee.shifts, "смена", "смены", "смен")} без точной стоимости.`,
       action: employee.memberId
-        ? "Заполните ставку в карточке Team OS, чтобы ФОТ и прибыль считались точно."
+        ? "Заполните ставку в карточке сотрудника, чтобы ФОТ и прибыль считались точно."
         : "Создайте карточку сотрудника из iiko и задайте ставку ФОТ.",
       laborOverTarget: null,
     };

@@ -221,7 +221,7 @@ function actionCta(action: OwnerReviewAction): string {
   if (action.target === "shift-plan-variance") return "Открыть план/факт";
   if (action.target === "team-learning") return "Открыть стандарты";
   if (action.target === "team-journal") return "Открыть журнал";
-  if (action.target === "team-actions") return "Открыть Team OS";
+  if (action.target === "team-actions") return "Открыть команду";
   if (action.target === "margin-diagnostics") {
     return action.learningChecklistTitle === "Если в техкарте нет цен ингредиентов"
       ? "Закрыть цены техкарт"
@@ -495,7 +495,7 @@ export function OwnerReviewCard({
                         ) : null}
                         {action.existingTaskId ? (
                           <span className="rounded-md border border-border/45 bg-background/50 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                            уже в Team OS
+                            уже в задачах
                           </span>
                         ) : null}
                         <p className="text-[13px] font-medium text-foreground">

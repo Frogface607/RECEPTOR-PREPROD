@@ -112,7 +112,7 @@ export function LaborBiCard({
                   label: "ФОТ не доказан",
                   title: "Смены видны, но ФОТ еще нельзя считать",
                   detail:
-                    "Receptor видит смены и часы, но не нашел ни одной точной ставки. Сначала свяжите сотрудников и задайте правила ФОТ в Team OS.",
+                    "Receptor видит смены и часы, но не нашел ни одной точной ставки. Сначала свяжите сотрудников и задайте правила ФОТ в команде.",
                   className:
                     "border-amber-400/35 bg-amber-400/10 text-amber-200",
                 };
@@ -231,7 +231,7 @@ export function LaborBiCard({
               </h3>
             </div>
             <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
-              Владелец сразу видит, какого сотрудника открыть в Team OS.
+              Владелец сразу видит, какого сотрудника открыть в команде.
             </p>
           </div>
 
@@ -553,13 +553,13 @@ function LaborNextActionCard({
 }) {
   const buttonLabel =
     action.kind === "missing-member"
-      ? "Добавить в Team OS"
+      ? "Добавить сотрудника"
       : action.kind === "missing-rate"
         ? "Открыть ставку"
         : action.kind === "expensive-labor" ||
             action.kind === "low-productivity"
           ? "Открыть смены"
-          : "Открыть Team OS";
+          : "Открыть команду";
 
   return (
     <div className="mt-4 grid gap-3 rounded-lg border border-border/45 bg-background/30 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
@@ -592,7 +592,7 @@ function LaborNextActionCard({
 }
 
 function blockerReasonLabel(reason: LaborBlocker["reason"]): string {
-  if (reason === "missing-member") return "нет в Team OS";
+  if (reason === "missing-member") return "нет карточки";
   return "нет ставки";
 }
 
@@ -696,7 +696,7 @@ function EmployeeDiagnosticCard({
           variant="outline"
           className="mt-3 h-8 w-full justify-between border-brand/35 bg-brand/10 px-3 text-[12px] text-brand hover:bg-brand/15"
         >
-          Открыть в Team OS
+          Открыть сотрудника
           <ArrowRight className="size-3.5" />
         </LinkButton>
       ) : null}

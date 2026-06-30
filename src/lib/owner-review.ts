@@ -850,7 +850,7 @@ function taskFromLaborSetupProgress(
   if (progress.status === "needs-members") {
     return {
       title: trimTaskTitle(
-        `Импортировать сотрудников из iiko в Team OS: ${progress.missingStaffCards} карточек не связано, ${formatRubles(progress.unpricedRevenue)} выручки без точного ФОТ.`,
+        `Импортировать сотрудников из iiko в команду: ${progress.missingStaffCards} карточек не связано, ${formatRubles(progress.unpricedRevenue)} выручки без точного ФОТ.`,
       ),
       priority: "medium",
       roleId: "venue_manager",
@@ -862,7 +862,7 @@ function taskFromLaborSetupProgress(
       contextNote: withLearningContext({
         context: `Проверка: ${progress.missingStaffCards} карточек сотрудников не связано с iiko, ${formatRubles(progress.unpricedRevenue)} выручки без точного ФОТ.${blockerText}`,
         question:
-          "какие сотрудники iiko должны быть связаны с Team OS, чтобы ФОТ стал доказанным",
+          "какие сотрудники iiko должны быть связаны с командой, чтобы ФОТ стал доказанным",
         reason:
           "видеть реальную стоимость команды в сменах, а не только выручку",
         learningModuleTitle,
@@ -901,7 +901,7 @@ function taskFromLaborSetupProgress(
 
   return {
     title: trimTaskTitle(
-      `Заполнить ставки ФОТ в Team OS: ${progress.missingRateCards} сотрудников без ставки, ${formatRubles(progress.unpricedRevenue)} выручки под вопросом.`,
+      `Заполнить ставки ФОТ в команде: ${progress.missingRateCards} сотрудников без ставки, ${formatRubles(progress.unpricedRevenue)} выручки под вопросом.`,
     ),
     priority: progress.tone === "risk" ? "high" : "medium",
     roleId: "venue_manager",
@@ -1000,7 +1000,7 @@ function auditEventLabel(event: TeamAuditEvent): string {
     if (event.sourceLabel) return event.sourceLabel;
     return isClosedLoopEvent(event) ? "Закрыто" : "Статус";
   }
-  return "Team OS";
+  return "Команда";
 }
 
 function auditEventTone(event: TeamAuditEvent): OwnerReviewTone {
@@ -1178,14 +1178,14 @@ function operationalPulse(
   if (proof.urgentOpenTasks > 0) {
     return {
       title: "Есть срочные действия команды",
-      detail: `${urgentTasksLabel(proof.urgentOpenTasks)} держат контур открытым.${openTaskContourText(proof.openTaskContours)}${nextOpenTaskText(proof.nextOpenTaskTitle, proof.nextOpenTaskImpactLabel)} Закройте их в Team OS, чтобы выводы владельца стали доказанными.`,
+      detail: `${urgentTasksLabel(proof.urgentOpenTasks)} держат контур открытым.${openTaskContourText(proof.openTaskContours)}${nextOpenTaskText(proof.nextOpenTaskTitle, proof.nextOpenTaskImpactLabel)} Закройте их в задачах команды, чтобы выводы владельца стали доказанными.`,
       tone: "risk",
       openTasks: proof.openTasks,
       urgentOpenTasks: proof.urgentOpenTasks,
       openTaskContours: proof.openTaskContours,
       closedLoops: proof.closedLoops,
       recentEvents: proof.recentEvents,
-      action: { label: "Открыть Team OS", target: "team-actions" },
+      action: { label: "Открыть команду", target: "team-actions" },
     };
   }
 
@@ -1244,7 +1244,7 @@ function operationalPulse(
   if (proof.announcements > 0) {
     return {
       title: "Команда получила контекст",
-      detail: `${announcementCountLabel(proof.announcements)} опубликовано в Team OS. Последнее: ${trimEvidenceDetail(
+      detail: `${announcementCountLabel(proof.announcements)} опубликовано в команде. Последнее: ${trimEvidenceDetail(
         proof.lastAnnouncement ?? "командное объявление",
       )}.`,
       tone: "good",
@@ -1260,14 +1260,14 @@ function operationalPulse(
   return {
     title: "Открытых задач нет",
     detail:
-      "Новых закрытий в последних событиях не было. Если появится риск по ФОТ, марже или смене, он пойдет в Team OS.",
+      "Новых закрытий в последних событиях не было. Если появится риск по ФОТ, марже или смене, он пойдет в задачи команды.",
     tone: "good",
     openTasks: proof.openTasks,
     urgentOpenTasks: proof.urgentOpenTasks,
     openTaskContours: proof.openTaskContours,
     closedLoops: proof.closedLoops,
     recentEvents: proof.recentEvents,
-    action: { label: "Открыть Team OS", target: "team-actions" },
+    action: { label: "Открыть команду", target: "team-actions" },
   };
 }
 
@@ -1281,7 +1281,7 @@ function operationalProofEvidence(
           proof.nextOpenTaskImpactLabel,
         )}`
       : proof.openTasks > 0
-        ? `${proof.urgentOpenTasks} срочных${proof.openTaskContours.length ? `: ${proof.openTaskContours.join(", ")}` : ""}.${nextOpenTaskText(proof.nextOpenTaskTitle, proof.nextOpenTaskImpactLabel)} Закрытые контуры появятся после выполнения задач в Team OS.`
+        ? `${proof.urgentOpenTasks} срочных${proof.openTaskContours.length ? `: ${proof.openTaskContours.join(", ")}` : ""}.${nextOpenTaskText(proof.nextOpenTaskTitle, proof.nextOpenTaskImpactLabel)} Закрытые контуры появятся после выполнения задач команды.`
         : "Открытых задач нет; новых закрытий в последних событиях не было.";
 
   return {
@@ -1311,7 +1311,7 @@ function operationalCommunicationEvidence(
             ? `, ${proof.unreadImportantAnnouncements} без подтверждения`
             : ""
         }. Последнее: ${trimEvidenceDetail(proof.lastAnnouncement)}`
-      : "Командные объявления опубликованы в Team OS.",
+      : "Командные объявления опубликованы.",
     tone: proof.unreadImportantAnnouncements > 0 ? "watch" : "good",
   };
 }
@@ -1356,11 +1356,11 @@ function taskWord(
 }
 
 function openTasksLabel(count: number): string {
-  return `${count} ${taskWord(count, "открытая задача", "открытые задачи", "открытых задач")} Team OS`;
+  return `${count} ${taskWord(count, "открытая задача команды", "открытые задачи команды", "открытых задач команды")}`;
 }
 
 function urgentTasksLabel(count: number): string {
-  return `${count} ${taskWord(count, "срочная задача", "срочные задачи", "срочных задач")} Team OS`;
+  return `${count} ${taskWord(count, "срочная задача команды", "срочные задачи команды", "срочных задач команды")}`;
 }
 
 function readinessCoverageLine(input: {
@@ -1530,17 +1530,17 @@ function buildProfitReadiness(input: {
   }
 
   if (!input.team) {
-    missing.push("Team OS");
-    setAction({ label: "Открыть Team OS", target: "team-actions" });
+    missing.push("команда");
+    setAction({ label: "Открыть команду", target: "team-actions" });
   } else if (input.team.status === "ready") {
     score += 10;
   } else if (input.team.status === "attention") {
     score += 6;
     missing.push("готовность команды");
-    setAction({ label: "Открыть Team OS", target: "team-actions" });
+    setAction({ label: "Открыть команду", target: "team-actions" });
   } else {
-    missing.push("блокеры Team OS");
-    setAction({ label: "Открыть Team OS", target: "team-actions" });
+    missing.push("блокеры команды");
+    setAction({ label: "Открыть команду", target: "team-actions" });
   }
 
   if (!input.operationalProof) {
@@ -1591,7 +1591,7 @@ function buildProfitReadiness(input: {
       score: roundedScore,
       title: "Можно считать прибыль",
       detail:
-        "Реальные данные iiko, ФОТ, себестоимость и Team OS контуры закрыты.",
+        "Реальные данные iiko, ФОТ, себестоимость и командные контуры закрыты.",
       missing: [],
       action: null,
       tone: "good",
@@ -2954,16 +2954,15 @@ function buildVerdict(input: {
     return {
       verdict: "ФОТ периода пока не доказан: часть смен без ставок.",
       summary:
-        "Сначала закройте сотрудников и ставки в Team OS, иначе стоимость команды будет занижена.",
+        "Сначала закройте сотрудников и ставки в команде, иначе стоимость команды будет занижена.",
     };
   }
 
   if (teamBlocked) {
     return {
-      verdict:
-        "Смена не готова в Team OS: есть операционный блокер по команде.",
+      verdict: "Смена не готова: есть операционный блокер по команде.",
       summary:
-        "Деньги можно смотреть, но смену нельзя считать управляемой, пока роли, допуски, ставки или срочные задачи не закрыты в Team OS.",
+        "Деньги можно смотреть, но смену нельзя считать управляемой, пока роли, допуски, ставки или срочные задачи команды не закрыты.",
     };
   }
 
