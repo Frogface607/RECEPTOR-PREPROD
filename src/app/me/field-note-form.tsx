@@ -2,8 +2,17 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Mic2, SendHorizontal } from "lucide-react";
+import { ListPlus, Loader2, Mic2, SendHorizontal } from "lucide-react";
 import { submitFieldNoteAction, type OwnTaskStatusResult } from "./actions";
+
+const FIELD_NOTE_TEMPLATES = [
+  { label: "Гости", text: "Гости спрашивали: " },
+  { label: "Стоп", text: "Стоп-лист / закончилось: " },
+  { label: "Конфликт", text: "Конфликт или жалоба: " },
+  { label: "Событие", text: "Событие / посадка: " },
+  { label: "Команда", text: "Команде мешало: " },
+  { label: "Продажи", text: "Сервис / продажи: " },
+];
 
 function resultText(result: OwnTaskStatusResult): string {
   return result.ok ? result.message : result.error;
@@ -16,6 +25,14 @@ export function FieldNoteForm() {
   const [message, setMessage] = useState<string | null>(null);
 
   const canSubmit = body.trim().length >= 5 && !pending;
+
+  function addTemplate(text: string) {
+    setMessage(null);
+    setBody((current) => {
+      const value = current.trimEnd();
+      return value ? `${value}\n${text}` : text;
+    });
+  }
 
   return (
     <form
@@ -49,6 +66,20 @@ export function FieldNoteForm() {
             делу.
           </p>
         </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        {FIELD_NOTE_TEMPLATES.map((template) => (
+          <button
+            key={template.label}
+            type="button"
+            onClick={() => addTemplate(template.text)}
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border/55 bg-background/40 px-2.5 text-[12px] text-muted-foreground transition-colors hover:border-brand/40 hover:text-foreground"
+          >
+            <ListPlus className="size-3.5 text-brand" />
+            {template.label}
+          </button>
+        ))}
       </div>
 
       <textarea

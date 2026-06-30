@@ -231,13 +231,17 @@ export async function submitFieldNoteAction(
 
   const { data: existingTask, error: taskLookupError } = await admin
     .from("team_tasks")
-    .select("id")
+    .select("id,audience_type,audience_role")
     .eq("venue_id", membership.venue_id)
     .eq("title", "Полевой контекст смены")
     .in("status", ["new", "accepted", "in_progress"])
     .order("created_at", { ascending: false })
     .limit(1)
-    .maybeSingle<{ id: string }>();
+    .maybeSingle<{
+      id: string;
+      audience_type: string | null;
+      audience_role: string | null;
+    }>();
 
   if (taskLookupError) {
     if (missingFieldNoteTables(taskLookupError.message)) {
@@ -250,6 +254,30 @@ export async function submitFieldNoteAction(
   }
 
   let taskId = existingTask?.id ?? null;
+  if (
+    existingTask &&
+    (existingTask.audience_type !== "role" ||
+      existingTask.audience_role !== "venue_manager")
+  ) {
+    const { error: updateAudienceError } = await admin
+      .from("team_tasks")
+      .update({
+        audience_type: "role",
+        audience_member_id: null,
+        audience_role: "venue_manager",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", existingTask.id)
+      .eq("venue_id", membership.venue_id);
+
+    if (
+      updateAudienceError &&
+      !missingFieldNoteTables(updateAudienceError.message)
+    ) {
+      return { ok: false, error: updateAudienceError.message };
+    }
+  }
+
   if (!taskId) {
     const insert = {
       venue_id: membership.venue_id,
