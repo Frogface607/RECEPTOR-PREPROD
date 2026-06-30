@@ -2,6 +2,7 @@ import {
   AlertTriangle,
   ArrowRight,
   BookOpenCheck,
+  BrainCircuit,
   CheckCircle2,
   ClipboardList,
   GaugeCircle,
@@ -10,6 +11,11 @@ import {
   SearchCheck,
 } from "lucide-react";
 import Link from "next/link";
+import type {
+  OwnerBrainReadiness,
+  OwnerBrainSource,
+  OwnerBrainSourceStatus,
+} from "@/lib/owner-brain-readiness";
 import type {
   OwnerProfitReadinessAction,
   OwnerReview,
@@ -50,6 +56,12 @@ const TASK_STATUS_LABEL: Record<TeamTask["status"], string> = {
   in_progress: "в работе",
   done: "сделана",
   verified: "проверена",
+};
+
+const BRAIN_STATUS_CLASS: Record<OwnerBrainSourceStatus, string> = {
+  ready: "border-brand/35 bg-brand/10 text-brand",
+  work: "border-amber-500/35 bg-amber-500/10 text-amber-200",
+  missing: "border-destructive/35 bg-destructive/8 text-destructive",
 };
 
 function actionContour(action: OwnerReviewAction): string {
@@ -210,6 +222,34 @@ function teamTaskQueueHref(
   });
 }
 
+function brainSourceHref(
+  source: OwnerBrainSource,
+  venueId: string,
+  teamPeriodParams?: TeamPeriodParams,
+): string {
+  if (source.id === "context") return "/context";
+  if (source.id === "iiko") return "/settings#iiko";
+  if (source.id === "field") {
+    return buildTeamHref({
+      venueId,
+      hash: "#shift-summary",
+      periodParams: teamPeriodParams,
+    });
+  }
+  if (source.id === "learning") {
+    return buildTeamHref({
+      venueId,
+      hash: "#learning-progress",
+      periodParams: teamPeriodParams,
+    });
+  }
+  return buildTeamHref({
+    venueId,
+    hash: "#team-actions",
+    periodParams: teamPeriodParams,
+  });
+}
+
 function actionCta(action: OwnerReviewAction): string {
   if (action.existingTaskId) return "Открыть задачу";
   if (action.target === "margin-risk") return "Разобрать";
@@ -239,11 +279,13 @@ function primaryAction(review: OwnerReview): OwnerReviewAction | null {
 export function OwnerCommandPanel({
   venueId,
   review,
+  brainReadiness,
   teamTaskQueue,
   teamPeriodParams,
 }: {
   venueId: string;
   review: OwnerReview;
+  brainReadiness?: OwnerBrainReadiness;
   teamTaskQueue?: TeamTaskQueueSummary;
   teamPeriodParams?: TeamPeriodParams;
 }) {
@@ -441,6 +483,79 @@ export function OwnerCommandPanel({
         </div>
 
         <div className="rounded-lg border border-border/55 bg-background/35 p-4">
+          {brainReadiness ? (
+            <div className="mb-4 rounded-lg border border-brand/25 bg-brand/8 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                    Память ресторана
+                  </p>
+                  <h3 className="mt-2 text-lg font-medium text-foreground">
+                    {brainReadiness.score}% · {brainReadiness.title}
+                  </h3>
+                </div>
+                <span
+                  className={
+                    "inline-flex size-9 shrink-0 items-center justify-center rounded-lg border " +
+                    TONE_CLASS[brainReadiness.tone]
+                  }
+                >
+                  <BrainCircuit className="size-4" />
+                </span>
+              </div>
+              <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
+                {brainReadiness.summary}
+              </p>
+
+              <Link
+                href={brainSourceHref(
+                  brainReadiness.nextSource,
+                  venueId,
+                  teamPeriodParams,
+                )}
+                className="mt-3 grid gap-2 rounded-lg border border-border/50 bg-background/35 p-3 transition-colors hover:border-brand/45 hover:bg-brand/10 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+              >
+                <span className="min-w-0">
+                  <span className="block text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                    Следующий источник
+                  </span>
+                  <span className="mt-1 block text-sm font-medium text-foreground">
+                    {brainReadiness.nextSource.label}:{" "}
+                    {brainReadiness.nextSource.value}
+                  </span>
+                  <span className="mt-1 line-clamp-2 block text-[12px] leading-relaxed text-muted-foreground">
+                    {brainReadiness.nextSource.detail}
+                  </span>
+                </span>
+                <span className="inline-flex items-center gap-2 text-[12px] font-medium text-brand">
+                  {brainReadiness.nextSource.actionLabel}
+                  <ArrowRight className="size-3.5" />
+                </span>
+              </Link>
+
+              <div className="mt-3 grid grid-cols-5 gap-1.5">
+                {brainReadiness.sources.map((source) => (
+                  <Link
+                    key={source.id}
+                    href={brainSourceHref(source, venueId, teamPeriodParams)}
+                    className={
+                      "min-w-0 rounded-md border px-2 py-2 text-center transition-colors hover:bg-background/55 " +
+                      BRAIN_STATUS_CLASS[source.status]
+                    }
+                    title={`${source.label}: ${source.detail}`}
+                  >
+                    <span className="block truncate text-[10px] font-medium">
+                      {source.label}
+                    </span>
+                    <span className="mt-1 block truncate text-[11px] opacity-80">
+                      {source.value}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
               <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">

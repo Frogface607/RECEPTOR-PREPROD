@@ -28,6 +28,7 @@ import { getVenueAccess } from "@/lib/auth/venue-access";
 import { buildDailyBrief } from "@/lib/brief/daily-brief";
 import { listMenuItemMappings } from "@/lib/menu-item-mapping-store";
 import { buildMenuMarginReadiness } from "@/lib/menu-margin-readiness";
+import { buildOwnerBrainReadiness } from "@/lib/owner-brain-readiness";
 import { buildOwnerReview } from "@/lib/owner-review";
 import { buildLaborBi } from "@/lib/team/labor-bi";
 import {
@@ -277,6 +278,14 @@ export default async function DashboardPage({
     teamAnnouncementReads: teamWorkspace.announcementReads,
     shiftPlanVariance,
   });
+  const brainReadiness = buildOwnerBrainReadiness({
+    context: venue.context,
+    staff: teamWorkspace.staff,
+    tasks: teamWorkspace.tasks,
+    comments: teamWorkspace.comments,
+    learningSummaries: teamLearningSummaries,
+    dataMode,
+  });
   const teamTaskQueue = buildTeamTaskQueue(teamWorkspace.tasks);
   const teamPeriodParams = periodToSearchParams(period);
 
@@ -292,6 +301,7 @@ export default async function DashboardPage({
             <OwnerCommandPanel
               venueId={venueId}
               review={ownerReview}
+              brainReadiness={brainReadiness}
               teamTaskQueue={teamTaskQueue}
               teamPeriodParams={teamPeriodParams}
             />
