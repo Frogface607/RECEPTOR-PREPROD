@@ -109,10 +109,14 @@ describe("buildLaborMarginBridge", () => {
       tone: "risk",
       title: "Проверить смену: Мария и слабая маржа",
       marginRiskDish: "Cheap pasta",
+      marginRiskGrossMarginPct: 45,
+      marginRiskGrossProfitGap: 150,
       averageGrossMarginPct: 72.3,
     });
     expect(bridge.detail).toContain("Cheap pasta");
-    expect(bridge.action).toContain("слабую маржу");
+    expect(bridge.detail).toContain("Недобор валовой прибыли");
+    expect(bridge.detail).toMatch(/150 ₽/);
+    expect(bridge.action).toContain("цену");
   });
 
   test("marks labor and margin ready when there are no personal FOT risks", () => {

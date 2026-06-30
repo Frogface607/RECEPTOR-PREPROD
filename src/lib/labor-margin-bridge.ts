@@ -14,6 +14,8 @@ export type LaborMarginBridge = {
   action: string;
   employee: LaborEmployeeDiagnostic | null;
   marginRiskDish: string | null;
+  marginRiskGrossMarginPct: number | null;
+  marginRiskGrossProfitGap: number;
   laborCostPct: number | null;
   marginCoveragePct: number;
   averageGrossMarginPct: number | null;
@@ -34,6 +36,8 @@ export function buildLaborMarginBridge(input: {
   const base = {
     employee: employeeIssue,
     marginRiskDish: marginRisk?.dishName ?? null,
+    marginRiskGrossMarginPct: marginRisk?.grossMarginPct ?? null,
+    marginRiskGrossProfitGap: marginRisk?.grossProfitGapToTarget ?? 0,
     laborCostPct: input.labor.laborCostPct,
     marginCoveragePct,
     averageGrossMarginPct,
@@ -77,9 +81,9 @@ export function buildLaborMarginBridge(input: {
       ...base,
       tone: employeeIssue.tone === "risk" ? "risk" : "watch",
       title: `Проверить смену: ${employeeIssue.name} и слабая маржа`,
-      detail: `${employeeIssue.detail} В этом же периоде слабая доказанная маржа у «${marginRisk.dishName}»: ${marginRisk.grossMarginPct}%.`,
+      detail: `${employeeIssue.detail} В этом же периоде слабая доказанная маржа у «${marginRisk.dishName}»: ${marginRisk.grossMarginPct}% при цене ${formatRubles(marginRisk.salePrice)} и себестоимости ${formatRubles(marginRisk.costReference)}. Недобор валовой прибыли к цели: ${formatRubles(marginRisk.grossProfitGapToTarget)}.`,
       action:
-        "Разберите, что продавалось в смены этого сотрудника: если упор был на слабую маржу, проблема может быть в меню, а не только в ФОТ.",
+        "Разберите продажи в смены этого сотрудника: если упор был на слабую маржу, сначала менять цену, порцию или продвижение блюда, а уже потом часы и ставку.",
     };
   }
 

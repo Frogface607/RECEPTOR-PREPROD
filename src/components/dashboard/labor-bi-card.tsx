@@ -505,11 +505,13 @@ function LaborMarginBridgeStrip({ bridge }: { bridge: LaborMarginBridge }) {
           />
           <MiniMetric label="маржа" value={`${bridge.marginCoveragePct}%`} />
           <MiniMetric
-            label="валовая"
+            label={bridge.marginRiskGrossProfitGap > 0 ? "недобор" : "валовая"}
             value={
-              bridge.averageGrossMarginPct !== null
-                ? formatPct(bridge.averageGrossMarginPct)
-                : "—"
+              bridge.marginRiskGrossProfitGap > 0
+                ? formatRubles(bridge.marginRiskGrossProfitGap)
+                : bridge.averageGrossMarginPct !== null
+                  ? formatPct(bridge.averageGrossMarginPct)
+                  : "—"
             }
           />
         </div>
