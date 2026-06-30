@@ -24,6 +24,15 @@ import { IikoDiagnosticsPanel } from "@/components/settings/iiko-diagnostics-pan
 import { getCurrentUser } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/db/env";
 import { getServerSupabase } from "@/lib/db/server";
+import {
+  buildSecondBrainLaunchPath,
+  type SecondBrainLaunchItemId,
+} from "@/lib/settings/second-brain-launch";
+import {
+  DEMO_STAFF,
+  DEMO_TASK_COMMENTS,
+  DEMO_TEAM_TASKS,
+} from "@/lib/team/team-os";
 import { calculateContextCompletion } from "@/lib/venues/context-questionnaire";
 import { listKnownVenues } from "@/lib/venues/get-venue";
 
@@ -44,6 +53,7 @@ type SettingsVenue = {
   contextMissingRequired: number;
   teamMembersCount: number;
   openTasksCount: number;
+  fieldNotesCount: number;
 };
 
 function normalizeIikoChannel(
@@ -82,8 +92,18 @@ async function listSettingsVenues(): Promise<SettingsVenue[]> {
         iikoChannel: normalizeIikoChannel(venue.iiko.channel),
         contextRequiredPercentage: completion.requiredPercentage,
         contextMissingRequired: completion.missingRequired.length,
-        teamMembersCount: 0,
-        openTasksCount: 0,
+        teamMembersCount: DEMO_STAFF.filter(
+          (member) => member.venueId === venue.id,
+        ).length,
+        openTasksCount: DEMO_TEAM_TASKS.filter(
+          (task) =>
+            task.venueId === venue.id &&
+            task.status !== "done" &&
+            task.status !== "verified",
+        ).length,
+        fieldNotesCount: DEMO_TASK_COMMENTS.filter(
+          (comment) => comment.venueId === venue.id,
+        ).length,
       };
     });
   }
@@ -150,7 +170,7 @@ async function listSettingsVenues(): Promise<SettingsVenue[]> {
       ],
     ),
   );
-  const [membershipsResult, tasksResult] = ids.length
+  const [membershipsResult, tasksResult, commentsResult] = ids.length
     ? await Promise.all([
         supabase
           .from("venue_memberships")
@@ -161,8 +181,12 @@ async function listSettingsVenues(): Promise<SettingsVenue[]> {
           .from("team_tasks")
           .select("venue_id,status")
           .in("venue_id", ids),
+        supabase
+          .from("team_task_comments")
+          .select("venue_id")
+          .in("venue_id", ids),
       ])
-    : [{ data: [] }, { data: [] }];
+    : [{ data: [] }, { data: [] }, { data: [] }];
   const teamMembersByVenue = new Map<string, number>();
   for (const membership of (membershipsResult.data ?? []) as Array<{
     venue_id: string;
@@ -184,6 +208,15 @@ async function listSettingsVenues(): Promise<SettingsVenue[]> {
       (openTasksByVenue.get(task.venue_id) ?? 0) + 1,
     );
   }
+  const fieldNotesByVenue = new Map<string, number>();
+  for (const comment of (commentsResult.data ?? []) as Array<{
+    venue_id: string;
+  }>) {
+    fieldNotesByVenue.set(
+      comment.venue_id,
+      (fieldNotesByVenue.get(comment.venue_id) ?? 0) + 1,
+    );
+  }
 
   return uniqueSettingsVenues(
     rows.map((venue) => {
@@ -200,6 +233,7 @@ async function listSettingsVenues(): Promise<SettingsVenue[]> {
         contextMissingRequired: completion.missingRequired.length,
         teamMembersCount: teamMembersByVenue.get(venue.id) ?? 0,
         openTasksCount: openTasksByVenue.get(venue.id) ?? 0,
+        fieldNotesCount: fieldNotesByVenue.get(venue.id) ?? 0,
       };
     }),
   );
@@ -426,90 +460,74 @@ function LaunchChecklist({
   firstVenueHref: string;
 }) {
   const venue = venues[0];
-  const onboardingHref = "/onboarding?new=1";
-  const venueQuery = venue ? `?venueId=${encodeURIComponent(venue.id)}` : "";
-  const dataReady = Boolean(venue?.iikoConnected);
-  const memoryPercentage = venue?.contextRequiredPercentage ?? 0;
-  const memoryReady = memoryPercentage >= 100;
-  const staffCount = venue?.teamMembersCount ?? 0;
-  const staffReady = staffCount > 1;
-  const openTasksCount = venue?.openTasksCount ?? 0;
-  const tasksReady = openTasksCount > 0;
-  const items: Array<{
-    icon: LucideIcon;
-    title: string;
-    status: string;
-    href: string;
-    action: string;
-    ready: boolean;
-  }> = [
-    {
-      icon: Plug,
-      title: "Данные iiko",
-      status: dataReady ? "подключены" : "нужен ключ",
-      href: dataReady ? firstVenueHref : onboardingHref,
-      action: dataReady ? "Открыть BI" : "Подключить",
-      ready: dataReady,
-    },
-    {
-      icon: Brain,
-      title: "Память заведения",
-      status: `${memoryPercentage}%`,
-      href: venue ? `/context${venueQuery}` : onboardingHref,
-      action: memoryReady ? "Проверить" : "Заполнить",
-      ready: memoryReady,
-    },
-    {
-      icon: UsersRound,
-      title: "Команда",
-      status: staffReady ? `${staffCount} человек` : "добавьте сотрудников",
-      href: venue ? `/team${venueQuery}` : onboardingHref,
-      action: "Открыть",
-      ready: staffReady,
-    },
-    {
-      icon: ClipboardList,
-      title: "Задачи",
-      status: tasksReady ? `${openTasksCount} активных` : "нет активных",
-      href: venue ? `/team${venueQuery}` : onboardingHref,
-      action: tasksReady ? "Смотреть" : "Раздать",
-      ready: tasksReady,
-    },
-  ];
+  const launchPath = buildSecondBrainLaunchPath({
+    venue: venue ?? null,
+    firstVenueHref,
+  });
+  const focus = launchPath.focus;
 
   return (
     <section className="mb-6 rounded-xl border border-border/60 bg-card/45 p-5">
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="mb-5 grid gap-4 lg:grid-cols-[1fr_0.62fr]">
         <div>
           <div className="flex items-center gap-2.5">
             <span className="flex size-8 items-center justify-center rounded-lg border border-border/50 bg-background/60 text-brand">
               <ListChecks className="size-4" />
             </span>
             <h2 className="text-[12px] uppercase tracking-[0.18em] text-muted-foreground">
-              Рабочий запуск
+              Запуск второго мозга
             </h2>
           </div>
-          <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-muted-foreground">
-            Четыре вещи, которые делают кабинет полезным в первый рабочий день.
+          <p className="mt-3 text-lg font-medium leading-snug text-foreground">
+            {launchPath.headline}
+          </p>
+          <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted-foreground">
+            Receptor становится полезным, когда знает заведение, людей и живую
+            смену. iiko добавляет факты сверху, но не заменяет операционный
+            контекст.
           </p>
         </div>
-        <Link
-          href={firstVenueHref}
-          className="inline-flex h-9 items-center justify-center rounded-lg border border-border/60 bg-background/45 px-3 text-sm text-foreground transition-colors hover:bg-card"
-        >
-          Открыть кабинет
-        </Link>
+
+        <div className="rounded-lg border border-brand/25 bg-brand/[0.05] p-4">
+          <p className="text-[11px] uppercase tracking-[0.16em] text-brand">
+            Следующий шаг
+          </p>
+          <div className="mt-3 flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                {focus.title}
+              </p>
+              <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
+                {focus.detail}
+              </p>
+            </div>
+            <span className="rounded-md border border-border/50 bg-background/60 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+              {launchPath.readyCount}/{launchPath.totalCount}
+            </span>
+          </div>
+          <Link
+            href={focus.href}
+            className="mt-4 inline-flex h-9 items-center justify-center rounded-lg bg-brand px-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-brand-hover"
+          >
+            {focus.action}
+          </Link>
+        </div>
       </div>
 
-      <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
-        {items.map((item) => {
-          const Icon = item.icon;
+      <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-5">
+        {launchPath.items.map((item) => {
+          const Icon = launchIcon(item.id);
 
           return (
             <Link
-              key={item.title}
+              key={item.id}
               href={item.href}
-              className="group flex min-h-28 flex-col justify-between rounded-lg border border-border/45 bg-background/35 p-4 transition-colors hover:border-brand/35 hover:bg-background/55"
+              className={
+                "group flex min-h-32 flex-col justify-between rounded-lg border p-4 transition-colors hover:border-brand/35 hover:bg-background/55 " +
+                (item.id === focus.id
+                  ? "border-brand/35 bg-brand/[0.04]"
+                  : "border-border/45 bg-background/35")
+              }
             >
               <div className="flex items-start justify-between gap-3">
                 <span className="flex size-9 items-center justify-center rounded-lg border border-border/45 bg-card/45 text-foreground">
@@ -527,8 +545,14 @@ function LaunchChecklist({
                 </span>
               </div>
               <div>
+                <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                  {item.step}
+                </p>
                 <p className="text-[14px] font-medium text-foreground">
                   {item.title}
+                </p>
+                <p className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-muted-foreground">
+                  {item.detail}
                 </p>
                 <p className="mt-2 inline-flex items-center gap-1.5 text-[13px] text-muted-foreground transition-colors group-hover:text-foreground">
                   {item.action}
@@ -541,6 +565,14 @@ function LaunchChecklist({
       </div>
     </section>
   );
+}
+
+function launchIcon(id: SecondBrainLaunchItemId): LucideIcon {
+  if (id === "context") return Brain;
+  if (id === "people") return UsersRound;
+  if (id === "field_note") return ClipboardList;
+  if (id === "advisor") return Activity;
+  return Plug;
 }
 
 function IikoConnectionCenter({ venues }: { venues: SettingsVenue[] }) {
