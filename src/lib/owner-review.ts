@@ -15,6 +15,10 @@ import {
   type LaborBiSummary,
   type LaborInsightTone,
 } from "@/lib/team/labor-bi";
+import {
+  buildTeamFieldContextDigest,
+  type TeamFieldContextDigest,
+} from "@/lib/team/team-field-context";
 import type {
   TeamShiftPlanVarianceIssue,
   TeamShiftPlanVarianceSummary,
@@ -31,6 +35,7 @@ import type {
   TeamAnnouncementRead,
   TeamAuditEvent,
   TeamTask,
+  TeamTaskComment,
 } from "@/lib/team/team-os";
 import type { TeamLaborSetupProgress } from "@/lib/team/team-labor-readiness";
 import type {
@@ -186,6 +191,7 @@ type BuildOwnerReviewInput = {
   margin?: MenuMarginReadiness;
   team?: TeamOpsReadiness;
   teamTasks?: TeamTask[];
+  teamComments?: TeamTaskComment[];
   teamAuditEvents?: TeamAuditEvent[];
   teamStaff?: StaffMember[];
   teamAnnouncements?: TeamAnnouncement[];
@@ -1542,6 +1548,53 @@ function teamEvidence(input: TeamOpsReadiness): OwnerReviewEvidence {
   };
 }
 
+function fieldContextEvidence(
+  digest: TeamFieldContextDigest,
+): OwnerReviewEvidence {
+  const hasHardSignal = digest.signals.some(
+    (signal) =>
+      signal.kind === "conflict" ||
+      signal.kind === "stock" ||
+      signal.kind === "team",
+  );
+
+  return {
+    label: "Поле",
+    value:
+      digest.signalCount > 0
+        ? `${digest.signalCount} сигналов`
+        : `${digest.totalNotes} заметок`,
+    detail: digest.summary,
+    tone: hasHardSignal ? "risk" : "watch",
+  };
+}
+
+function fieldContextHypothesis(
+  digest: TeamFieldContextDigest | null,
+): OwnerReviewHypothesis | null {
+  const signal = digest?.signals[0];
+  if (!signal) return null;
+
+  return {
+    title: "Полевой сигнал нужно связать с цифрами",
+    why: signal.detail,
+    check:
+      "На брифинге спросить команду, как этот сигнал повлиял на выручку, гостевой опыт, стоп-лист или ФОТ смены.",
+    role: "manager",
+    tone:
+      signal.kind === "conflict" ||
+      signal.kind === "stock" ||
+      signal.kind === "team"
+        ? "risk"
+        : "watch",
+    taskSourceLabel: "Полевой контекст",
+    impactLabel:
+      signal.sourceCount > 1 ? `${signal.sourceCount} сигнала` : "1 сигнал",
+    learningModuleId: "shift-brief",
+    learningModuleTitle: "Брифинг смены и передача контекста",
+  };
+}
+
 function shiftPlanVarianceEvidence(
   input: TeamShiftPlanVarianceSummary,
 ): OwnerReviewEvidence | null {
@@ -2243,6 +2296,10 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     input.teamAnnouncements,
     input.teamAnnouncementReads,
   );
+  const fieldContext = buildTeamFieldContextDigest({
+    comments: input.teamComments ?? [],
+    tasks: input.teamTasks ?? [],
+  });
   const operational = operationalPulse(operationalProof);
   const readiness = buildProfitReadiness({
     dataMode: input.dataMode,
@@ -2287,6 +2344,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       return evidence ? [evidence] : [];
     })(),
     ...(input.team ? [teamEvidence(input.team)] : []),
+    ...(fieldContext ? [fieldContextEvidence(fieldContext)] : []),
     ...(operationalProof ? [operationalProofEvidence(operationalProof)] : []),
     ...(() => {
       const evidence = operationalProof
@@ -2399,6 +2457,11 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
 
   if (marginHypothesis) {
     hypotheses.push(marginHypothesis);
+  }
+
+  const fieldHypothesis = fieldContextHypothesis(fieldContext);
+  if (fieldHypothesis) {
+    hypotheses.push(fieldHypothesis);
   }
 
   const planVarianceHypothesis = input.shiftPlanVariance

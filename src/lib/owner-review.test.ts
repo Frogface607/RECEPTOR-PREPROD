@@ -22,6 +22,7 @@ import type {
   TeamAnnouncementRead,
   TeamAuditEvent,
   TeamTask,
+  TeamTaskComment,
 } from "./team/team-os";
 
 const summary: RevenueSummary = {
@@ -2051,5 +2052,79 @@ describe("buildOwnerReview", () => {
       priority: "high",
       sourceLabel: "ФОТ setup",
     });
+  });
+
+  test("uses team comments as field context for owner decisions", () => {
+    const teamTasks: TeamTask[] = [
+      {
+        id: "task-shift-context",
+        title: "Разобрать вечернюю смену",
+        source: "copilot",
+        sourceLabel: "Выручка и смены",
+        priority: "medium",
+        status: "in_progress",
+        venueId: "venue-1",
+        audience: { type: "role", roleId: "venue_manager" },
+        dueLabel: "сегодня",
+      },
+    ];
+    const teamComments: TeamTaskComment[] = [
+      {
+        id: "comment-field-1",
+        venueId: "venue-1",
+        taskId: "task-shift-context",
+        authorName: "Маша",
+        body: "Был конфликт по ожиданию блюда, гости спрашивали лимонад, мята закончилась.",
+        createdAtLabel: "22:30",
+      },
+      {
+        id: "comment-system",
+        venueId: "venue-1",
+        taskId: "task-shift-context",
+        authorName: "Receptor",
+        body: "Зачем: понять риск. Урок для команды: Цифры ресторана простым языком.",
+        createdAtLabel: "10:00",
+      },
+    ];
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      teamTasks,
+      teamComments,
+    });
+
+    expect(review.evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Поле",
+          value: "3 сигналов",
+          detail: expect.stringContaining("Конфликты и жалобы"),
+          tone: "risk",
+        }),
+      ]),
+    );
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Полевой сигнал нужно связать с цифрами",
+          taskSourceLabel: "Полевой контекст",
+          learningModuleId: "shift-brief",
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          sourceLabel: "Полевой контекст",
+          learningModuleTitle: "Брифинг смены и передача контекста",
+        }),
+      ]),
+    );
   });
 });

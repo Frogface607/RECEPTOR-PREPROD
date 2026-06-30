@@ -1,0 +1,149 @@
+import type { TeamTask, TeamTaskComment } from "./team-os";
+
+export type TeamFieldSignalKind =
+  "conflict" | "stock" | "event" | "guest" | "team" | "service";
+
+export type TeamFieldSignal = {
+  kind: TeamFieldSignalKind;
+  title: string;
+  detail: string;
+  sourceCount: number;
+  latestAtLabel: string;
+};
+
+export type TeamFieldContextDigest = {
+  totalNotes: number;
+  signalCount: number;
+  signals: TeamFieldSignal[];
+  summary: string;
+};
+
+const SYSTEM_MARKERS = ["урок для команды:", "чеклист:", "зачем:", "receptor"];
+
+const SIGNAL_RULES: Array<{
+  kind: TeamFieldSignalKind;
+  title: string;
+  keywords: string[];
+}> = [
+  {
+    kind: "conflict",
+    title: "Конфликты и жалобы",
+    keywords: ["конфликт", "жалоб", "недовол", "возврат", "спор"],
+  },
+  {
+    kind: "stock",
+    title: "Стоп-лист и заготовки",
+    keywords: ["стоп", "закончил", "не было", "нет в наличии", "заготов"],
+  },
+  {
+    kind: "event",
+    title: "События и посадка",
+    keywords: ["банкет", "мероприят", "посадк", "гостей", "очеред"],
+  },
+  {
+    kind: "guest",
+    title: "Вопросы гостей",
+    keywords: [
+      "спрашивал",
+      "спросили",
+      "просили",
+      "гость спрос",
+      "часто спраш",
+    ],
+  },
+  {
+    kind: "team",
+    title: "Трение в команде",
+    keywords: ["неудоб", "не успев", "хаос", "долго", "мешает", "устал"],
+  },
+  {
+    kind: "service",
+    title: "Сервис и продажи",
+    keywords: ["апсел", "допрод", "рекоменд", "продаж", "сервис"],
+  },
+];
+
+function normalize(value: string): string {
+  return value.trim().replace(/\s+/g, " ");
+}
+
+function searchText(value: string): string {
+  return normalize(value).toLocaleLowerCase("ru-RU");
+}
+
+function isSystemComment(comment: TeamTaskComment): boolean {
+  const body = searchText(comment.body);
+  return SYSTEM_MARKERS.some((marker) => body.includes(marker));
+}
+
+function commentTaskLabel(
+  comment: TeamTaskComment,
+  tasksById: Map<string, TeamTask>,
+): string {
+  const task = tasksById.get(comment.taskId);
+  if (!task) return comment.authorName;
+  return `${comment.authorName}: ${task.sourceLabel ?? task.title}`;
+}
+
+function signalWeight(kind: TeamFieldSignalKind): number {
+  if (kind === "conflict" || kind === "stock") return 500;
+  if (kind === "team") return 400;
+  if (kind === "event") return 300;
+  if (kind === "guest") return 200;
+  return 100;
+}
+
+export function buildTeamFieldContextDigest({
+  comments,
+  tasks = [],
+}: {
+  comments: TeamTaskComment[];
+  tasks?: TeamTask[];
+}): TeamFieldContextDigest | null {
+  const tasksById = new Map(tasks.map((task) => [task.id, task]));
+  const fieldComments = comments.filter(
+    (comment) =>
+      normalize(comment.body).length > 0 && !isSystemComment(comment),
+  );
+
+  if (fieldComments.length === 0) return null;
+
+  const signals = SIGNAL_RULES.flatMap((rule) => {
+    const matched = fieldComments.filter((comment) => {
+      const body = searchText(comment.body);
+      return rule.keywords.some((keyword) => body.includes(keyword));
+    });
+
+    if (matched.length === 0) return [];
+
+    const latest = matched[matched.length - 1];
+    return [
+      {
+        kind: rule.kind,
+        title: rule.title,
+        detail: `${commentTaskLabel(latest, tasksById)} — ${normalize(latest.body)}`,
+        sourceCount: matched.length,
+        latestAtLabel: latest.createdAtLabel,
+      },
+    ];
+  }).sort((a, b) => {
+    const weightDelta = signalWeight(b.kind) - signalWeight(a.kind);
+    return weightDelta || b.sourceCount - a.sourceCount;
+  });
+
+  const signalCount = signals.reduce(
+    (sum, signal) => sum + signal.sourceCount,
+    0,
+  );
+  const summary =
+    signals.length > 0
+      ? `${signals[0].title}: ${signals[0].detail}`
+      : `Команда оставила ${fieldComments.length} заметок без явного BI-тега.`;
+
+  return {
+    totalNotes: fieldComments.length,
+    signalCount,
+    signals: signals.slice(0, 3),
+    summary,
+  };
+}

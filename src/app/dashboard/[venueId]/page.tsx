@@ -270,6 +270,7 @@ export default async function DashboardPage({
     margin: marginReadiness,
     team: teamReadiness,
     teamTasks: teamWorkspace.tasks,
+    teamComments: teamWorkspace.comments,
     teamAuditEvents: teamWorkspace.auditEvents,
     teamStaff: teamWorkspace.staff,
     teamAnnouncements: teamWorkspace.announcements,
