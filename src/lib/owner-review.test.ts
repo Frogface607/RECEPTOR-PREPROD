@@ -297,6 +297,7 @@ describe("buildOwnerReview", () => {
           learningModuleId: "restaurant-numbers-basics",
           learningModuleTitle: "Цифры ресторана простым языком",
           learningChecklistTitle: "Если BI показал перерасход ФОТ",
+          briefingQuestion: "какая смена, человек или ставка съедает прибыль",
         }),
       ]),
     );
@@ -788,6 +789,8 @@ describe("buildOwnerReview", () => {
           learningModuleId: "tech-card-discipline",
           learningModuleTitle: "Техкарта как договор внутри команды",
           learningChecklistTitle: "Если BI показал недобор валовой прибыли",
+          briefingQuestion:
+            "какая цена, порция, списание или себестоимость объясняет провал маржи",
         }),
       ]),
     );

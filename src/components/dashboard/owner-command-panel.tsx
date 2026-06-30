@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   ClipboardList,
   GaugeCircle,
+  HelpCircle,
   SearchCheck,
 } from "lucide-react";
 import type {
@@ -430,6 +431,12 @@ export function OwnerCommandPanel({
               <p className="mt-2 line-clamp-3 text-[13px] leading-relaxed text-muted-foreground">
                 {mainAction.detail}
               </p>
+              {mainAction.briefingQuestion ? (
+                <p className="mt-2 flex items-start gap-2 text-[12px] leading-relaxed text-foreground/85">
+                  <HelpCircle className="mt-0.5 size-3.5 shrink-0 text-brand" />
+                  <span>Вопрос: {mainAction.briefingQuestion}</span>
+                </p>
+              ) : null}
               {mainAction.learningModuleTitle ? (
                 <p className="mt-2 line-clamp-1 text-[12px] leading-relaxed text-sky-100/85">
                   Команде поможет: {mainAction.learningModuleTitle}
@@ -570,6 +577,12 @@ export function OwnerCommandPanel({
                     <p className="mt-1 line-clamp-1 text-[12px] leading-relaxed text-muted-foreground">
                       {action.detail}
                     </p>
+                    {action.briefingQuestion ? (
+                      <p className="mt-1 flex items-start gap-2 text-[12px] leading-relaxed text-foreground/85">
+                        <HelpCircle className="mt-0.5 size-3.5 shrink-0 text-brand" />
+                        <span>Вопрос: {action.briefingQuestion}</span>
+                      </p>
+                    ) : null}
                   </div>
                   <LinkButton
                     href={actionHref(action, venueId, teamPeriodParams)}

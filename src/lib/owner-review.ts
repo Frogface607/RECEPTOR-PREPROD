@@ -71,6 +71,7 @@ export type OwnerReviewHypothesis = {
   learningModuleId?: string;
   learningModuleTitle?: string;
   learningChecklistTitle?: string;
+  briefingQuestion?: string;
   audienceMemberId?: string;
   audienceMemberName?: string;
 };
@@ -109,6 +110,7 @@ export type OwnerReviewAction = {
   learningModuleId?: string;
   learningModuleTitle?: string;
   learningChecklistTitle?: string;
+  briefingQuestion?: string;
   existingTaskId?: string;
   existingTaskStatus?: TeamTask["status"];
 };
@@ -546,16 +548,32 @@ function hypothesisChecklistTitle(item: OwnerReviewHypothesis): string | null {
 
 function withActionChecklist(action: OwnerReviewAction): OwnerReviewAction {
   const learningChecklistTitle = actionChecklistTitle(action);
-  return learningChecklistTitle
-    ? { ...action, learningChecklistTitle }
-    : action;
+  const briefingQuestion = taskQuestionForSource(
+    action.sourceLabel ?? actionSourceLabel(action),
+  );
+
+  if (!learningChecklistTitle && !briefingQuestion) return action;
+
+  return {
+    ...action,
+    ...(learningChecklistTitle ? { learningChecklistTitle } : {}),
+    ...(briefingQuestion ? { briefingQuestion } : {}),
+  };
 }
 
 function withHypothesisChecklist(
   item: OwnerReviewHypothesis,
 ): OwnerReviewHypothesis {
   const learningChecklistTitle = hypothesisChecklistTitle(item);
-  return learningChecklistTitle ? { ...item, learningChecklistTitle } : item;
+  const briefingQuestion = taskQuestionForSource(item.taskSourceLabel);
+
+  if (!learningChecklistTitle && !briefingQuestion) return item;
+
+  return {
+    ...item,
+    ...(learningChecklistTitle ? { learningChecklistTitle } : {}),
+    ...(briefingQuestion ? { briefingQuestion } : {}),
+  };
 }
 
 function actionContextNote(action: OwnerReviewAction): string {
