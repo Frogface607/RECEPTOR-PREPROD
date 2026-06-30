@@ -815,6 +815,96 @@ describe("buildOwnerReview", () => {
     );
   });
 
+  test("focuses missing ingredient price tasks on the tech-card price checklist", () => {
+    const margin = buildMenuMarginReadiness({
+      dishes: [
+        {
+          dishName: "Pasta",
+          dishGroup: "Kitchen",
+          dishAmountInt: 10,
+          dishSumInt: 30000,
+        },
+      ],
+      products: [
+        {
+          id: "pasta-base",
+          name: "Pasta",
+          sizePrices: [],
+        },
+        {
+          id: "flour",
+          name: "Flour",
+          unit: "g",
+          pricePerKg: 100,
+          sizePrices: [],
+        },
+        {
+          id: "egg",
+          name: "Egg",
+          unit: "pcs",
+          sizePrices: [],
+        },
+      ],
+      techCards: [
+        {
+          id: "chart-pasta",
+          productId: "pasta-base",
+          productName: "Pasta",
+          items: [
+            {
+              productId: "flour",
+              productName: "Flour",
+              amount: 0.12,
+              unit: "kg",
+            },
+            {
+              productId: "egg",
+              productName: "Egg",
+              amount: 2,
+              unit: "pcs",
+            },
+          ],
+        },
+      ],
+    });
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      margin,
+    });
+
+    expect(review.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Техкарта есть, не хватает цен ингредиентов",
+          target: "margin-diagnostics",
+          learningModuleId: "tech-card-discipline",
+          learningChecklistTitle: "Если в техкарте нет цен ингредиентов",
+          detail: expect.stringContaining("Egg"),
+        }),
+      ]),
+    );
+    expect(review.tasks[0]).toMatchObject({
+      learningChecklistTitle: "Если в техкарте нет цен ингредиентов",
+      contextNote: expect.stringContaining(
+        "Чеклист: Если в техкарте нет цен ингредиентов.",
+      ),
+    });
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          learningChecklistTitle: "Если в техкарте нет цен ингредиентов",
+        }),
+      ]),
+    );
+  });
+
   test("turns proven low margin into an owner review action", () => {
     const lowMarginDishes: DishStat[] = [
       {

@@ -481,6 +481,14 @@ function taskChecklistForSource(
 }
 
 function actionChecklistTitle(action: OwnerReviewAction): string | null {
+  if (
+    action.learningModuleId === "tech-card-discipline" &&
+    action.target === "margin-diagnostics" &&
+    action.detail.includes("ингредиент")
+  ) {
+    return "Если в техкарте нет цен ингредиентов";
+  }
+
   return (
     action.learningChecklistTitle ??
     taskChecklistForSource(
@@ -491,6 +499,13 @@ function actionChecklistTitle(action: OwnerReviewAction): string | null {
 }
 
 function hypothesisChecklistTitle(item: OwnerReviewHypothesis): string | null {
+  if (
+    item.learningModuleId === "tech-card-discipline" &&
+    item.check.includes("ингредиент")
+  ) {
+    return "Если в техкарте нет цен ингредиентов";
+  }
+
   return (
     item.learningChecklistTitle ??
     taskChecklistForSource(item.taskSourceLabel, item.learningModuleId)
@@ -2174,6 +2189,7 @@ function laborMarginHypothesis(input: {
     check: marginAction,
     role: "chef",
     tone: input.margin.status === "blocked" ? "risk" : "watch",
+    ...marginLearningHint(),
   };
 }
 

@@ -75,6 +75,9 @@ describe("team learning catalog", () => {
     expect(techCard?.sections).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
+          title: "Если в техкарте нет цен ингредиентов",
+        }),
+        expect.objectContaining({
           title: "Если BI показал недобор валовой прибыли",
         }),
       ]),
