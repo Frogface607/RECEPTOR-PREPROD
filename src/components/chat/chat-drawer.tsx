@@ -11,9 +11,9 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import {
   BarChart3,
   Bot,
-  ChefHat,
-  Clock3,
   Database,
+  MessageSquareText,
+  UsersRound,
   Send,
   Sparkles,
   Target,
@@ -191,7 +191,7 @@ export function ChatDrawer({
                 Советник Receptor
               </SheetTitle>
               <span className="mt-0.5 text-[12px] text-muted-foreground">
-                {venueName} · продажи, меню, смены и действия владельца
+                {venueName} · память смены, команда, iiko и действия владельца
               </span>
             </div>
             <button
@@ -256,23 +256,23 @@ export function ChatDrawer({
 const COPILOT_MODES = [
   {
     icon: BarChart3,
-    title: "Деньги",
-    text: "Выручка, средний чек, динамика и просадки по периодам.",
+    title: "Цифры iiko",
+    text: "Выручка, средний чек, меню, смены и просадки по периодам.",
   },
   {
-    icon: ChefHat,
-    title: "Меню",
-    text: "Блюда, категории, оборот, порции и точки для себестоимости.",
+    icon: MessageSquareText,
+    title: "Память смены",
+    text: "Что произошло с гостями, стоп-листом, погодой и сервисом.",
   },
   {
-    icon: Clock3,
-    title: "Смены",
-    text: "Где просел чек, скорость и качество управленческого контроля.",
+    icon: UsersRound,
+    title: "Команда",
+    text: "Открытые задачи, роли, обучение и пробелы перед сменой.",
   },
   {
     icon: Target,
     title: "Действия",
-    text: "Что сделать сегодня, чтобы вечер работал на прибыль.",
+    text: "Один управленческий шаг на сегодня вместо списка отчетов.",
   },
 ];
 
@@ -287,15 +287,15 @@ function EmptyState({ onPick }: { onPick: (text: string) => void }) {
             </div>
             <div>
               <p className="text-[11px] uppercase tracking-[0.18em] text-brand">
-                Советник по данным iiko и профилю заведения
+                Советник с памятью ресторана
               </p>
               <h3 className="mt-2 max-w-2xl text-[28px] font-medium leading-[1.06] tracking-[-0.025em] text-foreground sm:text-[36px]">
-                Спросите как у сильного операционного директора.
+                Спросите человека, который помнит смену.
               </h3>
               <p className="mt-4 max-w-2xl text-[14px] leading-relaxed text-muted-foreground">
-                Receptor соединяет цифры iiko, контекст заведения и ресторанную
-                логику: объясняет, что произошло, почему это важно и какие
-                действия стоит сделать сегодня.
+                Receptor соединяет цифры iiko, анкету заведения, память смены,
+                командные задачи и обучение. Ответ должен привести к одному
+                понятному действию, а не к еще одному отчету.
               </p>
             </div>
           </div>
