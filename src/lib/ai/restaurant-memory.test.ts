@@ -92,6 +92,7 @@ describe("restaurant advisor memory", () => {
     expect(memory.fieldMemoryQuality).toBe("полных итогов смены: 1/1");
     expect(memory.fieldMemoryTaskStatus).toContain("Уточнить итог смены");
     expect(memory.fieldMemoryTaskStatus).toContain("в работе");
+    expect(memory.fieldMemoryFollowUpQuestions).toEqual([]);
     expect(memory.memberSignals.join("\n")).toContain("Маша");
     expect(memory.memberSignals.join("\n")).toContain("итоги смены: 1/1");
     expect(memory.memberSignals.join("\n")).toContain("Алина");
@@ -99,6 +100,32 @@ describe("restaurant advisor memory", () => {
     expect(memory.fieldSignals.join("\n")).toContain("Погода");
     expect(memory.openTasks[0]).toContain("Проверить стоп-лист");
     expect(memory.learningGaps[0]).toContain("Маша");
+  });
+
+  test("suggests briefing questions when shift memory is incomplete and not assigned", () => {
+    const memory = buildRestaurantAdvisorMemory({
+      staff,
+      tasks: tasks.filter((task) => task.id !== "shift-memory"),
+      comments: [
+        {
+          id: "weak-note",
+          venueId: "venue",
+          taskId: "field",
+          authorName: "Маша",
+          body: "Итог смены: было странно. Надо обсудить.",
+          createdAtLabel: "22:10",
+        },
+      ],
+      learningProgress: [],
+      learningStandards: [],
+    });
+
+    expect(memory.fieldMemoryQuality).toContain("память смены неполная");
+    expect(memory.fieldMemoryTaskStatus).toBeNull();
+    expect(memory.fieldMemoryFollowUpQuestions).toEqual([
+      "Почему это повлияло на гостей, продажи или команду?",
+      "Когда это случилось и сколько гостей, столов, позиций или денег затронуло?",
+    ]);
   });
 
   test("formats memory for advisor prompt", () => {
@@ -109,6 +136,7 @@ describe("restaurant advisor memory", () => {
       fieldMemoryQuality: "полных итогов смены: 1/1",
       fieldMemoryTaskStatus:
         "Уточнить итог смены: контекст/причина (в работе, до утреннего разбора)",
+      fieldMemoryFollowUpQuestions: [],
       memberSignals: ["Маша (Управляющий): итоги смены: 1/1"],
       openTasks: ["Проверить стоп-лист — до 17:00"],
       learningGaps: ["Алина: Как рекомендовать блюдо без давления"],
@@ -122,6 +150,25 @@ describe("restaurant advisor memory", () => {
     expect(text).toContain("Учебные пробелы");
   });
 
+  test("formats shift memory follow-up questions for advisor prompt", () => {
+    const text = formatRestaurantAdvisorMemoryForPrompt({
+      teamSummary: "2 активных сотрудника",
+      fieldSummary: "Итог смены: было странно",
+      fieldSignals: [],
+      fieldMemoryQuality: "память смены неполная: не хватает контекста",
+      fieldMemoryTaskStatus: null,
+      fieldMemoryFollowUpQuestions: [
+        "Почему это повлияло на гостей, продажи или команду?",
+      ],
+      memberSignals: [],
+      openTasks: [],
+      learningGaps: [],
+    });
+
+    expect(text).toContain("Вопросы для добора памяти смены");
+    expect(text).toContain("Почему это повлияло");
+  });
+
   test("formats a compact memory summary for user-facing answers", () => {
     const text = formatRestaurantAdvisorMemoryForAnswer({
       teamSummary: "2 активных сотрудников",
@@ -130,6 +177,7 @@ describe("restaurant advisor memory", () => {
       fieldMemoryQuality: "память смены неполная: не хватает контекста, когда/сколько",
       fieldMemoryTaskStatus:
         "Уточнить итог смены: контекст/причина (в работе, до утреннего разбора)",
+      fieldMemoryFollowUpQuestions: [],
       memberSignals: ["Маша (Управляющий): итог неполный"],
       openTasks: ["Проверить стоп-лист — до 17:00"],
       learningGaps: ["Алина: Как рекомендовать блюдо без давления"],
@@ -142,5 +190,24 @@ describe("restaurant advisor memory", () => {
     expect(text).toContain("Первый учебный пробел");
     expect(text).not.toContain("Сигналы с поля");
     expect(text).not.toContain("Открытые действия:");
+  });
+
+  test("formats next briefing question when no shift memory task is open", () => {
+    const text = formatRestaurantAdvisorMemoryForAnswer({
+      teamSummary: "2 активных сотрудника",
+      fieldSummary: "Итог смены: было странно",
+      fieldSignals: [],
+      fieldMemoryQuality: "память смены неполная: не хватает контекста",
+      fieldMemoryTaskStatus: null,
+      fieldMemoryFollowUpQuestions: [
+        "Почему это повлияло на гостей, продажи или команду?",
+      ],
+      memberSignals: [],
+      openTasks: [],
+      learningGaps: [],
+    });
+
+    expect(text).toContain("Следующий вопрос для брифа");
+    expect(text).toContain("Почему это повлияло");
   });
 });

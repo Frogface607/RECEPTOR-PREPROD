@@ -13,6 +13,7 @@ const RESTAURANT_MEMORY: RestaurantAdvisorMemory = {
   fieldMemoryQuality: "полных итогов смены: 1/1",
   fieldMemoryTaskStatus:
     "Уточнить итог смены: контекст/причина (в работе, до утреннего разбора)",
+  fieldMemoryFollowUpQuestions: [],
   memberSignals: ["Маша (Управляющий): итоги смены: 1/1"],
   openTasks: ["Проверить стоп-лист — до 17:00"],
   learningGaps: ["Алина: Как рекомендовать блюдо без давления"],
@@ -22,7 +23,10 @@ function client() {
   return new MockIikoClient({ today: ANCHOR });
 }
 
-async function collect(message: string) {
+async function collect(
+  message: string,
+  restaurantMemory: RestaurantAdvisorMemory = RESTAURANT_MEMORY,
+) {
   const events = [];
   for await (const ev of runMockChatTurn({
     message,
@@ -31,7 +35,7 @@ async function collect(message: string) {
     venueCity: "Иркутск",
     venueProfile: DEFAULT_VENUE_INTELLIGENCE,
     venueContext: DEMO_CONTEXT_ANSWERS,
-    restaurantMemory: RESTAURANT_MEMORY,
+    restaurantMemory,
     iikoClient: client(),
   })) {
     events.push(ev);
@@ -97,6 +101,23 @@ describe("runMockChatTurn — routing", () => {
     expect(text?.text).toContain("Итог смены: ливень");
     expect(text?.text).toContain("Добор памяти уже в работе");
     expect(text?.text).toContain("Рабочий ритм Receptor");
+  });
+
+  test("owner brief suggests a shift memory question when no task is open", async () => {
+    const memoryWithoutTask: RestaurantAdvisorMemory = {
+      ...RESTAURANT_MEMORY,
+      fieldMemoryQuality: "память смены неполная: не хватает контекста",
+      fieldMemoryTaskStatus: null,
+      fieldMemoryFollowUpQuestions: [
+        "Почему это повлияло на гостей, продажи или команду?",
+      ],
+      learningGaps: [],
+    };
+
+    const ev = await collect("Что делать сегодня?", memoryWithoutTask);
+    const text = ev.find((e) => e.type === "text");
+    expect(text?.text).toContain("Вопрос для брифа");
+    expect(text?.text).toContain("Почему это повлияло");
   });
 });
 

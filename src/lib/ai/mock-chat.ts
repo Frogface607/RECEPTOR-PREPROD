@@ -326,6 +326,9 @@ function memoryBriefLines(memory: RestaurantAdvisorMemory | undefined): string[]
     memory.fieldMemoryTaskStatus
       ? `Добор памяти смены: ${memory.fieldMemoryTaskStatus}.`
       : null,
+    !memory.fieldMemoryTaskStatus && memory.fieldMemoryFollowUpQuestions[0]
+      ? `Вопрос для брифа: ${memory.fieldMemoryFollowUpQuestions[0]}`
+      : null,
     memory.learningGaps[0]
       ? `Обучить в первую очередь: ${memory.learningGaps[0]}.`
       : null,

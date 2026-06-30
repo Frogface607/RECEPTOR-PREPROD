@@ -17,6 +17,7 @@ export type RestaurantAdvisorMemory = {
   fieldSignals: string[];
   fieldMemoryQuality: string | null;
   fieldMemoryTaskStatus: string | null;
+  fieldMemoryFollowUpQuestions: string[];
   memberSignals: string[];
   openTasks: string[];
   learningGaps: string[];
@@ -167,6 +168,11 @@ export function buildRestaurantAdvisorMemory(
       : fieldReadiness.complete > 0
         ? `полных итогов смены: ${fieldReadiness.complete}/${fieldReadiness.total}`
         : `память смены неполная: не хватает ${fieldReadiness.bestMissing.join(", ")}`;
+  const fieldTaskStatus = fieldMemoryTaskStatus(input.tasks);
+  const fieldMemoryFollowUpQuestions =
+    fieldReadiness.complete === 0 && !fieldTaskStatus
+      ? fieldReadiness.followUpQuestions
+      : [];
 
   return {
     teamSummary: roleSummary(input.staff),
@@ -177,7 +183,8 @@ export function buildRestaurantAdvisorMemory(
           `${signal.title}: ${signal.detail} (${signal.sourceCount})`,
       ) ?? [],
     fieldMemoryQuality,
-    fieldMemoryTaskStatus: fieldMemoryTaskStatus(input.tasks),
+    fieldMemoryTaskStatus: fieldTaskStatus,
+    fieldMemoryFollowUpQuestions,
     memberSignals: memberMemoryLines(input),
     openTasks: openTaskLines(input.tasks),
     learningGaps: learningGapLines(input),
@@ -212,6 +219,12 @@ export function formatRestaurantAdvisorMemoryForPrompt(
 
   if (memory.fieldMemoryTaskStatus) {
     lines.push(`Добор памяти смены уже поставлен: ${memory.fieldMemoryTaskStatus}.`);
+  }
+
+  if (!memory.fieldMemoryTaskStatus && memory.fieldMemoryFollowUpQuestions.length > 0) {
+    lines.push(
+      `Вопросы для добора памяти смены: ${memory.fieldMemoryFollowUpQuestions.join("; ")}.`,
+    );
   }
 
   if (memory.memberSignals.length > 0) {
@@ -254,6 +267,9 @@ export function formatRestaurantAdvisorMemoryForAnswer(
       : null,
     memory.fieldMemoryTaskStatus
       ? `• Добор памяти уже в работе: ${memory.fieldMemoryTaskStatus}.`
+      : null,
+    !memory.fieldMemoryTaskStatus && memory.fieldMemoryFollowUpQuestions[0]
+      ? `• Следующий вопрос для брифа: ${memory.fieldMemoryFollowUpQuestions[0]}`
       : null,
     memory.learningGaps[0]
       ? `• Первый учебный пробел: ${memory.learningGaps[0]}.`

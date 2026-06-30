@@ -15,6 +15,7 @@ const RESTAURANT_MEMORY: RestaurantAdvisorMemory = {
   fieldMemoryQuality: "полных итогов смены: 1/1",
   fieldMemoryTaskStatus:
     "Уточнить итог смены: контекст/причина (в работе, до утреннего разбора)",
+  fieldMemoryFollowUpQuestions: [],
   memberSignals: ["Маша (Управляющий): итоги смены: 1/1"],
   openTasks: ["Проверить стоп-лист — до 17:00"],
   learningGaps: ["Алина: Как рекомендовать блюдо без давления"],
