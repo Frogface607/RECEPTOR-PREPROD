@@ -443,6 +443,11 @@ function taskReasonForSource(
       ? `закрыть ${impactLabel} выручки без понятной себестоимости`
       : "понять, где меню зарабатывает деньги, а где только делает оборот";
   }
+  if (sourceLabel === "ФОТ и маржа") {
+    return impactLabel
+      ? `не резать часы и ставки вслепую: сначала понять ${impactLabel} вместе с валовой прибылью`
+      : "сначала проверить валовую прибыль блюда, затем принимать решение по смене";
+  }
   if (sourceLabel === "ФОТ и смены" || sourceLabel === "ФОТ и маржа") {
     return impactLabel
       ? `понять, сколько ${impactLabel} стоит смене и прибыли`
@@ -664,8 +669,9 @@ function fieldBriefingContext(
 
 function taskFromHypothesis(item: OwnerReviewHypothesis): SurvivalTaskDraft {
   const shouldLeadWithCheck =
-    item.taskSourceLabel === "Выручка и смены" &&
-    item.check.includes("Сверить с полевым фактом");
+    (item.taskSourceLabel === "Выручка и смены" &&
+      item.check.includes("Сверить с полевым фактом")) ||
+    item.taskSourceLabel === "ФОТ и маржа";
   const context =
     item.taskSourceLabel === "Полевой контекст"
       ? fieldBriefingContext(
@@ -2470,7 +2476,7 @@ function ownerActionFromLaborMargin(input: {
 
   return {
     title: bridge.title,
-    detail: bridge.detail,
+    detail: `Проверка: ${bridge.action} ${bridge.detail}`,
     role: bridge.employee
       ? "manager"
       : bridge.tone === "setup"
@@ -2478,15 +2484,7 @@ function ownerActionFromLaborMargin(input: {
         : "owner",
     tone: ownerToneFromLaborBridge(bridge.tone),
     target,
-    impactLabel:
-      bridge.employee?.laborCostPct !== null &&
-      bridge.employee?.laborCostPct !== undefined
-        ? `ФОТ ${formatCoverage(bridge.employee.laborCostPct)}`
-        : bridge.employee
-          ? formatRubles(bridge.employee.sales)
-          : marginAction.blocker
-            ? formatRubles(marginAction.blocker.revenue)
-            : `${bridge.marginCoveragePct}% маржа`,
+    impactLabel: laborMarginImpactLabel(bridge, marginAction),
     memberId: bridge.employee?.memberId,
     memberName: bridge.employee?.name,
     sourceLabel: "ФОТ и маржа",
@@ -2501,6 +2499,27 @@ function ownerActionFromLaborMargin(input: {
         ? `Разобрать ФОТ и маржу: ${bridge.marginRiskDish}`
         : "Доказать ФОТ и маржу периода",
   };
+}
+
+function laborMarginImpactLabel(
+  bridge: ReturnType<typeof buildLaborMarginBridge>,
+  marginAction: ReturnType<typeof buildMenuMarginNextAction>,
+): string {
+  const laborLabel =
+    bridge.employee?.laborCostPct !== null &&
+    bridge.employee?.laborCostPct !== undefined
+      ? `ФОТ ${formatCoverage(bridge.employee.laborCostPct)}`
+      : bridge.employee
+        ? formatRubles(bridge.employee.sales)
+        : null;
+  const marginLabel =
+    bridge.marginRiskGrossProfitGap > 0
+      ? `недобор ${formatRubles(bridge.marginRiskGrossProfitGap)}`
+      : marginAction.blocker
+        ? formatRubles(marginAction.blocker.revenue)
+        : `${bridge.marginCoveragePct}% маржа`;
+
+  return laborLabel ? `${laborLabel} · ${marginLabel}` : marginLabel;
 }
 
 function teamActionTarget(href: string): OwnerReviewActionTarget {

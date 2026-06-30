@@ -206,14 +206,14 @@ describe("buildOwnerReview", () => {
           role: "manager",
           tone: "risk",
           sourceLabel: "ФОТ и маржа",
-          impactLabel: "ФОТ 35%",
+          impactLabel: expect.stringMatching(/^ФОТ 35% · 20\s000\s₽$/),
         }),
         expect.objectContaining({
           title: "Разобрать дорогую смену",
           target: "shift-diagnostics",
           role: "manager",
           tone: "risk",
-          impactLabel: expect.stringMatching(/^10\s000 ₽$/),
+          impactLabel: expect.stringMatching(/^10\s000\s₽$/),
         }),
         expect.objectContaining({
           title: "Блюдо не связано с iiko",
@@ -237,8 +237,8 @@ describe("buildOwnerReview", () => {
       priority: "high",
       roleId: "venue_manager",
       sourceLabel: "ФОТ и маржа",
-      impactLabel: "ФОТ 35%",
-      contextNote: expect.stringContaining("решение по часам без маржи"),
+      impactLabel: expect.stringMatching(/^ФОТ 35% · 20\s000\s₽$/),
+      contextNote: expect.stringContaining("не резать часы"),
     });
     expect(review.tasks[0].title.length).toBeLessThan(80);
     expect(review.hypotheses).toEqual(
@@ -533,7 +533,7 @@ describe("buildOwnerReview", () => {
         expect.objectContaining({
           title: "Проверить смену: Maria и слабая маржа",
           why: expect.stringContaining("Cheap pasta"),
-          check: expect.stringContaining("проблема может быть в меню"),
+          check: expect.stringContaining("сначала менять цену"),
           role: "owner",
           tone: "risk",
           taskTitle: "Разобрать ФОТ и маржу: Maria",
@@ -550,6 +550,7 @@ describe("buildOwnerReview", () => {
         expect.objectContaining({
           title: "Разобрать ФОТ и маржу: Maria",
           sourceLabel: "ФОТ и маржа",
+          impactLabel: expect.stringMatching(/^ФОТ 36% · недобор 150\s₽$/),
           audienceMemberId: "manager-1",
           audienceMemberName: "Maria",
           learningModuleId: "tech-card-discipline",
@@ -570,6 +571,8 @@ describe("buildOwnerReview", () => {
         }),
       ]),
     );
+    expect(review.tasks[0].contextNote).toContain("недобор 150");
+    expect(review.tasks[0].contextNote).toContain("сначала менять цену");
   });
 
   test("does not create another FOT-margin task for the same employee contour", () => {
