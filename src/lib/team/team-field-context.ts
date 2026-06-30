@@ -119,6 +119,21 @@ function fieldSummary(signals: TeamFieldSignal[]): string {
   )}`;
 }
 
+function untaggedFieldSummary(
+  notes: TeamTaskComment[],
+  tasksById: Map<string, TeamTask>,
+): string {
+  const latest = notes[notes.length - 1];
+  if (!latest) return "";
+
+  const prefix =
+    notes.length === 1
+      ? "Команда оставила заметку без явного BI-тега"
+      : `Команда оставила ${notes.length} заметок без явного BI-тега`;
+
+  return `${prefix}: ${commentTaskLabel(latest, tasksById)} — ${normalize(latest.body)}`;
+}
+
 export function buildTeamFieldContextDigest({
   comments,
   tasks = [],
@@ -180,7 +195,7 @@ export function buildTeamFieldContextDigest({
   const summary =
     signals.length > 0
       ? fieldSummary(signals)
-      : `Команда оставила ${fieldContextNotes.length} заметок без явного BI-тега.`;
+      : untaggedFieldSummary(fieldContextNotes, tasksById);
 
   return {
     totalNotes,

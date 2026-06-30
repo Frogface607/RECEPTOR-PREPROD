@@ -2422,4 +2422,89 @@ describe("buildOwnerReview", () => {
       "Зачем: связать факты смены с BI, назначить ответственного и убрать повторяемую причину.",
     );
   });
+
+  test("turns untagged field notes into a Team OS task to connect them with BI", () => {
+    const teamTasks: TeamTask[] = [
+      {
+        id: "task-shift-context",
+        title: "Полевой контекст смены",
+        source: "manager",
+        sourceLabel: "Поле",
+        priority: "medium",
+        status: "in_progress",
+        venueId: "venue-1",
+        audience: { type: "role", roleId: "venue_manager" },
+        dueLabel: "ежедневно",
+      },
+    ];
+    const teamComments: TeamTaskComment[] = [
+      {
+        id: "comment-field-plain",
+        venueId: "venue-1",
+        taskId: "task-shift-context",
+        authorName: "Оля",
+        body: "Сегодня есть пара наблюдений для утреннего разбора.",
+        createdAtLabel: "23:00",
+      },
+    ];
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      teamTasks,
+      teamComments,
+    });
+
+    expect(review.evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Поле",
+          value: "1 заметка",
+          detail: expect.stringContaining("Сегодня есть пара наблюдений"),
+          tone: "watch",
+        }),
+      ]),
+    );
+    expect(review.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Связать полевую заметку с цифрами",
+          sourceLabel: "Полевой контекст",
+          impactLabel: "1 заметка",
+          learningModuleId: "shift-brief",
+          learningChecklistTitle: "Разбор: факт, вопрос, проверка, действие",
+          briefingQuestion:
+            "какая цифра подтверждает этот факт: выручка, ФОТ, маржа, стоп-лист или отзывы гостей",
+        }),
+      ]),
+    );
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Связать полевую заметку с цифрами",
+          check: expect.stringContaining("выбрать одну цифру"),
+          taskSourceLabel: "Полевой контекст",
+          learningChecklistTitle: "Разбор: факт, вопрос, проверка, действие",
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Связать полевую заметку с цифрами",
+          sourceLabel: "Полевой контекст",
+          learningModuleTitle: "Брифинг смены и передача контекста",
+          learningChecklistTitle: "Разбор: факт, вопрос, проверка, действие",
+          contextNote: expect.stringContaining(
+            "Вопрос: какая цифра подтверждает этот факт",
+          ),
+        }),
+      ]),
+    );
+  });
 });

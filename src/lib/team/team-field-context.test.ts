@@ -126,8 +126,11 @@ describe("buildTeamFieldContextDigest", () => {
       signalCount: 0,
       signals: [],
     });
-    expect(digest?.summary).toContain("1");
+    expect(digest?.summary).toContain("Команда оставила заметку");
     expect(digest?.summary).toContain("BI-тега");
+    expect(digest?.summary).toContain(
+      "Сегодня есть пара наблюдений для утреннего разбора.",
+    );
   });
 
   test("recognizes guided field note templates", () => {

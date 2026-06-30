@@ -1726,6 +1726,14 @@ function teamEvidence(input: TeamOpsReadiness): OwnerReviewEvidence {
   };
 }
 
+function fieldCountLabel(
+  count: number,
+  single: string,
+  plural: string,
+): string {
+  return count === 1 ? `1 ${single}` : `${count} ${plural}`;
+}
+
 function fieldContextEvidence(
   digest: TeamFieldContextDigest,
 ): OwnerReviewEvidence {
@@ -1740,8 +1748,8 @@ function fieldContextEvidence(
     label: "Поле",
     value:
       digest.signalCount > 0
-        ? `${digest.signalCount} сигналов`
-        : `${digest.totalNotes} заметок`,
+        ? fieldCountLabel(digest.signalCount, "сигнал", "сигналов")
+        : fieldCountLabel(digest.totalNotes, "заметка", "заметок"),
     detail: digest.summary,
     tone: hasHardSignal ? "risk" : "watch",
   };
@@ -1750,8 +1758,27 @@ function fieldContextEvidence(
 function fieldContextHypothesis(
   digest: TeamFieldContextDigest | null,
 ): OwnerReviewHypothesis | null {
-  const signal = digest?.signals[0];
-  if (!signal) return null;
+  if (!digest) return null;
+  const signal = digest.signals[0];
+  if (!signal) {
+    return {
+      title: "Связать полевую заметку с цифрами",
+      why: digest.summary,
+      check:
+        "На утреннем брифинге выбрать одну цифру, которая подтверждает или опровергает заметку: выручка, ФОТ, маржа, стоп-лист или отзывы гостей.",
+      role: "manager",
+      tone: "watch",
+      taskSourceLabel: "Полевой контекст",
+      taskTitle: "Связать полевую заметку с цифрами",
+      briefingQuestion:
+        "какая цифра подтверждает этот факт: выручка, ФОТ, маржа, стоп-лист или отзывы гостей",
+      impactLabel:
+        digest.totalNotes > 1 ? `${digest.totalNotes} заметки` : "1 заметка",
+      learningModuleId: "shift-brief",
+      learningModuleTitle: "Брифинг смены и передача контекста",
+      learningChecklistTitle: "Разбор: факт, вопрос, проверка, действие",
+    };
+  }
   const task = fieldContextTaskFor(signal.kind);
   const relatedSignals = digest.signals.slice(1);
   const relatedLine =
