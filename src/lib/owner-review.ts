@@ -1271,6 +1271,31 @@ function announcementReadLabel(count: number): string {
   return `${count} ${taskWord(count, "прочтение", "прочтения", "прочтений")}`;
 }
 
+function laborMissingReadinessLabel(labor: LaborBiSummary): string {
+  if (labor.staffShifts === 0) return "смены iiko для ФОТ";
+  const blocker = labor.topBlockers[0];
+  if (blocker?.reason === "missing-member") return "карточки сотрудников из iiko";
+  if (blocker?.reason === "missing-rate") return "точные ставки ФОТ";
+  return "сотрудники и ставки ФОТ";
+}
+
+function laborReadinessAction(labor: LaborBiSummary): OwnerProfitReadinessAction {
+  if (labor.staffShifts === 0) {
+    return { label: "Проверить смены", target: "shift-coverage" };
+  }
+
+  const blocker = labor.topBlockers[0];
+  if (blocker?.reason === "missing-member") {
+    return { label: "Добавить сотрудника", target: "labor-member" };
+  }
+
+  if (blocker?.reason === "missing-rate") {
+    return { label: "Заполнить ставку", target: "labor-rate" };
+  }
+
+  return { label: "Заполнить ФОТ", target: "labor-rate" };
+}
+
 function marginMissingReadinessLabel(margin: MenuMarginReadiness): string {
   const strongestBlocker = Math.max(
     margin.missingLinkRevenue,
@@ -1361,15 +1386,11 @@ function buildProfitReadiness(input: {
     score += 25;
   } else if (input.labor.laborReadinessStatus === "partial") {
     score += 14;
-    missing.push("точные ставки ФОТ");
-    setAction({ label: "Заполнить ФОТ", target: "labor-rate" });
+    missing.push(laborMissingReadinessLabel(input.labor));
+    setAction(laborReadinessAction(input.labor));
   } else {
-    missing.push("сотрудники и ставки ФОТ");
-    setAction({
-      label:
-        input.labor.staffShifts === 0 ? "Проверить смены" : "Заполнить ФОТ",
-      target: input.labor.staffShifts === 0 ? "shift-coverage" : "labor-rate",
-    });
+    missing.push(laborMissingReadinessLabel(input.labor));
+    setAction(laborReadinessAction(input.labor));
   }
 
   if (!input.margin) {

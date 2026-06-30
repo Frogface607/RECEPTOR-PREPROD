@@ -1673,6 +1673,94 @@ describe("buildOwnerReview", () => {
     expect(review.readiness.detail).toContain("себестоимость");
   });
 
+  test("points profit readiness to missing iiko staff cards before rates", () => {
+    const labor = buildLaborBi({
+      shifts: [
+        {
+          shiftId: "shift-petr",
+          openTime: "2026-06-26T18:00:00",
+          closeTime: "2026-06-27T02:00:00",
+          revenue: 90000,
+          items: 210,
+          employee: "Петр",
+        },
+      ],
+    });
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor,
+      margin: buildReadyMargin(),
+      team: buildReadyTeam(),
+      teamTasks: [],
+      teamAuditEvents: [],
+    });
+
+    expect(review.readiness).toMatchObject({
+      status: "blocked",
+      action: {
+        label: "Добавить сотрудника",
+        target: "labor-member",
+      },
+    });
+    expect(review.readiness.detail).toContain("карточки сотрудников из iiko");
+  });
+
+  test("points profit readiness to a missing FOT rate for known team members", () => {
+    const labor = buildLaborBi({
+      staff: [
+        {
+          id: "waiter",
+          name: "Илья",
+          roleId: "service",
+          venueId: "venue-1",
+          status: "active",
+          shiftLabel: "вечер",
+        },
+      ],
+      shifts: [
+        {
+          shiftId: "shift-ilya",
+          openTime: "2026-06-26T16:00:00",
+          closeTime: "2026-06-27T00:00:00",
+          revenue: 60000,
+          items: 150,
+          employee: "Илья",
+        },
+      ],
+    });
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor,
+      margin: buildReadyMargin(),
+      team: buildReadyTeam(),
+      teamTasks: [],
+      teamAuditEvents: [],
+    });
+
+    expect(review.readiness).toMatchObject({
+      status: "blocked",
+      action: {
+        label: "Заполнить ставку",
+        target: "labor-rate",
+      },
+    });
+    expect(review.readiness.detail).toContain("точные ставки ФОТ");
+  });
+
   test("points profit readiness to tech-card ingredient prices when they block margin", () => {
     const margin = buildMenuMarginReadiness({
       dishes,
