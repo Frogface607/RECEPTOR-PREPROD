@@ -5,6 +5,7 @@ import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getSupabaseAdmin } from "@/lib/db/admin";
 import { getServerSupabase } from "@/lib/db/server";
+import { hasMeaningfulFieldNoteBody } from "@/lib/team/field-note-input";
 
 const OwnTaskStatusInput = z.object({
   taskId: z.string().min(1),
@@ -187,6 +188,13 @@ export async function submitFieldNoteAction(
   const parsed = SubmitFieldNoteInput.safeParse(raw);
   if (!parsed.success) {
     return { ok: false, error: "Опишите, что важного было на смене." };
+  }
+  if (!hasMeaningfulFieldNoteBody(parsed.data.body)) {
+    return {
+      ok: false,
+      error:
+        "Допишите факт после шаблона: что спросили, что закончилось или что помешало смене.",
+    };
   }
 
   const user = await getCurrentUser();

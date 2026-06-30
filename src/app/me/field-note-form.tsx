@@ -4,15 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ListPlus, Loader2, Mic2, SendHorizontal } from "lucide-react";
 import { submitFieldNoteAction, type OwnTaskStatusResult } from "./actions";
-
-const FIELD_NOTE_TEMPLATES = [
-  { label: "Гости", text: "Гости спрашивали: " },
-  { label: "Стоп", text: "Стоп-лист / закончилось: " },
-  { label: "Конфликт", text: "Конфликт или жалоба: " },
-  { label: "Событие", text: "Событие / посадка: " },
-  { label: "Команда", text: "Команде мешало: " },
-  { label: "Продажи", text: "Сервис / продажи: " },
-];
+import {
+  FIELD_NOTE_TEMPLATES,
+  hasMeaningfulFieldNoteBody,
+} from "@/lib/team/field-note-input";
 
 function resultText(result: OwnTaskStatusResult): string {
   return result.ok ? result.message : result.error;
@@ -24,7 +19,7 @@ export function FieldNoteForm() {
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  const canSubmit = body.trim().length >= 5 && !pending;
+  const canSubmit = hasMeaningfulFieldNoteBody(body) && !pending;
 
   function addTemplate(text: string) {
     setMessage(null);
