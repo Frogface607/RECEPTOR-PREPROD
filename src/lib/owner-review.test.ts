@@ -829,11 +829,13 @@ describe("buildOwnerReview", () => {
           title: "RMS не отдает закупочную цену",
           target: "margin-diagnostics",
           role: "owner",
+          sourceLabel: "Маржа и техкарты",
+          taskTitle: "RMS не отдает закупочную цену",
           learningModuleId: "tech-card-discipline",
           learningModuleTitle: "Техкарта как договор внутри команды",
           learningChecklistTitle: "Если BI показал недобор валовой прибыли",
           briefingQuestion:
-            "какая цена, порция, списание или себестоимость объясняет провал маржи",
+            "каких связей, техкарт или закупочных цен не хватает, чтобы доверять марже",
         }),
       ]),
     );
@@ -850,7 +852,7 @@ describe("buildOwnerReview", () => {
     });
     expect(review.tasks[0].contextNote).toContain("Проверка:");
     expect(review.tasks[0].contextNote).toContain(
-      "Вопрос: какая цена, порция, списание или себестоимость объясняет провал маржи.",
+      "Вопрос: каких связей, техкарт или закупочных цен не хватает, чтобы доверять марже.",
     );
     expect(review.tasks[0].contextNote).toMatch(
       /Зачем: закрыть 20\s000\s₽ выручки без понятной себестоимости\./,
@@ -943,8 +945,12 @@ describe("buildOwnerReview", () => {
         expect.objectContaining({
           title: "Техкарта есть, не хватает цен ингредиентов",
           target: "margin-diagnostics",
+          sourceLabel: "Маржа и техкарты",
+          taskTitle: "Техкарта есть, не хватает цен ингредиентов",
           learningModuleId: "tech-card-discipline",
           learningChecklistTitle: "Если в техкарте нет цен ингредиентов",
+          briefingQuestion:
+            "каким ингредиентам не хватает закупочной цены и почему RMS не доказывает food cost",
           detail: expect.stringContaining("Egg"),
         }),
       ]),

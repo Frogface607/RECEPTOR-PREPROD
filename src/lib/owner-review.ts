@@ -2316,6 +2316,11 @@ function ownerActionFromMargin(
       role: "chef",
       tone: primaryRisk.grossMarginPct < 45 ? "risk" : "watch",
       target: "margin-risk",
+      sourceLabel: "Маржа и техкарты",
+      taskTitle: `Разобрать маржу: ${primaryRisk.dishName}`,
+      learningChecklistTitle: "Если BI показал недобор валовой прибыли",
+      briefingQuestion:
+        "какая цена, порция, списание или себестоимость объясняет провал маржи",
       impactLabel:
         primaryRisk.grossProfitGapToTarget > 0
           ? formatRubles(primaryRisk.grossProfitGapToTarget)
@@ -2323,6 +2328,15 @@ function ownerActionFromMargin(
       ...learning,
     };
   }
+
+  const missingTechCardPrices =
+    nextAction.kind === "missing-cost" && Boolean(nextAction.blocker?.hasTechCard);
+  const learningChecklistTitle = missingTechCardPrices
+    ? "Если в техкарте нет цен ингредиентов"
+    : "Если BI показал недобор валовой прибыли";
+  const briefingQuestion = missingTechCardPrices
+    ? "каким ингредиентам не хватает закупочной цены и почему RMS не доказывает food cost"
+    : "каких связей, техкарт или закупочных цен не хватает, чтобы доверять марже";
 
   return {
     title: nextAction.title,
@@ -2336,6 +2350,10 @@ function ownerActionFromMargin(
       nextAction.kind === "missing-cost"
         ? "margin-diagnostics"
         : "margin-mapping",
+    sourceLabel: "Маржа и техкарты",
+    taskTitle: nextAction.title,
+    learningChecklistTitle,
+    briefingQuestion,
     ...learning,
   };
 }
