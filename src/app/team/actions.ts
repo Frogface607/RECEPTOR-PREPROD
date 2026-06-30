@@ -11,6 +11,7 @@ import { listLearningItemsForRole } from "@/lib/team/team-learning";
 import type { TeamLearningStandardStatus } from "@/lib/team/team-learning-standards";
 import { TEAM_ROLES, type TeamRoleId, type TeamTask } from "@/lib/team/team-os";
 import {
+  normalizeTaskLabel,
   normalizeTaskImpactLabel,
   normalizeTaskSourceLabel,
 } from "@/lib/team/team-task-labels";
@@ -503,9 +504,23 @@ async function findTaskContextLabels(
   ctx: WritableTeamContext,
   venueId: string,
   taskId: string,
-): Promise<{ sourceLabel: string | null; impactLabel: string | null }> {
+): Promise<{
+  sourceLabel: string | null;
+  impactLabel: string | null;
+  learningModuleId: string | null;
+  learningModuleTitle: string | null;
+  learningChecklistTitle: string | null;
+}> {
+  const emptyContext = {
+    sourceLabel: null,
+    impactLabel: null,
+    learningModuleId: null,
+    learningModuleTitle: null,
+    learningChecklistTitle: null,
+  };
+
   if (ctx.mode === "sandbox" || !ctx.supabase) {
-    return { sourceLabel: null, impactLabel: null };
+    return emptyContext;
   }
 
   const { data, error } = await ctx.supabase
@@ -519,10 +534,17 @@ async function findTaskContextLabels(
     .limit(1)
     .maybeSingle<{ metadata: Record<string, unknown> | null }>();
 
-  if (error) return { sourceLabel: null, impactLabel: null };
+  if (error) return emptyContext;
   return {
     sourceLabel: normalizeTaskSourceLabel(data?.metadata?.sourceLabel),
     impactLabel: normalizeTaskImpactLabel(data?.metadata?.impactLabel),
+    learningModuleId: normalizeTaskLabel(data?.metadata?.learningModuleId),
+    learningModuleTitle: normalizeTaskLabel(
+      data?.metadata?.learningModuleTitle,
+    ),
+    learningChecklistTitle: normalizeTaskLabel(
+      data?.metadata?.learningChecklistTitle,
+    ),
   };
 }
 
