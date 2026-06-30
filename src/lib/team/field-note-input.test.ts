@@ -3,6 +3,7 @@ import {
   FIELD_NOTE_MEMORY_PROMPTS,
   FIELD_NOTE_TEMPLATES,
   buildFieldNoteFollowUpQuestions,
+  buildFieldNoteFollowUpTaskDraft,
   fieldNoteReadinessHint,
   getFieldNoteReadiness,
   hasMeaningfulFieldNoteBody,
@@ -166,5 +167,38 @@ describe("field note input", () => {
       "Почему это повлияло на гостей, продажи или команду?",
       "Когда это случилось и сколько гостей, столов, позиций или денег затронуло?",
     ]);
+  });
+
+  test("builds a manager task draft from incomplete shift memory", () => {
+    const readiness = summarizeFieldNoteReadiness([
+      "Итог смены: было странно. Надо обсудить.",
+    ]);
+    const draft = buildFieldNoteFollowUpTaskDraft({
+      readiness,
+      signalSummary: "Трение в команде: Маша — было странно",
+    });
+
+    expect(draft).toMatchObject({
+      title: "Уточнить итог смены: контекст/причина, когда/сколько",
+      priority: "medium",
+      roleId: "venue_manager",
+      dueLabel: "до утреннего разбора",
+      sourceLabel: "Память смены",
+      impactLabel: "не хватает: контекст/причина, когда/сколько",
+      learningModuleId: "shift-brief",
+      learningChecklistTitle: "Если итог смены неполный",
+    });
+    expect(draft?.contextNote).toContain(
+      "Почему это повлияло на гостей, продажи или команду?",
+    );
+    expect(draft?.contextNote).toContain("Что уже есть: Трение в команде");
+
+    expect(
+      buildFieldNoteFollowUpTaskDraft({
+        readiness: summarizeFieldNoteReadiness([
+          "Итог смены: ливень, отменили 3 брони после 19:00. Утром проверить стоп-лист.",
+        ]),
+      }),
+    ).toBeNull();
   });
 });

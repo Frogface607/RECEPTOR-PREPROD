@@ -1,3 +1,5 @@
+import type { SurvivalTaskDraft } from "@/lib/survival-score";
+
 export type FieldNoteTemplate = {
   label: string;
   text: string;
@@ -192,6 +194,38 @@ export function buildFieldNoteFollowUpQuestions(
   return questions.length > 0
     ? questions
     : ["Что важно запомнить из смены для утреннего разбора?"];
+}
+
+export function buildFieldNoteFollowUpTaskDraft({
+  readiness,
+  signalSummary,
+}: {
+  readiness: FieldNoteReadinessSummary;
+  signalSummary?: string | null;
+}): SurvivalTaskDraft | null {
+  if (readiness.complete > 0) return null;
+
+  const hasAnyNote = readiness.total > 0;
+  const missingLabel = readiness.bestMissing.join(", ");
+  const questions = readiness.followUpQuestions
+    .map((question) => `- ${question}`)
+    .join("\n");
+  const signalLine = signalSummary ? `\nЧто уже есть: ${signalSummary}` : "";
+
+  return {
+    title: hasAnyNote
+      ? `Уточнить итог смены: ${missingLabel}`
+      : "Собрать итог смены для утреннего разбора",
+    priority: hasAnyNote ? "medium" : "high",
+    roleId: "venue_manager",
+    dueLabel: "до утреннего разбора",
+    sourceLabel: "Память смены",
+    impactLabel: hasAnyNote ? `не хватает: ${missingLabel}` : "нет итога смены",
+    contextNote: `Проверка: советнику не хватает живого контекста смены.${signalLine}\nВопросы для управляющего:\n${questions}\nЗачем: без этих ответов владелец видит цифры, но не понимает причину смены.`,
+    learningModuleId: "shift-brief",
+    learningModuleTitle: "Ежедневный брифинг смены",
+    learningChecklistTitle: "Если итог смены неполный",
+  };
 }
 
 export function summarizeFieldNoteReadiness(

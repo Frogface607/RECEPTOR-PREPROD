@@ -91,6 +91,7 @@ import {
   type TeamFieldContextDigest,
 } from "@/lib/team/team-field-context";
 import {
+  buildFieldNoteFollowUpTaskDraft,
   summarizeFieldNoteReadiness,
   type FieldNoteReadinessSummary,
 } from "@/lib/team/field-note-input";
@@ -535,6 +536,7 @@ export default async function TeamPage({
         />
 
         <TeamShiftMemorySection
+          venueId={venueId}
           digest={learningFieldContext}
           readiness={fieldNoteReadiness}
         />
@@ -2367,12 +2369,19 @@ function dailyWorkflowToneClass(tone: TeamDailyWorkflowTone): string {
 }
 
 function TeamShiftMemorySection({
+  venueId,
   digest,
   readiness,
 }: {
+  venueId: string;
   digest: TeamFieldContextDigest | null;
   readiness: FieldNoteReadinessSummary;
 }) {
+  const followUpTaskDraft = buildFieldNoteFollowUpTaskDraft({
+    readiness,
+    signalSummary: digest?.summary,
+  });
+
   return (
     <section
       id="shift-summary"
@@ -2471,6 +2480,12 @@ function TeamShiftMemorySection({
           )}
 
           <div className="mt-4 flex flex-wrap gap-2">
+            {followUpTaskDraft ? (
+              <TeamFollowUpTaskButton
+                venueId={venueId}
+                draft={followUpTaskDraft}
+              />
+            ) : null}
             <LinkButton href="#team-actions" variant="outline">
               Открыть задачи и заметки
               <ArrowRight className="size-4" />
