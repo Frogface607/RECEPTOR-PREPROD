@@ -312,6 +312,7 @@ describe("buildOwnerReview", () => {
         "Урок для команды: Цифры ресторана простым языком.",
       ),
     });
+    expect(review.tasks[0].contextNote).toContain("Проверка:");
     expect(review.tasks[0].contextNote).toContain(
       "Зачем: понять, сколько ФОТ 10% стоит смене и прибыли.",
     );
@@ -797,6 +798,7 @@ describe("buildOwnerReview", () => {
         "Урок для команды: Техкарта как договор внутри команды.",
       ),
     });
+    expect(review.tasks[0].contextNote).toContain("Проверка:");
     expect(review.tasks[0].contextNote).toMatch(
       /Зачем: закрыть 20\s000\s₽ выручки без понятной себестоимости\./,
     );

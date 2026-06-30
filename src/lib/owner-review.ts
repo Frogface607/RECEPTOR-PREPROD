@@ -501,8 +501,11 @@ function withHypothesisChecklist(
 
 function actionContextNote(action: OwnerReviewAction): string {
   const sourceLabel = action.sourceLabel ?? actionSourceLabel(action);
+  const context = action.detail.startsWith("Проверка:")
+    ? action.detail
+    : `Проверка: ${action.detail}`;
   return withLearningContext({
-    context: action.detail,
+    context,
     learningModuleTitle: action.learningModuleTitle,
     checklistTitle:
       action.learningChecklistTitle ??
