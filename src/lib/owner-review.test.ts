@@ -1673,6 +1673,58 @@ describe("buildOwnerReview", () => {
     expect(review.readiness.detail).toContain("себестоимость");
   });
 
+  test("points profit readiness to tech-card ingredient prices when they block margin", () => {
+    const margin = buildMenuMarginReadiness({
+      dishes,
+      products: [
+        {
+          id: "pasta-base",
+          name: "Паста",
+          sizePrices: [],
+        },
+      ],
+      techCards: [
+        {
+          id: "chart-pasta",
+          productId: "pasta-base",
+          productName: "Паста",
+          items: [
+            {
+              productId: "flour",
+              productName: "Мука",
+              amount: 0.12,
+              unit: "kg",
+            },
+          ],
+        },
+      ],
+    });
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor: buildReadyLabor(),
+      margin,
+      team: buildReadyTeam(),
+      teamTasks: [],
+      teamAuditEvents: [],
+    });
+
+    expect(review.readiness).toMatchObject({
+      status: "partial",
+      action: {
+        label: "Закрыть цены техкарт",
+        target: "margin-diagnostics",
+      },
+    });
+    expect(review.readiness.detail).toContain("цены ингредиентов техкарт");
+  });
+
   test("keeps profit readiness partial while Team OS has an open loop", () => {
     const teamTasks: TeamTask[] = [
       {

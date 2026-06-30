@@ -1271,6 +1271,60 @@ function announcementReadLabel(count: number): string {
   return `${count} ${taskWord(count, "прочтение", "прочтения", "прочтений")}`;
 }
 
+function marginMissingReadinessLabel(margin: MenuMarginReadiness): string {
+  const strongestBlocker = Math.max(
+    margin.missingLinkRevenue,
+    margin.missingProductCostRevenue,
+    margin.missingTechCardPriceRevenue,
+  );
+
+  if (
+    margin.missingTechCardPriceRevenue > 0 &&
+    margin.missingTechCardPriceRevenue === strongestBlocker
+  ) {
+    return "цены ингредиентов техкарт";
+  }
+
+  if (
+    margin.missingProductCostRevenue > 0 &&
+    margin.missingProductCostRevenue === strongestBlocker
+  ) {
+    return "закупочные цены товаров";
+  }
+
+  if (margin.missingLinkRevenue > 0) {
+    return "связи блюд с iiko";
+  }
+
+  return "закупочные цены и техкарты";
+}
+
+function marginReadinessAction(
+  margin: MenuMarginReadiness,
+): OwnerProfitReadinessAction {
+  const strongestBlocker = Math.max(
+    margin.missingLinkRevenue,
+    margin.missingProductCostRevenue,
+    margin.missingTechCardPriceRevenue,
+  );
+
+  if (
+    margin.missingTechCardPriceRevenue > 0 &&
+    margin.missingTechCardPriceRevenue === strongestBlocker
+  ) {
+    return { label: "Закрыть цены техкарт", target: "margin-diagnostics" };
+  }
+
+  if (
+    margin.missingProductCostRevenue > 0 &&
+    margin.missingProductCostRevenue === strongestBlocker
+  ) {
+    return { label: "Проверить цены RMS", target: "margin-diagnostics" };
+  }
+
+  return { label: "Связать блюда", target: "margin-mapping" };
+}
+
 function buildProfitReadiness(input: {
   dataMode: "live" | "mock";
   dataQuality: RevenueDataQuality;
@@ -1325,20 +1379,11 @@ function buildProfitReadiness(input: {
     score += 35;
   } else if (input.margin.status === "partial") {
     score += 18;
-    missing.push("закупочные цены и техкарты");
-    setAction({
-      label:
-        input.margin.missingCostRevenue >= input.margin.missingLinkRevenue
-          ? "Проверить RMS"
-          : "Связать блюда",
-      target:
-        input.margin.missingCostRevenue >= input.margin.missingLinkRevenue
-          ? "margin-diagnostics"
-          : "margin-mapping",
-    });
+    missing.push(marginMissingReadinessLabel(input.margin));
+    setAction(marginReadinessAction(input.margin));
   } else {
-    missing.push("связи блюд с iiko и закупочные цены");
-    setAction({ label: "Связать блюда", target: "margin-mapping" });
+    missing.push(marginMissingReadinessLabel(input.margin));
+    setAction(marginReadinessAction(input.margin));
   }
 
   if (!input.team) {
