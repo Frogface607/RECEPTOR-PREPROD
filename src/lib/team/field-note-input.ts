@@ -3,22 +3,52 @@ export type FieldNoteTemplate = {
   text: string;
 };
 
+export type FieldNotePrompt = {
+  label: string;
+  hint: string;
+  example: string;
+};
+
 export type FieldNoteReadiness = {
   hasFact: boolean;
+  hasContext: boolean;
   hasScale: boolean;
   hasAction: boolean;
   score: number;
   missing: string[];
 };
 
+export const FIELD_NOTE_MEMORY_PROMPTS: FieldNotePrompt[] = [
+  {
+    label: "Факт",
+    hint: "что произошло",
+    example: "закончилась мята, была жалоба, просели рекомендации",
+  },
+  {
+    label: "Контекст",
+    hint: "почему это важно",
+    example: "ливень, банкет, новая смена, гости спрашивали замену",
+  },
+  {
+    label: "Масштаб",
+    hint: "когда и сколько",
+    example: "после 21:00, 3 стола, 6 отказов, 20 минут ожидания",
+  },
+  {
+    label: "Действие",
+    hint: "что проверить утром",
+    example: "заказать мяту, дать замену залу, разобрать возврат",
+  },
+];
+
 export const FIELD_NOTE_TEMPLATES: FieldNoteTemplate[] = [
   {
     label: "Итог смены",
-    text: "Итог смены:\nПосадка / гости / погода:\nЧто повлияло на выручку:\nЧто команда заметила:\nЧто проверить утром:\nЧто сказать на брифе: ",
+    text: "Итог смены:\nФакт:\nКонтекст / причина:\nКогда / сколько:\nЧто команда сделала:\nЧто проверить утром:\nЧто сказать на брифе: ",
   },
   {
     label: "Гости",
-    text: "Гости спрашивали:\nСколько раз / когда:\nЧто ответили:\nЧто проверить утром: ",
+    text: "Гости спрашивали:\nКонтекст / почему важно:\nСколько раз / когда:\nЧто ответили:\nЧто проверить утром: ",
   },
   {
     label: "Стоп",
@@ -78,7 +108,13 @@ function meaningfulFieldNoteLines(value: string): string[] {
 }
 
 function hasScaleSignal(line: string): boolean {
-  return /(\d|раз|гост|стол|посад|брон|порц|руб|₽|чек|минут|час|после|до |к \d|утром|вечером|днем|ночью|погода|дожд|ливн|снег|жар|мороз|ветер|отмен)/iu.test(
+  return /(\d|раз|гост|стол|посад|брон|порц|руб|₽|чек|минут|час|после|(^|\s)до\s|к \d|утром|вечером|днем|ночью|погода|дожд|ливн|снег|жар|мороз|ветер|отмен)/iu.test(
+    line,
+  );
+}
+
+function hasContextSignal(line: string): boolean {
+  return /(почему|причин|контекст|из-за|из за|потому|повлия|мешал|сработал|важн|гост|погод|дожд|ливн|снег|жар|мороз|ветер|банкет|мероприят|посад|брон|конфликт|жалоб|стоп|закончил|команд|кухн|зал|сервис|апсел|рекоменд)/iu.test(
     line,
   );
 }
@@ -92,19 +128,22 @@ function hasActionSignal(line: string): boolean {
 export function getFieldNoteReadiness(value: string): FieldNoteReadiness {
   const lines = meaningfulFieldNoteLines(value);
   const hasFact = lines.length > 0;
+  const hasContext = lines.some(hasContextSignal);
   const hasScale = lines.some(hasScaleSignal);
   const hasAction = lines.some(hasActionSignal);
   const missing = [
     hasFact ? null : "факт",
+    hasContext ? null : "контекст/причина",
     hasScale ? null : "когда/сколько",
     hasAction ? null : "что сделали или проверить",
   ].filter((item): item is string => Boolean(item));
 
   return {
     hasFact,
+    hasContext,
     hasScale,
     hasAction,
-    score: [hasFact, hasScale, hasAction].filter(Boolean).length,
+    score: [hasFact, hasContext, hasScale, hasAction].filter(Boolean).length,
     missing,
   };
 }
@@ -114,7 +153,7 @@ export function hasMeaningfulFieldNoteBody(value: string): boolean {
 }
 
 export function fieldNoteReadinessHint(readiness: FieldNoteReadiness): string {
-  if (readiness.score === 3) {
+  if (readiness.score === 4) {
     return "Готово: итог попадет в память смены и утренний разбор владельца.";
   }
 

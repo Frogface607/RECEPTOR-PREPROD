@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import {
+  FIELD_NOTE_MEMORY_PROMPTS,
   FIELD_NOTE_TEMPLATES,
   fieldNoteReadinessHint,
   getFieldNoteReadiness,
@@ -21,11 +22,18 @@ describe("field note input", () => {
   test("accepts guided templates with actual shift facts", () => {
     expect(FIELD_NOTE_TEMPLATES[0]).toMatchObject({
       label: "Итог смены",
-      text: expect.stringContaining("Что проверить утром"),
     });
+    expect(FIELD_NOTE_TEMPLATES[0].text).toContain("Контекст / причина");
+    expect(FIELD_NOTE_TEMPLATES[0].text).toContain("Что проверить утром");
+    expect(FIELD_NOTE_MEMORY_PROMPTS.map((prompt) => prompt.label)).toEqual([
+      "Факт",
+      "Контекст",
+      "Масштаб",
+      "Действие",
+    ]);
     expect(
       hasMeaningfulFieldNoteBody(
-        "Гости спрашивали:\nСколько раз / когда: 4 раза после 21:00\nЧто ответили: предложили лимонад без сахара",
+        "Гости спрашивали:\nКонтекст / почему важно: часто просили без сахара\nСколько раз / когда: 4 раза после 21:00\nЧто ответили: предложили лимонад без сахара",
       ),
     ).toBe(true);
     expect(
@@ -44,25 +52,40 @@ describe("field note input", () => {
     expect(hasMeaningfulFieldNoteBody("закончилась мята")).toBe(true);
   });
 
-  test("scores field notes by fact, scale and action", () => {
+  test("scores field notes by fact, context, scale and action", () => {
     expect(
       getFieldNoteReadiness(
-        "Стоп-лист / закончилось: мята\nКогда заметили: к 21:00\nЧто заменили или потеряли: не продали 6 лимонадов\nЧто проверить утром: заказ мяты",
+        "Стоп-лист / закончилось: мята\nКонтекст / причина: поставка не пришла, зал терял лимонады\nКогда заметили: к 21:00\nЧто заменили или потеряли: не продали 6 лимонадов\nЧто проверить утром: заказ мяты",
       ),
     ).toMatchObject({
       hasFact: true,
+      hasContext: true,
       hasScale: true,
       hasAction: true,
-      score: 3,
+      score: 4,
       missing: [],
     });
 
     expect(getFieldNoteReadiness("закончилась мята")).toMatchObject({
       hasFact: true,
+      hasContext: true,
       hasScale: false,
       hasAction: false,
-      score: 1,
+      score: 2,
       missing: ["когда/сколько", "что сделали или проверить"],
+    });
+
+    expect(
+      getFieldNoteReadiness(
+        "Было странно и неприятно. Надо обсудить.",
+      ),
+    ).toMatchObject({
+      hasFact: true,
+      hasContext: false,
+      hasScale: false,
+      hasAction: true,
+      score: 2,
+      missing: ["контекст/причина", "когда/сколько"],
     });
   });
 
@@ -73,9 +96,10 @@ describe("field note input", () => {
       ),
     ).toMatchObject({
       hasFact: true,
+      hasContext: true,
       hasScale: true,
       hasAction: true,
-      score: 3,
+      score: 4,
       missing: [],
     });
   });

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { submitFieldNoteAction, type OwnTaskStatusResult } from "./actions";
 import {
+  FIELD_NOTE_MEMORY_PROMPTS,
   FIELD_NOTE_TEMPLATES,
   fieldNoteReadinessHint,
   getFieldNoteReadiness,
@@ -225,6 +226,25 @@ export function FieldNoteForm() {
         ))}
       </div>
 
+      <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+        {FIELD_NOTE_MEMORY_PROMPTS.map((prompt) => (
+          <div
+            key={prompt.label}
+            className="rounded-lg border border-border/50 bg-background/30 p-3"
+          >
+            <p className="text-[10px] uppercase tracking-[0.16em] text-brand">
+              {prompt.label}
+            </p>
+            <p className="mt-1 text-[12px] leading-relaxed text-foreground/85">
+              {prompt.hint}
+            </p>
+            <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-muted-foreground">
+              {prompt.example}
+            </p>
+          </div>
+        ))}
+      </div>
+
       <textarea
         value={body}
         onChange={(event) => setBody(event.target.value)}
@@ -237,7 +257,8 @@ export function FieldNoteForm() {
       <div className="mt-3 flex flex-wrap gap-2">
         {[
           { label: "Факт", done: readiness.hasFact },
-          { label: "Когда/сколько/почему", done: readiness.hasScale },
+          { label: "Контекст", done: readiness.hasContext },
+          { label: "Когда/сколько", done: readiness.hasScale },
           { label: "Что проверить", done: readiness.hasAction },
         ].map((item) => (
           <span
