@@ -286,11 +286,19 @@ function brainMemoryGraphHref(
   venueId: string,
   teamPeriodParams?: TeamPeriodParams,
 ): string {
-  if (graph.target === "advisor") {
+  return brainMemoryGraphTargetHref(graph.target, venueId, teamPeriodParams);
+}
+
+function brainMemoryGraphTargetHref(
+  target: OwnerBrainMemoryGraph["target"],
+  venueId: string,
+  teamPeriodParams?: TeamPeriodParams,
+): string {
+  if (target === "advisor") {
     return dashboardChatHref(venueId, teamPeriodParams);
   }
 
-  return brainSourceIdHref(graph.target, venueId, teamPeriodParams);
+  return brainSourceIdHref(target, venueId, teamPeriodParams);
 }
 
 function actionCta(action: OwnerReviewAction): string {
@@ -587,12 +595,21 @@ export function OwnerCommandPanel({
                   </p>
                   <div className="mt-2 grid gap-1.5">
                     {brainReadiness.memoryGraph.trace.map((item) => (
-                      <p
-                        key={item}
-                        className="text-[12px] leading-relaxed text-muted-foreground"
+                      <Link
+                        key={item.detail}
+                        href={brainMemoryGraphTargetHref(
+                          item.target,
+                          venueId,
+                          teamPeriodParams,
+                        )}
+                        className="group flex items-start justify-between gap-3 rounded-md py-1 text-[12px] leading-relaxed text-muted-foreground transition-colors hover:text-foreground"
                       >
-                        {item}
-                      </p>
+                        <span>{item.detail}</span>
+                        <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-medium text-brand">
+                          {item.actionLabel}
+                          <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
+                        </span>
+                      </Link>
                     ))}
                   </div>
                 </div>

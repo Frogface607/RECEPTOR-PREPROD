@@ -133,9 +133,31 @@ describe("owner brain readiness", () => {
       detail: "Люди, смена и задачи уже связаны в памяти советника.",
     });
     expect(readiness.memoryGraph.summary).toContain("люди, смена, задачи");
-    expect(readiness.memoryGraph.trace.join("\n")).toContain("Люди: Маша");
-    expect(readiness.memoryGraph.trace.join("\n")).toContain("Смена: Маша");
-    expect(readiness.memoryGraph.trace.join("\n")).not.toContain("->");
+    expect(readiness.memoryGraph.trace.map((item) => item.detail).join("\n")).toContain(
+      "Люди: Маша",
+    );
+    expect(readiness.memoryGraph.trace.map((item) => item.detail).join("\n")).toContain(
+      "Смена: Маша",
+    );
+    expect(readiness.memoryGraph.trace.map((item) => item.detail).join("\n")).not.toContain(
+      "->",
+    );
+    expect(readiness.memoryGraph.trace).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          target: "team",
+          actionLabel: "Команда",
+        }),
+        expect.objectContaining({
+          target: "field",
+          actionLabel: "Итог",
+        }),
+        expect.objectContaining({
+          target: "team",
+          actionLabel: "Задачи",
+        }),
+      ]),
+    );
     expect(readiness.sources.find((source) => source.id === "field")?.status).toBe(
       "ready",
     );

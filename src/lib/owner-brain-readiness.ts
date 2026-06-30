@@ -81,12 +81,18 @@ export type OwnerBrainMemoryGraph = {
   tone: OwnerReviewTone;
   summary: string;
   detail: string;
-  trace: string[];
+  trace: OwnerBrainMemoryGraphTrace[];
   actionLabel: string;
   target: OwnerBrainMemoryGraphTarget;
 };
 
 export type OwnerBrainMemoryGraphTarget = OwnerBrainSourceId | "advisor";
+
+export type OwnerBrainMemoryGraphTrace = {
+  detail: string;
+  target: OwnerBrainMemoryGraphTarget;
+  actionLabel: string;
+};
 
 type BuildOwnerBrainReadinessInput = {
   context: unknown;
@@ -471,6 +477,37 @@ function buildOwnerMemoryGraph({
       : missingLabel === "задачи"
         ? "Связать задачу"
         : "Спросить советника";
+  const trace = (brief.traceLines ?? explainRestaurantMemoryGraph(relations)).map(
+    (line): OwnerBrainMemoryGraphTrace => {
+      if (line.startsWith("Люди:")) {
+        return {
+          detail: line,
+          target: "team",
+          actionLabel: "Команда",
+        };
+      }
+      if (line.startsWith("Смена:")) {
+        return {
+          detail: line,
+          target: "field",
+          actionLabel: "Итог",
+        };
+      }
+      if (line.startsWith("Задачи:")) {
+        return {
+          detail: line,
+          target: "team",
+          actionLabel: "Задачи",
+        };
+      }
+
+      return {
+        detail: line,
+        target: "advisor",
+        actionLabel: "Спросить",
+      };
+    },
+  );
 
   return {
     tone,
@@ -479,7 +516,7 @@ function buildOwnerMemoryGraph({
       brief.missingLabels.length > 0
         ? `Следующее связать: ${brief.nextAction}.`
         : "Люди, смена и задачи уже связаны в памяти советника.",
-    trace: brief.traceLines ?? explainRestaurantMemoryGraph(relations),
+    trace,
     actionLabel,
     target,
   };
