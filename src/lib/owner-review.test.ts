@@ -295,6 +295,7 @@ describe("buildOwnerReview", () => {
           impactLabel: "ФОТ 10%",
           learningModuleId: "restaurant-numbers-basics",
           learningModuleTitle: "Цифры ресторана простым языком",
+          learningChecklistTitle: "Если BI показал перерасход ФОТ",
         }),
       ]),
     );
@@ -305,6 +306,7 @@ describe("buildOwnerReview", () => {
       sourceLabel: "ФОТ и смены",
       learningModuleId: "restaurant-numbers-basics",
       learningModuleTitle: "Цифры ресторана простым языком",
+      learningChecklistTitle: "Если BI показал перерасход ФОТ",
       contextNote: expect.stringContaining(
         "Урок для команды: Цифры ресторана простым языком.",
       ),
@@ -779,6 +781,7 @@ describe("buildOwnerReview", () => {
           role: "owner",
           learningModuleId: "tech-card-discipline",
           learningModuleTitle: "Техкарта как договор внутри команды",
+          learningChecklistTitle: "Если BI показал недобор валовой прибыли",
         }),
       ]),
     );
@@ -788,6 +791,7 @@ describe("buildOwnerReview", () => {
       sourceLabel: "Маржа и техкарты",
       learningModuleId: "tech-card-discipline",
       learningModuleTitle: "Техкарта как договор внутри команды",
+      learningChecklistTitle: "Если BI показал недобор валовой прибыли",
       contextNote: expect.stringContaining(
         "Урок для команды: Техкарта как договор внутри команды.",
       ),
@@ -1745,6 +1749,7 @@ describe("buildOwnerReview", () => {
           impactLabel: expect.stringMatching(/^20\s000\s₽$/),
           learningModuleId: "shift-open-close",
           learningModuleTitle: "Открытие и закрытие смены без хаоса",
+          learningChecklistTitle: "Если BI показал слабую смену",
           why: expect.stringMatching(/Недобор к базе: 20\s000\s₽\./),
         }),
       ]),
@@ -1768,6 +1773,7 @@ describe("buildOwnerReview", () => {
           impactLabel: expect.stringMatching(/^20\s000\s₽$/),
           learningModuleId: "shift-open-close",
           learningModuleTitle: "Открытие и закрытие смены без хаоса",
+          learningChecklistTitle: "Если BI показал слабую смену",
           contextNote: expect.stringContaining(
             "Урок для команды: Открытие и закрытие смены без хаоса.",
           ),

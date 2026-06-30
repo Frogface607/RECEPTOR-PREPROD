@@ -16,7 +16,11 @@ import {
 import { createTeamTaskAction } from "@/app/team/actions";
 import { Button } from "@/components/ui/button";
 import type { SurvivalTaskDraft } from "@/lib/survival-score";
-import type { TeamRoleId, TeamTask } from "@/lib/team/team-os";
+import {
+  taskChecklistHintFromContext,
+  type TeamRoleId,
+  type TeamTask,
+} from "@/lib/team/team-os";
 
 type TaskState = Record<number, "idle" | "saved" | "error">;
 
@@ -53,7 +57,10 @@ function createdMessage(draft: SurvivalTaskDraft, message: string): string {
   const learning = draft.learningModuleTitle
     ? ` Стандарт: ${draft.learningModuleTitle}.`
     : "";
-  return `${message} Контур: ${sourceLabel(draft)}.${impact}${learning} Адресат: ${audiencePrefix(draft).toLowerCase()} ${audienceLabel(draft)}.`;
+  const checklist = draft.learningChecklistTitle
+    ? ` Чеклист: ${draft.learningChecklistTitle}.`
+    : "";
+  return `${message} Контур: ${sourceLabel(draft)}.${impact}${learning}${checklist} Адресат: ${audiencePrefix(draft).toLowerCase()} ${audienceLabel(draft)}.`;
 }
 
 function businessReasonFromContext(
@@ -64,8 +71,13 @@ function businessReasonFromContext(
   const start = contextNote.indexOf(marker);
   if (start < 0) return null;
   const raw = contextNote.slice(start);
-  const learningStart = raw.indexOf("Урок для команды:");
-  const reason = learningStart >= 0 ? raw.slice(0, learningStart) : raw;
+  const suffixStart = [
+    raw.indexOf("Урок для команды:"),
+    raw.indexOf("Чеклист:"),
+  ]
+    .filter((index) => index >= 0)
+    .sort((a, b) => a - b)[0];
+  const reason = suffixStart >= 0 ? raw.slice(0, suffixStart) : raw;
   return reason.replace(/\s+/g, " ").trim() || null;
 }
 
@@ -123,6 +135,9 @@ export function SurvivalTaskActions({
           ? `/me/learning?module=${encodeURIComponent(draft.learningModuleId)}`
           : null;
         const businessReason = businessReasonFromContext(draft.contextNote);
+        const checklistTitle =
+          draft.learningChecklistTitle ??
+          taskChecklistHintFromContext(draft.contextNote);
         return (
           <div
             key={`${draft.roleId}-${index}-${draft.title}`}
@@ -168,6 +183,7 @@ export function SurvivalTaskActions({
                     <BookOpenCheck className="mt-0.5 size-3.5 shrink-0 text-sky-200" />
                     <span>
                       Команде поможет: {draft.learningModuleTitle}
+                      {checklistTitle ? `. Чеклист: ${checklistTitle}` : ""}
                       {learningHref ? (
                         <>
                           {" "}

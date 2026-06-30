@@ -390,6 +390,9 @@ export function OwnerCommandPanel({
               {mainAction.learningModuleTitle ? (
                 <p className="mt-2 line-clamp-1 text-[12px] leading-relaxed text-sky-100/85">
                   Команде поможет: {mainAction.learningModuleTitle}
+                  {mainAction.learningChecklistTitle
+                    ? `. Чеклист: ${mainAction.learningChecklistTitle}`
+                    : ""}
                 </p>
               ) : null}
               <LinkButton

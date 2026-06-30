@@ -63,6 +63,7 @@ export type OwnerReviewHypothesis = {
   impactLabel?: string;
   learningModuleId?: string;
   learningModuleTitle?: string;
+  learningChecklistTitle?: string;
   audienceMemberId?: string;
   audienceMemberName?: string;
 };
@@ -100,6 +101,7 @@ export type OwnerReviewAction = {
   taskTitle?: string;
   learningModuleId?: string;
   learningModuleTitle?: string;
+  learningChecklistTitle?: string;
   existingTaskId?: string;
 };
 
@@ -449,15 +451,45 @@ function taskChecklistForSource(
   return null;
 }
 
+function actionChecklistTitle(action: OwnerReviewAction): string | null {
+  return (
+    action.learningChecklistTitle ??
+    taskChecklistForSource(
+      action.sourceLabel ?? actionSourceLabel(action),
+      action.learningModuleId,
+    )
+  );
+}
+
+function hypothesisChecklistTitle(item: OwnerReviewHypothesis): string | null {
+  return (
+    item.learningChecklistTitle ??
+    taskChecklistForSource(item.taskSourceLabel, item.learningModuleId)
+  );
+}
+
+function withActionChecklist(action: OwnerReviewAction): OwnerReviewAction {
+  const learningChecklistTitle = actionChecklistTitle(action);
+  return learningChecklistTitle
+    ? { ...action, learningChecklistTitle }
+    : action;
+}
+
+function withHypothesisChecklist(
+  item: OwnerReviewHypothesis,
+): OwnerReviewHypothesis {
+  const learningChecklistTitle = hypothesisChecklistTitle(item);
+  return learningChecklistTitle ? { ...item, learningChecklistTitle } : item;
+}
+
 function actionContextNote(action: OwnerReviewAction): string {
   const sourceLabel = action.sourceLabel ?? actionSourceLabel(action);
   return withLearningContext({
     context: action.detail,
     learningModuleTitle: action.learningModuleTitle,
-    checklistTitle: taskChecklistForSource(
-      sourceLabel,
-      action.learningModuleId,
-    ),
+    checklistTitle:
+      action.learningChecklistTitle ??
+      taskChecklistForSource(sourceLabel, action.learningModuleId),
     reason: taskReasonForSource(sourceLabel, action.impactLabel),
   });
 }
@@ -473,6 +505,7 @@ function taskFromOwnerAction(action: OwnerReviewAction): SurvivalTaskDraft {
     sourceLabel: action.sourceLabel ?? actionSourceLabel(action),
     learningModuleId: action.learningModuleId,
     learningModuleTitle: action.learningModuleTitle,
+    learningChecklistTitle: actionChecklistTitle(action) ?? undefined,
     audienceMemberId: action.memberId,
     audienceMemberName: action.memberName,
   };
@@ -488,15 +521,13 @@ function taskFromHypothesis(item: OwnerReviewHypothesis): SurvivalTaskDraft {
     contextNote: withLearningContext({
       context: `${item.why} Проверка: ${item.check}`,
       learningModuleTitle: item.learningModuleTitle,
-      checklistTitle: taskChecklistForSource(
-        item.taskSourceLabel,
-        item.learningModuleId,
-      ),
+      checklistTitle: hypothesisChecklistTitle(item),
       reason: taskReasonForSource(item.taskSourceLabel, item.impactLabel),
     }),
     sourceLabel: item.taskSourceLabel ?? "Гипотеза",
     learningModuleId: item.learningModuleId,
     learningModuleTitle: item.learningModuleTitle,
+    learningChecklistTitle: hypothesisChecklistTitle(item) ?? undefined,
     audienceMemberId: item.audienceMemberId,
     audienceMemberName: item.audienceMemberName,
   };
@@ -2325,7 +2356,9 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
         input.labor ? ownerActionFromLabor(input.labor) : null,
         input.margin ? ownerActionFromMargin(input.margin) : null,
         input.team ? ownerActionFromTeam(input.team) : null,
-      ].filter((item): item is OwnerReviewAction => item !== null),
+      ]
+        .filter((item): item is OwnerReviewAction => item !== null)
+        .map(withActionChecklist),
       input.teamTasks,
     ),
   ).slice(0, 3);
@@ -2485,7 +2518,9 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     });
   }
 
-  const visibleHypotheses = sortOwnerHypotheses(hypotheses).slice(0, 4);
+  const visibleHypotheses = sortOwnerHypotheses(
+    hypotheses.map(withHypothesisChecklist),
+  ).slice(0, 4);
   const questions: OwnerReviewQuestion[] = visibleHypotheses.map((item) => ({
     role: item.role,
     text: item.check,

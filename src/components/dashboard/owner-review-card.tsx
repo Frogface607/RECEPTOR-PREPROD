@@ -504,6 +504,9 @@ export function OwnerReviewCard({
                       {action.learningModuleTitle ? (
                         <p className="mt-1 text-[12px] leading-relaxed text-sky-100/85">
                           Команде поможет: {action.learningModuleTitle}
+                          {action.learningChecklistTitle
+                            ? `. Чеклист: ${action.learningChecklistTitle}`
+                            : ""}
                         </p>
                       ) : null}
                     </div>

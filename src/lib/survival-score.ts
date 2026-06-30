@@ -43,6 +43,7 @@ export type SurvivalTaskDraft = {
   sourceLabel?: string;
   learningModuleId?: string;
   learningModuleTitle?: string;
+  learningChecklistTitle?: string;
   audienceMemberId?: string;
   audienceMemberName?: string;
 };
