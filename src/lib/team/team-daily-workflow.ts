@@ -58,7 +58,7 @@ export function buildTeamDailyWorkflow(input: {
       detail:
         input.fieldContext?.summary ??
         "Нужен короткий факт от команды: гости, стоп-лист, конфликт, погода, продажи или что проверить утром.",
-      href: "#team-actions",
+      href: "#shift-summary",
       tone: input.fieldContext ? "work" : "risk",
     },
     {

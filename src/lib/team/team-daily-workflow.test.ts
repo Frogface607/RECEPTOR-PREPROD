@@ -79,6 +79,7 @@ describe("buildTeamDailyWorkflow", () => {
     });
     expect(steps[2]).toMatchObject({
       title: "Разобрать факты смены",
+      href: "#shift-summary",
       tone: "work",
     });
   });
@@ -112,6 +113,7 @@ describe("buildTeamDailyWorkflow", () => {
 
     expect(steps[2]).toMatchObject({
       title: "Собрать итог смены",
+      href: "#shift-summary",
       tone: "risk",
     });
     expect(steps[3]).toMatchObject({

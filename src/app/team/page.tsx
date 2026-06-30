@@ -86,7 +86,10 @@ import {
   type TeamLearningFocusTone,
   type TeamLearningRolePlan,
 } from "@/lib/team/team-learning-role-plan";
-import { buildTeamFieldContextDigest } from "@/lib/team/team-field-context";
+import {
+  buildTeamFieldContextDigest,
+  type TeamFieldContextDigest,
+} from "@/lib/team/team-field-context";
 import { buildTeamLaborReadiness } from "@/lib/team/team-labor-readiness";
 import {
   buildTeamOpsReadiness,
@@ -523,6 +526,8 @@ export default async function TeamPage({
           periodLabel={formatPeriodLabel(period)}
           laborProfile={memberLaborProfile}
         />
+
+        <TeamShiftMemorySection digest={learningFieldContext} />
 
         <ShiftOperationsRoute
           roster={shiftRoster}
@@ -2332,6 +2337,83 @@ function dailyWorkflowToneClass(tone: TeamDailyWorkflowTone): string {
     return "border-destructive/30 bg-destructive/10 text-destructive";
   if (tone === "work") return "border-brand/30 bg-brand/10 text-brand";
   return "border-[color:var(--pro)]/30 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
+}
+
+function TeamShiftMemorySection({
+  digest,
+}: {
+  digest: TeamFieldContextDigest | null;
+}) {
+  return (
+    <section
+      id="shift-summary"
+      className="scroll-mt-24 border-b border-border/40"
+    >
+      <div className="mx-auto grid max-w-7xl gap-5 px-6 py-7 lg:grid-cols-[0.72fr_1.28fr]">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
+            Память смены
+          </p>
+          <h2 className="mt-2 text-2xl font-medium">
+            Что команда заметила на поле
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            Цифры объясняют результат, но причина часто живет в коротком итоге
+            смены.
+          </p>
+        </div>
+
+        <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+          {digest ? (
+            <div className="grid gap-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                    Главный сигнал
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-foreground">
+                    {digest.summary}
+                  </p>
+                </div>
+                <Badge variant="outline">{digest.totalNotes} заметок</Badge>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {digest.signals.map((signal) => (
+                  <span
+                    key={signal.kind}
+                    className="rounded-md border border-brand/25 bg-brand/10 px-2.5 py-1 text-[11px] text-brand"
+                  >
+                    {signal.title} · {signal.sourceCount}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              <p className="text-sm font-medium text-foreground">
+                Итог смены еще не собран
+              </p>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                После смены попросите коротко зафиксировать: посадку, гостей,
+                стоп-лист, конфликт, погоду, что продавали и что проверить
+                утром.
+              </p>
+            </div>
+          )}
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <LinkButton href="#team-actions" variant="outline">
+              Открыть задачи и заметки
+              <ArrowRight className="size-4" />
+            </LinkButton>
+            <LinkButton href="#learning-progress" variant="outline">
+              Связать с обучением
+            </LinkButton>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 }
 
 function shiftDiagnosticToneClass(tone: LaborShiftDiagnostic["tone"]): string {
