@@ -44,6 +44,7 @@ import {
   getTeamRole,
   hasAnnouncementRead,
   listCommentsForTask,
+  taskChecklistHintFromContext,
   taskContextWithoutLearningHint,
   taskLearningHintFromContext,
   type TeamAnnouncement,
@@ -277,6 +278,9 @@ export default async function MyCabinetPage({
   const nextActionContextLearningTitle = taskLearningHintFromContext(
     nextActionTaskContext?.body,
   );
+  const nextActionContextChecklistTitle = taskChecklistHintFromContext(
+    nextActionTaskContext?.body,
+  );
   const nextActionLearningItem =
     (nextActionTask?.learningModuleId
       ? getLearningItem(nextActionTask.learningModuleId)
@@ -442,6 +446,9 @@ export default async function MyCabinetPage({
                           <BookOpenCheck className="size-3.5 text-sky-200" />
                           <span>
                             Поможет стандарт: {nextActionLearningTitle}
+                            {nextActionContextChecklistTitle
+                              ? `. Чеклист: ${nextActionContextChecklistTitle}`
+                              : ""}
                           </span>
                           {nextActionLearningItem ? (
                             <Link
@@ -754,6 +761,7 @@ function TaskCard({
 }) {
   const sourceLabel = sourceBadgeLabel(task);
   const contextLearningTitle = taskLearningHintFromContext(context?.body);
+  const contextChecklistTitle = taskChecklistHintFromContext(context?.body);
   const learningItem =
     (task.learningModuleId
       ? getLearningItem(task.learningModuleId)
@@ -817,7 +825,10 @@ function TaskCard({
       {learningTitle ? (
         <div className="mt-3 flex flex-wrap items-center gap-2 rounded-md border border-sky-400/20 bg-sky-400/5 px-3 py-2 text-[12px] leading-relaxed text-sky-100/90">
           <BookOpenCheck className="size-3.5 text-sky-200" />
-          <span>Поможет стандарт: {learningTitle}</span>
+          <span>
+            Поможет стандарт: {learningTitle}
+            {contextChecklistTitle ? `. Чеклист: ${contextChecklistTitle}` : ""}
+          </span>
           {learningItem ? (
             <Link
               href={`/me/learning?module=${encodeURIComponent(learningItem.id)}`}

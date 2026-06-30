@@ -312,6 +312,9 @@ describe("buildOwnerReview", () => {
     expect(review.tasks[0].contextNote).toContain(
       "Зачем: понять, сколько ФОТ 10% стоит смене и прибыли.",
     );
+    expect(review.tasks[0].contextNote).toContain(
+      "Чеклист: Если BI показал перерасход ФОТ.",
+    );
   });
 
   test("opens linked employee when personal FOT efficiency is risky", () => {
@@ -375,6 +378,9 @@ describe("buildOwnerReview", () => {
     });
     expect(review.tasks[0].contextNote).toContain(
       "Урок для команды: Цифры ресторана простым языком.",
+    );
+    expect(review.tasks[0].contextNote).toContain(
+      "Чеклист: Если BI показал перерасход ФОТ.",
     );
   });
 
@@ -789,6 +795,9 @@ describe("buildOwnerReview", () => {
     expect(review.tasks[0].contextNote).toMatch(
       /Зачем: закрыть 20\s000\s₽ выручки без понятной себестоимости\./,
     );
+    expect(review.tasks[0].contextNote).toContain(
+      "Чеклист: Если BI показал недобор валовой прибыли.",
+    );
     expect(review.hypotheses).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -875,6 +884,9 @@ describe("buildOwnerReview", () => {
       roleId: "chef",
       priority: "medium",
       impactLabel: "150 ₽",
+      contextNote: expect.stringContaining(
+        "Чеклист: Если BI показал недобор валовой прибыли.",
+      ),
     });
   });
 
@@ -1765,6 +1777,16 @@ describe("buildOwnerReview", () => {
     expect(review.tasks).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
+          sourceLabel: "Выручка и смены",
+          contextNote: expect.stringContaining(
+            "Чеклист: Если BI показал слабую смену.",
+          ),
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
           contextNote: expect.stringMatching(/Недобор к базе: 20\s000\s₽\./),
         }),
       ]),
@@ -1835,6 +1857,16 @@ describe("buildOwnerReview", () => {
           impactLabel: expect.stringMatching(/^40\s000\s₽$/),
           contextNote: expect.stringContaining(
             "Урок для команды: Открытие и закрытие смены без хаоса.",
+          ),
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          sourceLabel: "Выручка и смены",
+          contextNote: expect.stringContaining(
+            "Чеклист: Если BI показал слабую смену.",
           ),
         }),
       ]),

@@ -312,8 +312,8 @@ function trimTaskTitle(value: string): string {
 
 function trimContextNote(value: string): string {
   const normalized = value.replace(/\s+/g, " ").trim();
-  if (normalized.length <= 320) return normalized;
-  return `${normalized.slice(0, 317).trim()}...`;
+  if (normalized.length <= 420) return normalized;
+  return `${normalized.slice(0, 417).trim()}...`;
 }
 
 function trimEvidenceDetail(value: string): string {
@@ -367,16 +367,19 @@ function appendSentence(base: string, sentence: string): string {
 function withLearningContext({
   context,
   learningModuleTitle,
+  checklistTitle,
   reason,
 }: {
   context: string;
   learningModuleTitle?: string;
+  checklistTitle?: string | null;
   reason?: string | null;
 }): string {
   const base = context.trim();
   const suffixParts = [
     reason ? `Зачем: ${reason}.` : null,
     learningModuleTitle ? `Урок для команды: ${learningModuleTitle}.` : null,
+    checklistTitle ? `Чеклист: ${checklistTitle}.` : null,
   ].filter((item): item is string => Boolean(item));
 
   if (suffixParts.length === 0) return trimContextNote(base);
@@ -384,9 +387,9 @@ function withLearningContext({
   const suffix = suffixParts.join(" ");
   const fullContext = appendSentence(base, suffix);
 
-  if (fullContext.length <= 320) return trimContextNote(fullContext);
+  if (fullContext.length <= 420) return trimContextNote(fullContext);
 
-  const baseLimit = Math.max(0, 320 - suffix.length - 5);
+  const baseLimit = Math.max(0, 420 - suffix.length - 5);
   return trimContextNote(
     appendSentence(`${base.slice(0, baseLimit).trim()}...`, suffix),
   );
@@ -428,11 +431,33 @@ function taskReasonForSource(
   return null;
 }
 
+function taskChecklistForSource(
+  sourceLabel: string | undefined,
+  learningModuleId: string | undefined,
+): string | null {
+  if (learningModuleId === "shift-open-close") {
+    return "Если BI показал слабую смену";
+  }
+  if (learningModuleId === "restaurant-numbers-basics") {
+    return "Если BI показал перерасход ФОТ";
+  }
+  if (learningModuleId === "tech-card-discipline") {
+    if (sourceLabel === "Маржа и техкарты" || sourceLabel === "ФОТ и маржа") {
+      return "Если BI показал недобор валовой прибыли";
+    }
+  }
+  return null;
+}
+
 function actionContextNote(action: OwnerReviewAction): string {
   const sourceLabel = action.sourceLabel ?? actionSourceLabel(action);
   return withLearningContext({
     context: action.detail,
     learningModuleTitle: action.learningModuleTitle,
+    checklistTitle: taskChecklistForSource(
+      sourceLabel,
+      action.learningModuleId,
+    ),
     reason: taskReasonForSource(sourceLabel, action.impactLabel),
   });
 }
@@ -463,6 +488,10 @@ function taskFromHypothesis(item: OwnerReviewHypothesis): SurvivalTaskDraft {
     contextNote: withLearningContext({
       context: `${item.why} Проверка: ${item.check}`,
       learningModuleTitle: item.learningModuleTitle,
+      checklistTitle: taskChecklistForSource(
+        item.taskSourceLabel,
+        item.learningModuleId,
+      ),
       reason: taskReasonForSource(item.taskSourceLabel, item.impactLabel),
     }),
     sourceLabel: item.taskSourceLabel ?? "Гипотеза",

@@ -567,7 +567,16 @@ export function listCommentsForTask(
 export function taskLearningHintFromContext(
   context: string | null | undefined,
 ): string | null {
-  const match = context?.match(/Урок для команды:\s*([^\n]+?)(?:\.\s*)?$/);
+  const match = context?.match(
+    /Урок для команды:\s*([^\n]+?)(?:\.\s*)?(?:Чеклист:\s*[^\n]+?(?:\.\s*)?)?$/,
+  );
+  return match?.[1]?.trim() || null;
+}
+
+export function taskChecklistHintFromContext(
+  context: string | null | undefined,
+): string | null {
+  const match = context?.match(/Чеклист:\s*([^\n]+?)(?:\.\s*)?$/);
   return match?.[1]?.trim() || null;
 }
 
@@ -575,6 +584,7 @@ export function taskContextWithoutLearningHint(
   context: string | null | undefined,
 ): string {
   return (context ?? "")
+    .replace(/\s*Чеклист:\s*[^\n]+?(?:\.\s*)?$/g, "")
     .replace(/\s*Урок для команды:\s*[^\n]+?(?:\.\s*)?$/g, "")
     .trim();
 }

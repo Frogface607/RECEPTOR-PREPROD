@@ -10,6 +10,7 @@ import {
   listTasksForMember,
   listTasksForRole,
   roleCan,
+  taskChecklistHintFromContext,
   taskContextWithoutLearningHint,
   taskLearningHintFromContext,
 } from "./team-os";
@@ -64,17 +65,17 @@ describe("Team OS roles and permissions", () => {
   });
 
   test("extracts learning hint from BI task context", () => {
-    expect(
-      taskLearningHintFromContext(
-        "ФОТ 36%. Урок для команды: Цифры ресторана простым языком.",
-      ),
-    ).toBe("Цифры ресторана простым языком");
+    const context =
+      "ФОТ 36%. Урок для команды: Цифры ресторана простым языком. Чеклист: Если BI показал перерасход ФОТ.";
+
+    expect(taskLearningHintFromContext(context)).toBe(
+      "Цифры ресторана простым языком",
+    );
+    expect(taskChecklistHintFromContext(context)).toBe(
+      "Если BI показал перерасход ФОТ",
+    );
     expect(taskLearningHintFromContext("Без учебного стандарта")).toBeNull();
-    expect(
-      taskContextWithoutLearningHint(
-        "ФОТ 36%. Урок для команды: Цифры ресторана простым языком.",
-      ),
-    ).toBe("ФОТ 36%.");
+    expect(taskContextWithoutLearningHint(context)).toBe("ФОТ 36%.");
   });
 
   test("keeps dots inside learning standard titles", () => {

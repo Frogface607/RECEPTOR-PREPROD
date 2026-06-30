@@ -34,6 +34,7 @@ import { buildIikoStaffImportCandidates } from "@/lib/team/team-iiko-staff-impor
 import {
   TEAM_ROLES,
   listCommentsForTask,
+  taskChecklistHintFromContext,
   taskContextWithoutLearningHint,
   taskLearningHintFromContext,
   type StaffMember,
@@ -822,6 +823,9 @@ export function TeamActionsPanel({
                   const contextLearningHint = taskLearningHintFromContext(
                     context?.body,
                   );
+                  const contextChecklistHint = taskChecklistHintFromContext(
+                    context?.body,
+                  );
                   const learningItem =
                     (task.learningModuleId
                       ? getLearningItem(task.learningModuleId)
@@ -893,7 +897,12 @@ export function TeamActionsPanel({
                         {learningHint ? (
                           <p className="mt-2 flex items-start gap-2 rounded-md border border-sky-400/20 bg-sky-400/5 px-3 py-2 text-[12px] leading-relaxed text-sky-100/90">
                             <BookOpenCheck className="mt-0.5 size-3.5 shrink-0 text-sky-200" />
-                            <span>Команде поможет: {learningHint}</span>
+                            <span>
+                              Команде поможет: {learningHint}
+                              {contextChecklistHint
+                                ? `. Чеклист: ${contextChecklistHint}`
+                                : ""}
+                            </span>
                           </p>
                         ) : null}
                       </button>
