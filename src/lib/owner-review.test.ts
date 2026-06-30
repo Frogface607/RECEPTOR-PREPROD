@@ -1784,7 +1784,7 @@ describe("buildOwnerReview", () => {
         expect.objectContaining({
           taskSourceLabel: "Полевой контекст",
           title: "Проверить стоп-лист и потерянные продажи",
-          learningChecklistTitle: "Разбор: факт, вопрос, проверка, действие",
+          learningChecklistTitle: "Если полевая заметка про стоп-лист",
           briefingQuestion:
             "что закончилось, сколько продаж потеряли и кто отвечает за запас",
         }),
@@ -1796,7 +1796,7 @@ describe("buildOwnerReview", () => {
           title: "Проверить стоп-лист и потерянные продажи",
           sourceLabel: "Полевой контекст",
           roleId: "venue_manager",
-          learningChecklistTitle: "Разбор: факт, вопрос, проверка, действие",
+          learningChecklistTitle: "Если полевая заметка про стоп-лист",
           contextNote: expect.stringContaining(
             "Вопрос: что закончилось, сколько продаж потеряли и кто отвечает за запас?",
           ),
@@ -2350,7 +2350,7 @@ describe("buildOwnerReview", () => {
           sourceLabel: "Полевой контекст",
           impactLabel: "3 сигнала",
           learningModuleId: "shift-brief",
-          learningChecklistTitle: "Разбор: факт, вопрос, проверка, действие",
+          learningChecklistTitle: "Если полевая заметка про конфликт",
           briefingQuestion:
             "что стало причиной конфликта и повторяется ли это в сменах",
           detail: expect.stringContaining("Связанные факты:"),
@@ -2377,7 +2377,7 @@ describe("buildOwnerReview", () => {
           title: "Разобрать конфликт смены с цифрами",
           sourceLabel: "Полевой контекст",
           learningModuleTitle: "Брифинг смены и передача контекста",
-          learningChecklistTitle: "Разбор: факт, вопрос, проверка, действие",
+          learningChecklistTitle: "Если полевая заметка про конфликт",
           contextNote: expect.stringContaining("Полевой факт: Маша"),
         }),
       ]),
@@ -2389,7 +2389,7 @@ describe("buildOwnerReview", () => {
       "Вопрос: что стало причиной конфликта и повторяется ли это в сменах?",
     );
     expect(fieldTaskContext).toContain(
-      "Чеклист: Разбор: факт, вопрос, проверка, действие.",
+      "Чеклист: Если полевая заметка про конфликт.",
     );
     expect(fieldTaskContext).toContain("Проверка: На брифинге");
     expect(fieldTaskContext).toContain("Связанные факты:");

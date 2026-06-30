@@ -88,6 +88,15 @@ describe("team learning catalog", () => {
         expect.objectContaining({
           title: "Разбор: факт, вопрос, проверка, действие",
         }),
+        expect.objectContaining({
+          title: "Если полевая заметка про стоп-лист",
+        }),
+        expect.objectContaining({
+          title: "Если полевая заметка про конфликт",
+        }),
+        expect.objectContaining({
+          title: "Если полевая заметка про сервис или запрос гостей",
+        }),
       ]),
     );
   });
