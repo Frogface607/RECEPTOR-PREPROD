@@ -22,11 +22,35 @@ const BI_EVIDENCE_LABELS = new Set([
   "Хит",
 ]);
 
+const BI_EVIDENCE_PRIORITY: Record<string, number> = {
+  "Юнит-экономика": 100,
+  ФОТ: 90,
+  Маржа: 85,
+  "План/факт": 80,
+  Покрытие: 70,
+  "Опора меню": 60,
+  Хит: 50,
+  Деньги: 40,
+};
+
+function tonePriority(tone: OwnerReviewTone): number {
+  if (tone === "risk") return 300;
+  if (tone === "watch") return 200;
+  return 100;
+}
+
+function biPriority(label: string): number {
+  return BI_EVIDENCE_PRIORITY[label] ?? 0;
+}
+
 function primaryBiRow(review: OwnerReview): OwnerMorningReviewRow {
-  const riskyBi =
-    review.evidence.find(
-      (item) => BI_EVIDENCE_LABELS.has(item.label) && item.tone !== "good",
-    ) ?? review.evidence.find((item) => item.label === "Деньги");
+  const riskyBi = review.evidence
+    .filter((item) => BI_EVIDENCE_LABELS.has(item.label))
+    .toSorted((a, b) => {
+      const toneDelta = tonePriority(b.tone) - tonePriority(a.tone);
+      if (toneDelta !== 0) return toneDelta;
+      return biPriority(b.label) - biPriority(a.label);
+    })[0];
 
   if (riskyBi) {
     return {

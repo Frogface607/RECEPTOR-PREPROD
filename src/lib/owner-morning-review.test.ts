@@ -23,7 +23,7 @@ function baseReview(): OwnerReview {
         label: "Деньги",
         value: "120 000 ₽",
         detail: "динамика: -8%",
-        tone: "good",
+        tone: "risk",
       },
       {
         label: "ФОТ",
