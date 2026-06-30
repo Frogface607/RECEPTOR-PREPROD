@@ -15,6 +15,36 @@ export type RestaurantMemoryRelation = {
   source: RestaurantMemoryRelationSource;
 };
 
+export type RestaurantMemoryNodeKind =
+  | "person"
+  | "role"
+  | "shift_note"
+  | "task"
+  | "signal";
+
+export type RestaurantMemoryNode = {
+  id: string;
+  kind: RestaurantMemoryNodeKind;
+  label: string;
+  source: RestaurantMemoryRelationSource;
+};
+
+export type RestaurantMemoryEdge = {
+  id: string;
+  from: string;
+  to: string;
+  predicate: string;
+  source: RestaurantMemoryRelationSource;
+  evidence: string;
+};
+
+export type RestaurantMemoryGraphModel = {
+  relations: RestaurantMemoryRelation[];
+  nodes: RestaurantMemoryNode[];
+  edges: RestaurantMemoryEdge[];
+  markdownSnapshot: string;
+};
+
 export type RestaurantMemoryGraphBrief = {
   relationCount: number;
   sourceLabels: string[];
@@ -85,6 +115,58 @@ function taskPredicate(task: TeamTask): string {
 
 function relationLine(relation: RestaurantMemoryRelation): string {
   return `${relation.subject} -> ${relation.predicate} -> ${relation.object}`;
+}
+
+function nodeId(kind: RestaurantMemoryNodeKind, label: string): string {
+  const slug = compact(label, 70)
+    .toLocaleLowerCase("ru-RU")
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return `${kind}:${slug || "node"}`;
+}
+
+function subjectNodeKind(
+  relation: RestaurantMemoryRelation,
+): RestaurantMemoryNodeKind {
+  if (relation.source === "task") return "task";
+  if (relation.source === "field" && relation.predicate === "связано с") {
+    return "signal";
+  }
+
+  return "person";
+}
+
+function objectNodeKind(
+  relation: RestaurantMemoryRelation,
+): RestaurantMemoryNodeKind {
+  if (relation.predicate === "роль") return "role";
+  if (relation.source === "task") return "task";
+  if (relation.source === "field" && relation.predicate === "связано с") {
+    return "signal";
+  }
+
+  return "shift_note";
+}
+
+function ensureNode(
+  nodes: Map<string, RestaurantMemoryNode>,
+  kind: RestaurantMemoryNodeKind,
+  label: string,
+  source: RestaurantMemoryRelationSource,
+): RestaurantMemoryNode {
+  const id = nodeId(kind, label);
+  const existing = nodes.get(id);
+  if (existing) return existing;
+
+  const node = {
+    id,
+    kind,
+    label: compact(label),
+    source,
+  };
+  nodes.set(id, node);
+  return node;
 }
 
 function relationCountLabel(count: number): string {
@@ -160,6 +242,73 @@ export function formatRestaurantMemoryGraph(
   relations: RestaurantMemoryRelation[],
 ): string[] {
   return relations.map(relationLine);
+}
+
+export function formatRestaurantMemoryGraphMarkdown({
+  nodes,
+  edges,
+}: Pick<RestaurantMemoryGraphModel, "nodes" | "edges">): string {
+  const nodeLines =
+    nodes.length > 0
+      ? nodes.map((node) => `- ${node.id}: ${node.label}`).join("\n")
+      : "- пока нет узлов";
+  const edgeLines =
+    edges.length > 0
+      ? edges
+          .map((edge) => `- ${edge.from} -> ${edge.predicate} -> ${edge.to}`)
+          .join("\n")
+      : "- пока нет связей";
+
+  return [
+    "# Карта памяти ресторана",
+    "",
+    "## Узлы",
+    nodeLines,
+    "",
+    "## Связи",
+    edgeLines,
+  ].join("\n");
+}
+
+export function buildRestaurantMemoryGraphModel(
+  input: RestaurantMemoryGraphInput,
+): RestaurantMemoryGraphModel {
+  const relations = buildRestaurantMemoryGraph(input);
+  const nodes = new Map<string, RestaurantMemoryNode>();
+  const edges = relations.map((relation, index) => {
+    const from = ensureNode(
+      nodes,
+      subjectNodeKind(relation),
+      relation.subject,
+      relation.source,
+    );
+    const to = ensureNode(
+      nodes,
+      objectNodeKind(relation),
+      relation.object,
+      relation.source,
+    );
+
+    return {
+      id: `edge:${index + 1}`,
+      from: from.id,
+      to: to.id,
+      predicate: relation.predicate,
+      source: relation.source,
+      evidence: relationLine(relation),
+    };
+  });
+  const model = {
+    relations,
+    nodes: Array.from(nodes.values()),
+    edges,
+    markdownSnapshot: "",
+  };
+
+  return {
+    ...model,
+    markdownSnapshot: formatRestaurantMemoryGraphMarkdown(model),
+  };
 }
 
 export function summarizeRestaurantMemoryGraph(

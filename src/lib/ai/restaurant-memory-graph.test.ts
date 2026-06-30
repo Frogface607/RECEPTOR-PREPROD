@@ -1,7 +1,9 @@
 import { describe, expect, test } from "vitest";
 import {
   buildRestaurantMemoryGraph,
+  buildRestaurantMemoryGraphModel,
   formatRestaurantMemoryGraph,
+  formatRestaurantMemoryGraphMarkdown,
   summarizeRestaurantMemoryGraph,
 } from "./restaurant-memory-graph";
 import type { StaffMember, TeamTask, TeamTaskComment } from "@/lib/team/team-os";
@@ -75,6 +77,36 @@ describe("restaurant memory graph", () => {
     );
     expect(lines.join("\n")).toContain("Погода и внешний контекст");
     expect(lines.join("\n")).not.toContain("Receptor -> сообщил");
+  });
+
+  test("keeps a lightweight node-edge model with a markdown snapshot", () => {
+    const model = buildRestaurantMemoryGraphModel({ staff, tasks, comments });
+
+    expect(model.relations.length).toBeGreaterThan(0);
+    expect(model.nodes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "person:маша",
+          kind: "person",
+          label: "Маша",
+        }),
+        expect.objectContaining({
+          kind: "role",
+          label: "Управляющий",
+        }),
+      ]),
+    );
+    expect(model.edges[0]).toMatchObject({
+      from: "person:маша",
+      predicate: "роль",
+      source: "team",
+    });
+    expect(model.markdownSnapshot).toContain("# Карта памяти ресторана");
+    expect(model.markdownSnapshot).toContain("## Узлы");
+    expect(model.markdownSnapshot).toContain("## Связи");
+    expect(formatRestaurantMemoryGraphMarkdown(model)).toContain(
+      "person:маша -> роль -> role:управляющий",
+    );
   });
 
   test("summarizes graph coverage without exposing raw edges to the UI", () => {

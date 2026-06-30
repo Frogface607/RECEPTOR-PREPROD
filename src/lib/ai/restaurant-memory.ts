@@ -1,7 +1,7 @@
 import { buildTeamFieldContextDigest } from "@/lib/team/team-field-context";
 import { summarizeFieldNoteReadiness } from "@/lib/team/field-note-input";
 import {
-  buildRestaurantMemoryGraph,
+  buildRestaurantMemoryGraphModel,
   formatRestaurantMemoryGraph,
   summarizeRestaurantMemoryGraph,
   type RestaurantMemoryGraphBrief,
@@ -28,6 +28,7 @@ export type RestaurantAdvisorMemory = {
   openTasks: string[];
   learningGaps: string[];
   memoryGraph: string[];
+  memoryGraphMarkdown?: string;
   memoryGraphBrief?: RestaurantMemoryGraphBrief;
 };
 
@@ -181,13 +182,15 @@ export function buildRestaurantAdvisorMemory(
     fieldReadiness.complete === 0 && !fieldTaskStatus
       ? fieldReadiness.followUpQuestions
       : [];
-  const memoryGraphRelations = buildRestaurantMemoryGraph({
+  const memoryGraphModel = buildRestaurantMemoryGraphModel({
     staff: input.staff,
     tasks: input.tasks,
     comments: input.comments,
   });
-  const memoryGraph = formatRestaurantMemoryGraph(memoryGraphRelations);
-  const memoryGraphBrief = summarizeRestaurantMemoryGraph(memoryGraphRelations);
+  const memoryGraph = formatRestaurantMemoryGraph(memoryGraphModel.relations);
+  const memoryGraphBrief = summarizeRestaurantMemoryGraph(
+    memoryGraphModel.relations,
+  );
 
   return {
     teamSummary: roleSummary(input.staff),
@@ -204,6 +207,8 @@ export function buildRestaurantAdvisorMemory(
     openTasks: openTaskLines(input.tasks),
     learningGaps: learningGapLines(input),
     memoryGraph,
+    memoryGraphMarkdown:
+      memoryGraphModel.edges.length > 0 ? memoryGraphModel.markdownSnapshot : undefined,
     memoryGraphBrief,
   };
 }

@@ -102,6 +102,8 @@ describe("restaurant advisor memory", () => {
     expect(memory.learningGaps[0]).toContain("Маша");
     expect(memory.memoryGraph.join("\n")).toContain("Маша -> роль");
     expect(memory.memoryGraph.join("\n")).toContain("оставил(а) итог смены");
+    expect(memory.memoryGraphMarkdown).toContain("# Карта памяти ресторана");
+    expect(memory.memoryGraphMarkdown).toContain("person:маша");
     expect(memory.memoryGraphBrief).toMatchObject({
       status: "ready",
       sourceLabels: ["люди", "смена", "задачи"],
