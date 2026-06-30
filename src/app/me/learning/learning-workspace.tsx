@@ -18,6 +18,10 @@ import {
   type TeamLearningItem,
   type TeamLearningScore,
 } from "@/lib/team/team-learning";
+import {
+  buildTeamLearningAdmission,
+  type TeamLearningAdmission,
+} from "@/lib/team/team-learning-admission";
 import type { TeamLearningProgressSnapshot } from "@/lib/team/team-learning-progress";
 import { saveLearningProgressAction } from "./actions";
 
@@ -162,6 +166,10 @@ export function LearningWorkspace({
           ) / items.length,
         )
       : 0;
+  const admission = useMemo(
+    () => buildTeamLearningAdmission({ items, progress }),
+    [items, progress],
+  );
 
   function selectAnswer(questionIndex: number, answerIndex: number) {
     if (submittedScore) return;
@@ -257,8 +265,16 @@ export function LearningWorkspace({
     );
 
   return (
-    <section className="mx-auto grid max-w-7xl gap-6 px-6 py-8 lg:grid-cols-[0.34fr_0.66fr]">
-      <aside className="space-y-4">
+    <section className="mx-auto max-w-7xl px-6 py-8">
+      <LearningAdmissionPanel
+        admission={admission}
+        memberName={memberName}
+        roleTitle={roleTitle}
+        onOpenNext={(moduleId) => selectModule(moduleId)}
+      />
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-[0.34fr_0.66fr]">
+        <aside className="space-y-4">
         <div className="rounded-lg border border-border/60 bg-card/50 p-5">
           <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
             Прогресс роли
@@ -325,9 +341,9 @@ export function LearningWorkspace({
             })}
           </div>
         </div>
-      </aside>
+        </aside>
 
-      <div className="space-y-6">
+        <div className="space-y-6">
         <article className="rounded-lg border border-border/60 bg-card/50 p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
@@ -558,8 +574,68 @@ export function LearningWorkspace({
             </div>
           </div>
         </article>
+        </div>
       </div>
     </section>
+  );
+}
+
+function LearningAdmissionPanel({
+  admission,
+  memberName,
+  roleTitle,
+  onOpenNext,
+}: {
+  admission: TeamLearningAdmission;
+  memberName: string;
+  roleTitle: string;
+  onOpenNext: (moduleId: string) => void;
+}) {
+  const ready = admission.status === "admitted";
+  const nextItem = admission.nextItem;
+
+  return (
+    <div className="rounded-lg border border-border/60 bg-card/45 p-5">
+      <div className="grid gap-4 lg:grid-cols-[1fr_0.58fr]">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-brand">
+            Допуск к смене
+          </p>
+          <h2 className="mt-3 text-xl font-medium leading-tight">
+            {admission.title}
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            {admission.detail}
+          </p>
+          <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
+            {memberName} · {roleTitle}
+          </p>
+        </div>
+
+        <div className="rounded-lg border border-brand/25 bg-brand/[0.05] p-4">
+          <div className="grid grid-cols-3 gap-2">
+            <Metric
+              label="обязательные"
+              value={`${admission.requiredCompleted}/${admission.requiredCount}`}
+            />
+            <Metric
+              label="все"
+              value={`${admission.completedCount}/${admission.totalCount}`}
+            />
+            <Metric label="средний" value={`${admission.averageBest}%`} />
+          </div>
+          {nextItem ? (
+            <button
+              type="button"
+              onClick={() => onOpenNext(nextItem.id)}
+              className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-lg bg-brand px-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-brand-hover"
+            >
+              {ready ? "Продолжить обучение" : "Открыть следующий стандарт"}
+            </button>
+          ) : null}
+        </div>
+      </div>
+    </div>
   );
 }
 
