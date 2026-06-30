@@ -486,7 +486,7 @@ export function OwnerReviewCard({
                         ) : null}
                         {action.learningModuleTitle ? (
                           <span className="rounded-md border border-sky-400/30 bg-sky-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-sky-200">
-                            урок
+                            стандарт
                           </span>
                         ) : null}
                         {action.existingTaskId ? (
@@ -509,7 +509,7 @@ export function OwnerReviewCard({
                       ) : null}
                       {action.learningModuleTitle ? (
                         <p className="mt-1 text-[12px] leading-relaxed text-sky-100/85">
-                          Команде поможет: {action.learningModuleTitle}
+                          Стандарт команды: {action.learningModuleTitle}
                           {action.learningChecklistTitle
                             ? `. Чеклист: ${action.learningChecklistTitle}`
                             : ""}
@@ -558,6 +558,21 @@ export function OwnerReviewCard({
                     <ToneIcon tone={hypothesis.tone} />
                     {ROLE_LABEL[hypothesis.role]}
                   </span>
+                  {hypothesis.taskSourceLabel ? (
+                    <span className="rounded-md border border-brand/30 bg-brand/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-brand">
+                      {hypothesis.taskSourceLabel}
+                    </span>
+                  ) : null}
+                  {hypothesis.impactLabel ? (
+                    <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-amber-200">
+                      {hypothesis.impactLabel}
+                    </span>
+                  ) : null}
+                  {hypothesis.learningModuleTitle ? (
+                    <span className="rounded-md border border-sky-400/30 bg-sky-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-sky-200">
+                      стандарт
+                    </span>
+                  ) : null}
                   <p className="text-[13px] font-medium text-foreground">
                     {hypothesis.title}
                   </p>
@@ -565,9 +580,23 @@ export function OwnerReviewCard({
                 <p className="mt-2 text-[12px] leading-relaxed text-muted-foreground">
                   {hypothesis.why}
                 </p>
+                {hypothesis.briefingQuestion ? (
+                  <p className="mt-2 flex items-start gap-2 text-[12px] leading-relaxed text-foreground/85">
+                    <HelpCircle className="mt-0.5 size-3.5 shrink-0 text-brand" />
+                    <span>Вопрос: {hypothesis.briefingQuestion}</span>
+                  </p>
+                ) : null}
                 <p className="mt-2 text-[13px] leading-relaxed text-foreground/85">
                   {hypothesis.check}
                 </p>
+                {hypothesis.learningModuleTitle ? (
+                  <p className="mt-2 text-[12px] leading-relaxed text-sky-100/85">
+                    Стандарт команды: {hypothesis.learningModuleTitle}
+                    {hypothesis.learningChecklistTitle
+                      ? `. Чеклист: ${hypothesis.learningChecklistTitle}`
+                      : ""}
+                  </p>
+                ) : null}
               </div>
             ))}
           </div>

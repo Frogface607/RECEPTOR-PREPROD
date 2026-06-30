@@ -413,7 +413,7 @@ export function OwnerCommandPanel({
                 ) : null}
                 {mainAction.learningModuleTitle ? (
                   <span className="rounded-md border border-sky-400/30 bg-sky-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-sky-200">
-                    урок
+                    стандарт
                   </span>
                 ) : null}
                 {mainAction.existingTaskId ? (
@@ -439,7 +439,7 @@ export function OwnerCommandPanel({
               ) : null}
               {mainAction.learningModuleTitle ? (
                 <p className="mt-2 line-clamp-1 text-[12px] leading-relaxed text-sky-100/85">
-                  Команде поможет: {mainAction.learningModuleTitle}
+                  Стандарт команды: {mainAction.learningModuleTitle}
                   {mainAction.learningChecklistTitle
                     ? `. Чеклист: ${mainAction.learningChecklistTitle}`
                     : ""}
@@ -567,7 +567,7 @@ export function OwnerCommandPanel({
                       ) : null}
                       {action.learningModuleTitle ? (
                         <span className="rounded-md border border-sky-400/30 bg-sky-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-sky-200">
-                          урок
+                          стандарт
                         </span>
                       ) : null}
                       <p className="text-[13px] font-medium text-foreground">
