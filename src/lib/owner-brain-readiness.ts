@@ -42,6 +42,13 @@ export type OwnerBrainFieldMemory = {
   detail: string;
   actionLabel: string;
   followUpQuestions: string[];
+  followUpTask: OwnerBrainFieldMemoryTask | null;
+};
+
+export type OwnerBrainFieldMemoryTask = {
+  title: string;
+  statusLabel: string;
+  dueLabel: string;
 };
 
 export type OwnerBrainReadiness = {
@@ -66,6 +73,7 @@ type BuildOwnerBrainReadinessInput = {
 
 type FieldOwnerBrainSource = OwnerBrainSource & {
   followUpQuestions: string[];
+  followUpTask: OwnerBrainFieldMemoryTask | null;
 };
 
 function sourceWeight(status: OwnerBrainSourceStatus): number {
@@ -127,6 +135,34 @@ function teamSource(staff: StaffMember[]): OwnerBrainSource {
   };
 }
 
+function isOpenTask(task: TeamTask): boolean {
+  return task.status !== "done" && task.status !== "verified";
+}
+
+function taskStatusLabel(status: TeamTask["status"]): string {
+  if (status === "new") return "новая";
+  if (status === "accepted") return "принята";
+  if (status === "in_progress") return "в работе";
+  return "ожидает проверки";
+}
+
+function fieldFollowUpTask(tasks: TeamTask[]): OwnerBrainFieldMemoryTask | null {
+  const task = tasks.find(
+    (item) =>
+      isOpenTask(item) &&
+      item.sourceLabel === "Память смены" &&
+      item.learningChecklistTitle === "Если итог смены неполный",
+  );
+
+  if (!task) return null;
+
+  return {
+    title: task.title,
+    statusLabel: taskStatusLabel(task.status),
+    dueLabel: task.dueLabel,
+  };
+}
+
 function fieldSource({
   comments,
   tasks,
@@ -138,6 +174,7 @@ function fieldSource({
   const noteReadiness = summarizeFieldNoteReadiness(
     comments.map((comment) => comment.body),
   );
+  const followUpTask = fieldFollowUpTask(tasks);
   const status: OwnerBrainSourceStatus = !digest
     ? "missing"
     : noteReadiness.complete > 0
@@ -156,6 +193,7 @@ function fieldSource({
       : "После смены нужен короткий итог: гости, событие, стоп-лист, конфликт, погода, что мешало продавать.",
     actionLabel: digest ? "Дополнить" : "Оставить итог",
     followUpQuestions: noteReadiness.followUpQuestions,
+    followUpTask,
   };
 }
 
@@ -170,6 +208,7 @@ function fieldMemoryFromSource(
       detail: source.detail,
       actionLabel: "Открыть",
       followUpQuestions: [],
+      followUpTask: null,
     };
   }
 
@@ -179,8 +218,9 @@ function fieldMemoryFromSource(
       title: "Итог смены нужно уточнить",
       value: source.value,
       detail: source.detail,
-      actionLabel: "Дополнить",
+      actionLabel: source.followUpTask ? "Открыть задачу" : "Дополнить",
       followUpQuestions: source.followUpQuestions,
+      followUpTask: source.followUpTask,
     };
   }
 
@@ -189,8 +229,9 @@ function fieldMemoryFromSource(
     title: "Итог смены еще не собран",
     value: source.value,
     detail: source.detail,
-    actionLabel: "Оставить итог",
+    actionLabel: source.followUpTask ? "Открыть задачу" : "Оставить итог",
     followUpQuestions: source.followUpQuestions,
+    followUpTask: source.followUpTask,
   };
 }
 

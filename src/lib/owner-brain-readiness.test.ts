@@ -128,6 +128,7 @@ describe("owner brain readiness", () => {
       value: "1/1",
       actionLabel: "Открыть",
       followUpQuestions: [],
+      followUpTask: null,
     });
     expect(readiness.fieldMemory.detail).toContain("ливень");
     expect(readiness.snapshot[0]).toMatchObject({
@@ -203,12 +204,69 @@ describe("owner brain readiness", () => {
         "Почему это повлияло на гостей, продажи или команду?",
         "Когда это случилось и сколько гостей, столов, позиций или денег затронуло?",
       ],
+      followUpTask: null,
     });
     expect(readiness.nextSource.id).toBe("field");
     expect(readiness.snapshot[1].value).toContain("Смена: нужно дописать");
     expect(readiness.snapshot[2]).toMatchObject({
       sourceId: "field",
       value: "Смена: 0/1",
+    });
+  });
+
+  test("shows when missing shift memory is already assigned as a task", () => {
+    const readiness = buildOwnerBrainReadiness({
+      context: DEMO_CONTEXT_ANSWERS,
+      staff,
+      tasks: [
+        ...tasks,
+        {
+          id: "shift-memory-task-done",
+          venueId: "venue",
+          title: "Старая задача по памяти смены",
+          source: "copilot",
+          sourceLabel: "Память смены",
+          learningChecklistTitle: "Если итог смены неполный",
+          priority: "medium",
+          status: "done",
+          audience: { type: "role", roleId: "venue_manager" },
+          dueLabel: "вчера",
+        },
+        {
+          id: "shift-memory-task-open",
+          venueId: "venue",
+          title: "Уточнить итог смены: контекст/причина, когда/сколько",
+          source: "copilot",
+          sourceLabel: "Память смены",
+          learningChecklistTitle: "Если итог смены неполный",
+          priority: "medium",
+          status: "in_progress",
+          audience: { type: "role", roleId: "venue_manager" },
+          dueLabel: "до утреннего разбора",
+        },
+      ],
+      comments: [
+        {
+          id: "weak-note",
+          venueId: "venue",
+          taskId: "field",
+          authorName: "Маша",
+          body: "Итог смены: было странно. Надо обсудить.",
+          createdAtLabel: "22:10",
+        },
+      ],
+      learningSummaries: staff.map((member) => learningSummary(member)),
+      dataMode: "live",
+    });
+
+    expect(readiness.fieldMemory).toMatchObject({
+      status: "work",
+      actionLabel: "Открыть задачу",
+      followUpTask: {
+        title: "Уточнить итог смены: контекст/причина, когда/сколько",
+        statusLabel: "в работе",
+        dueLabel: "до утреннего разбора",
+      },
     });
   });
 });
