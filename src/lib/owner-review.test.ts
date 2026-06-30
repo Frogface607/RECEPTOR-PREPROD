@@ -1785,6 +1785,8 @@ describe("buildOwnerReview", () => {
           taskSourceLabel: "Полевой контекст",
           title: "Проверить стоп-лист и потерянные продажи",
           learningChecklistTitle: "Разбор: факт, вопрос, проверка, действие",
+          briefingQuestion:
+            "что закончилось, сколько продаж потеряли и кто отвечает за запас",
         }),
       ]),
     );
@@ -1795,6 +1797,9 @@ describe("buildOwnerReview", () => {
           sourceLabel: "Полевой контекст",
           roleId: "venue_manager",
           learningChecklistTitle: "Разбор: факт, вопрос, проверка, действие",
+          contextNote: expect.stringContaining(
+            "Вопрос: что закончилось, сколько продаж потеряли и кто отвечает за запас?",
+          ),
         }),
       ]),
     );
@@ -2346,6 +2351,8 @@ describe("buildOwnerReview", () => {
           impactLabel: "3 сигнала",
           learningModuleId: "shift-brief",
           learningChecklistTitle: "Разбор: факт, вопрос, проверка, действие",
+          briefingQuestion:
+            "что стало причиной конфликта и повторяется ли это в сменах",
           detail: expect.stringContaining("Связанные факты:"),
         }),
       ]),
@@ -2359,6 +2366,8 @@ describe("buildOwnerReview", () => {
           impactLabel: "3 сигнала",
           why: expect.stringContaining("Связанные факты:"),
           learningModuleId: "shift-brief",
+          briefingQuestion:
+            "что стало причиной конфликта и повторяется ли это в сменах",
         }),
       ]),
     );
@@ -2377,7 +2386,7 @@ describe("buildOwnerReview", () => {
       (task) => task.sourceLabel === "Полевой контекст",
     )?.contextNote;
     expect(fieldTaskContext).toContain(
-      "Вопрос: что в смене объясняет эту цифру?",
+      "Вопрос: что стало причиной конфликта и повторяется ли это в сменах?",
     );
     expect(fieldTaskContext).toContain(
       "Чеклист: Разбор: факт, вопрос, проверка, действие.",

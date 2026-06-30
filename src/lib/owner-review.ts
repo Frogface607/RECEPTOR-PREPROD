@@ -548,9 +548,9 @@ function hypothesisChecklistTitle(item: OwnerReviewHypothesis): string | null {
 
 function withActionChecklist(action: OwnerReviewAction): OwnerReviewAction {
   const learningChecklistTitle = actionChecklistTitle(action);
-  const briefingQuestion = taskQuestionForSource(
-    action.sourceLabel ?? actionSourceLabel(action),
-  );
+  const briefingQuestion =
+    action.briefingQuestion ??
+    taskQuestionForSource(action.sourceLabel ?? actionSourceLabel(action));
 
   if (!learningChecklistTitle && !briefingQuestion) return action;
 
@@ -565,7 +565,8 @@ function withHypothesisChecklist(
   item: OwnerReviewHypothesis,
 ): OwnerReviewHypothesis {
   const learningChecklistTitle = hypothesisChecklistTitle(item);
-  const briefingQuestion = taskQuestionForSource(item.taskSourceLabel);
+  const briefingQuestion =
+    item.briefingQuestion ?? taskQuestionForSource(item.taskSourceLabel);
 
   if (!learningChecklistTitle && !briefingQuestion) return item;
 
@@ -580,7 +581,7 @@ function actionContextNote(action: OwnerReviewAction): string {
   const sourceLabel = action.sourceLabel ?? actionSourceLabel(action);
   const context =
     sourceLabel === "Полевой контекст"
-      ? fieldBriefingContext(action.detail)
+      ? fieldBriefingContext(action.detail, action.briefingQuestion)
       : action.detail.startsWith("Проверка:")
         ? action.detail
         : `Проверка: ${action.detail}`;
@@ -613,7 +614,10 @@ function taskFromOwnerAction(action: OwnerReviewAction): SurvivalTaskDraft {
   };
 }
 
-function fieldBriefingContext(detail: string): string {
+function fieldBriefingContext(
+  detail: string,
+  question?: string | null,
+): string {
   const checkMarker = " Проверка: ";
   const checkIndex = detail.indexOf(checkMarker);
   const rawFact =
@@ -626,7 +630,9 @@ function fieldBriefingContext(detail: string): string {
 
   if (!rawCheck) return fact;
 
-  return `${fact} Вопрос: что в смене объясняет эту цифру? Проверка: ${rawCheck}`;
+  return `${fact} Вопрос: ${
+    question ?? "что в смене объясняет эту цифру"
+  }? Проверка: ${rawCheck}`;
 }
 
 function taskFromHypothesis(item: OwnerReviewHypothesis): SurvivalTaskDraft {
@@ -635,7 +641,10 @@ function taskFromHypothesis(item: OwnerReviewHypothesis): SurvivalTaskDraft {
     item.check.includes("Сверить с полевым фактом");
   const context =
     item.taskSourceLabel === "Полевой контекст"
-      ? fieldBriefingContext(`${item.why} Проверка: ${item.check}`)
+      ? fieldBriefingContext(
+          `${item.why} Проверка: ${item.check}`,
+          item.briefingQuestion,
+        )
       : shouldLeadWithCheck
         ? `Проверка: ${item.check} ${item.why}`
         : `${item.why} Проверка: ${item.check}`;
@@ -1765,6 +1774,7 @@ function fieldContextHypothesis(
         : "watch",
     taskSourceLabel: "Полевой контекст",
     taskTitle: task.title,
+    briefingQuestion: task.question,
     impactLabel:
       digest.signalCount > 1 ? `${digest.signalCount} сигнала` : "1 сигнал",
     learningModuleId: "shift-brief",
@@ -1774,11 +1784,13 @@ function fieldContextHypothesis(
 
 function fieldContextTaskFor(kind: TeamFieldSignal["kind"]): {
   title: string;
+  question: string;
   check: string;
 } {
   if (kind === "conflict") {
     return {
       title: "Разобрать конфликт смены с цифрами",
+      question: "что стало причиной конфликта и повторяется ли это в сменах",
       check:
         "На брифинге уточнить причину конфликта, стол/блюдо/время ожидания и проверить, повлияло ли это на возвраты, скидки или повторные жалобы.",
     };
@@ -1786,6 +1798,8 @@ function fieldContextTaskFor(kind: TeamFieldSignal["kind"]): {
   if (kind === "stock") {
     return {
       title: "Проверить стоп-лист и потерянные продажи",
+      question:
+        "что закончилось, сколько продаж потеряли и кто отвечает за запас",
       check:
         "Сверить, какие позиции закончились, сколько они давали выручки в периоде и кто отвечает за заказ, заготовки и вечерний стоп-лист.",
     };
@@ -1793,6 +1807,7 @@ function fieldContextTaskFor(kind: TeamFieldSignal["kind"]): {
   if (kind === "team") {
     return {
       title: "Снять трение команды перед сменой",
+      question: "где команда теряет время и какой один стандарт снимет трение",
       check:
         "Спросить, где команда теряет время или путается, и превратить ответ в один чеклист, задачу или короткое обучение по роли.",
     };
@@ -1800,6 +1815,7 @@ function fieldContextTaskFor(kind: TeamFieldSignal["kind"]): {
   if (kind === "event") {
     return {
       title: "Связать событие с выручкой смены",
+      question: "что в событии надо повторить или исправить перед похожим днем",
       check:
         "Уточнить посадку, событие, состав смены и средний чек, чтобы понять, что повторить или исправить перед похожим днем.",
     };
@@ -1807,12 +1823,16 @@ function fieldContextTaskFor(kind: TeamFieldSignal["kind"]): {
   if (kind === "guest") {
     return {
       title: "Проверить частый вопрос гостей",
+      question:
+        "какой запрос гостей стоит превратить в меню, скрипт или обучение",
       check:
         "Посчитать, повторяется ли запрос гостей, и решить: добавить позицию, подготовить скрипт официантам или вынести ответ в меню.",
     };
   }
   return {
     title: "Проверить сервис и допродажи",
+    question:
+      "что команда реально рекомендовала гостям и где нужен простой скрипт",
     check:
       "На брифинге разобрать, что команда рекомендовала гостям, какие позиции продавались лучше и где нужен простой скрипт допродажи.",
   };
@@ -1836,6 +1856,7 @@ function ownerActionFromFieldContext(
     learningModuleId: hypothesis.learningModuleId,
     learningModuleTitle: hypothesis.learningModuleTitle,
     learningChecklistTitle: hypothesis.learningChecklistTitle,
+    briefingQuestion: hypothesis.briefingQuestion,
   };
 }
 
