@@ -71,7 +71,7 @@ export function DishesChart({ dishes }: { dishes: Dish[] }) {
       </div>
 
       <div className="mt-6 h-[420px] w-full">
-        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
           <BarChart
             data={data}
             layout="vertical"

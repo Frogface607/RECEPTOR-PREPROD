@@ -508,7 +508,7 @@ export function OwnerReviewCard({
                       {action.briefingQuestion ? (
                         <p className="mt-1 flex items-start gap-2 text-[12px] leading-relaxed text-foreground/85">
                           <HelpCircle className="mt-0.5 size-3.5 shrink-0 text-brand" />
-                          <span>Вопрос: {action.briefingQuestion}</span>
+                          <span>{action.briefingQuestion}</span>
                         </p>
                       ) : null}
                       {action.learningModuleTitle ? (
@@ -587,7 +587,7 @@ export function OwnerReviewCard({
                 {hypothesis.briefingQuestion ? (
                   <p className="mt-2 flex items-start gap-2 text-[12px] leading-relaxed text-foreground/85">
                     <HelpCircle className="mt-0.5 size-3.5 shrink-0 text-brand" />
-                    <span>Вопрос: {hypothesis.briefingQuestion}</span>
+                    <span>{hypothesis.briefingQuestion}</span>
                   </p>
                 ) : null}
                 <p className="mt-2 text-[13px] leading-relaxed text-foreground/85">

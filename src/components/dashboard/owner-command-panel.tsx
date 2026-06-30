@@ -438,7 +438,7 @@ export function OwnerCommandPanel({
               {mainAction.briefingQuestion ? (
                 <p className="mt-2 flex items-start gap-2 text-[12px] leading-relaxed text-foreground/85">
                   <HelpCircle className="mt-0.5 size-3.5 shrink-0 text-brand" />
-                  <span>Вопрос: {mainAction.briefingQuestion}</span>
+                  <span>{mainAction.briefingQuestion}</span>
                 </p>
               ) : null}
               {mainAction.learningModuleTitle ? (
@@ -584,7 +584,7 @@ export function OwnerCommandPanel({
                     {action.briefingQuestion ? (
                       <p className="mt-1 flex items-start gap-2 text-[12px] leading-relaxed text-foreground/85">
                         <HelpCircle className="mt-0.5 size-3.5 shrink-0 text-brand" />
-                        <span>Вопрос: {action.briefingQuestion}</span>
+                        <span>{action.briefingQuestion}</span>
                       </p>
                     ) : null}
                   </div>
