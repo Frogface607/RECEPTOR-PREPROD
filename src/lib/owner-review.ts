@@ -21,6 +21,10 @@ import {
   type TeamFieldContextDigest,
   type TeamFieldSignal,
 } from "@/lib/team/team-field-context";
+import {
+  summarizeFieldNoteReadiness,
+  type FieldNoteReadinessSummary,
+} from "@/lib/team/field-note-input";
 import type {
   TeamShiftPlanVarianceIssue,
   TeamShiftPlanVarianceSummary,
@@ -2110,6 +2114,31 @@ function fieldContextHypothesis(
   };
 }
 
+function incompleteFieldMemoryHypothesis(
+  digest: TeamFieldContextDigest | null,
+  readiness: FieldNoteReadinessSummary,
+): OwnerReviewHypothesis | null {
+  if (!digest || readiness.total === 0 || readiness.complete > 0) return null;
+
+  const missing = readiness.bestMissing.join(", ");
+  return {
+    title: "Дособрать итог смены для советника",
+    why: `Память смены есть, но не хватает: ${missing}. ${digest.summary}`,
+    check:
+      "Попросить ответственного дописать факт, контекст, масштаб и действие: что произошло, почему это важно, когда/сколько и что проверить утром.",
+    role: "manager",
+    tone: "watch",
+    taskSourceLabel: "Полевой контекст",
+    taskTitle: "Дособрать итог смены для советника",
+    briefingQuestion:
+      "чего не хватает в итоге смены: факт, контекст, масштаб или действие",
+    impactLabel: `${readiness.complete}/${readiness.total} полных итогов`,
+    learningModuleId: "shift-brief",
+    learningModuleTitle: "Брифинг смены и передача контекста",
+    learningChecklistTitle: "После смены собери итог смены",
+  };
+}
+
 function fieldContextTaskFor(kind: TeamFieldSignal["kind"]): {
   title: string;
   question: string;
@@ -2238,9 +2267,22 @@ function fieldContextTaskFor(kind: TeamFieldSignal["kind"]): {
 function ownerActionFromFieldContext(
   digest: TeamFieldContextDigest | null,
 ): OwnerReviewAction | null {
-  const hypothesis = fieldContextHypothesis(digest);
-  if (!hypothesis) return null;
+  return ownerActionFromFieldHypothesis(fieldContextHypothesis(digest));
+}
 
+function ownerActionFromFieldMemoryQuality(
+  digest: TeamFieldContextDigest | null,
+  readiness: FieldNoteReadinessSummary,
+): OwnerReviewAction | null {
+  return ownerActionFromFieldHypothesis(
+    incompleteFieldMemoryHypothesis(digest, readiness),
+  );
+}
+
+function ownerActionFromFieldHypothesis(
+  hypothesis: OwnerReviewHypothesis | null,
+): OwnerReviewAction | null {
+  if (!hypothesis) return null;
   return {
     title: hypothesis.taskTitle ?? hypothesis.title,
     detail: `${hypothesis.why} Проверка: ${hypothesis.check}`,
@@ -3074,6 +3116,9 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
     comments: input.teamComments ?? [],
     tasks: input.teamTasks ?? [],
   });
+  const fieldMemoryReadiness = summarizeFieldNoteReadiness(
+    (input.teamComments ?? []).map((comment) => comment.body),
+  );
   const operational = operationalPulse(operationalProof);
   const readiness = buildProfitReadiness({
     dataMode: input.dataMode,
@@ -3181,6 +3226,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
           ? ownerActionFromShiftPlanVariance(input.shiftPlanVariance)
           : null,
         ownerActionFromCommunication(operationalProof),
+        ownerActionFromFieldMemoryQuality(fieldContext, fieldMemoryReadiness),
         ownerActionFromFieldContext(fieldContext),
         ownerActionFromLaborMargin({
           labor: input.labor,
@@ -3232,6 +3278,14 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
 
   if (marginHypothesis) {
     hypotheses.push(marginHypothesis);
+  }
+
+  const fieldMemoryHypothesis = incompleteFieldMemoryHypothesis(
+    fieldContext,
+    fieldMemoryReadiness,
+  );
+  if (fieldMemoryHypothesis) {
+    hypotheses.push(fieldMemoryHypothesis);
   }
 
   const fieldHypothesis = fieldContextHypothesis(fieldContext);

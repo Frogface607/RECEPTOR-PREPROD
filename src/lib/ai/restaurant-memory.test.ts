@@ -77,6 +77,7 @@ describe("restaurant advisor memory", () => {
     expect(memory.teamSummary).toContain("Управляющий: 1");
     expect(memory.teamSummary).toContain("Официант: 1");
     expect(memory.fieldSummary).toContain("Итог смены");
+    expect(memory.fieldMemoryQuality).toBe("полных итогов смены: 1/1");
     expect(memory.fieldSignals.join("\n")).toContain("Погода");
     expect(memory.openTasks[0]).toContain("Проверить стоп-лист");
     expect(memory.learningGaps[0]).toContain("Маша");
@@ -87,12 +88,14 @@ describe("restaurant advisor memory", () => {
       teamSummary: "2 активных сотрудников",
       fieldSummary: "Память смены: ливень и стоп-лист",
       fieldSignals: ["Погода: ливень"],
+      fieldMemoryQuality: "полных итогов смены: 1/1",
       openTasks: ["Проверить стоп-лист — до 17:00"],
       learningGaps: ["Алина: Как рекомендовать блюдо без давления"],
     });
 
     expect(text).toContain("Память ресторана");
     expect(text).toContain("Сигналы с поля");
+    expect(text).toContain("Качество памяти смены");
     expect(text).toContain("Учебные пробелы");
   });
 
@@ -101,12 +104,14 @@ describe("restaurant advisor memory", () => {
       teamSummary: "2 активных сотрудников",
       fieldSummary: "Итог смены: ливень и стоп-лист",
       fieldSignals: ["Погода: ливень", "Стоп-лист: мята"],
+      fieldMemoryQuality: "память смены неполная: не хватает контекста, когда/сколько",
       openTasks: ["Проверить стоп-лист — до 17:00"],
       learningGaps: ["Алина: Как рекомендовать блюдо без давления"],
     });
 
     expect(text).toContain("Что уже знаю");
     expect(text).toContain("Последняя память смены");
+    expect(text).toContain("Память смены неполная");
     expect(text).toContain("Первый учебный пробел");
     expect(text).not.toContain("Сигналы с поля");
     expect(text).not.toContain("Открытые действия:");

@@ -3423,4 +3423,63 @@ describe("buildOwnerReview", () => {
       ]),
     );
   });
+
+  test("turns incomplete shift memory into a context collection task", () => {
+    const teamTasks: TeamTask[] = [
+      {
+        id: "task-shift-context",
+        title: "Полевой контекст смены",
+        source: "manager",
+        sourceLabel: "Поле",
+        priority: "medium",
+        status: "in_progress",
+        venueId: "venue-1",
+        audience: { type: "role", roleId: "venue_manager" },
+        dueLabel: "ежедневно",
+      },
+    ];
+    const teamComments: TeamTaskComment[] = [
+      {
+        id: "comment-weak-shift-summary",
+        venueId: "venue-1",
+        taskId: "task-shift-context",
+        authorName: "Маша",
+        body: "Итог смены: было странно. Надо обсудить.",
+        createdAtLabel: "23:10",
+      },
+    ];
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      teamTasks,
+      teamComments,
+    });
+
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Дособрать итог смены для советника",
+          check: expect.stringContaining("факт, контекст, масштаб и действие"),
+          taskSourceLabel: "Полевой контекст",
+          briefingQuestion: expect.stringContaining("чего не хватает"),
+          learningChecklistTitle: "После смены собери итог смены",
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Дособрать итог смены для советника",
+          sourceLabel: "Полевой контекст",
+          contextNote: expect.stringContaining("чего не хватает"),
+        }),
+      ]),
+    );
+  });
 });

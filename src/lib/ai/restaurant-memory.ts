@@ -1,4 +1,5 @@
 import { buildTeamFieldContextDigest } from "@/lib/team/team-field-context";
+import { summarizeFieldNoteReadiness } from "@/lib/team/field-note-input";
 import { buildTeamLearningSummaries } from "@/lib/team/team-learning-progress";
 import {
   getTeamRole,
@@ -13,6 +14,7 @@ export type RestaurantAdvisorMemory = {
   teamSummary: string;
   fieldSummary: string | null;
   fieldSignals: string[];
+  fieldMemoryQuality: string | null;
   openTasks: string[];
   learningGaps: string[];
 };
@@ -90,6 +92,15 @@ export function buildRestaurantAdvisorMemory(
     comments: input.comments,
     tasks: input.tasks,
   });
+  const fieldReadiness = summarizeFieldNoteReadiness(
+    input.comments.map((comment) => comment.body),
+  );
+  const fieldMemoryQuality =
+    fieldReadiness.total === 0
+      ? null
+      : fieldReadiness.complete > 0
+        ? `полных итогов смены: ${fieldReadiness.complete}/${fieldReadiness.total}`
+        : `память смены неполная: не хватает ${fieldReadiness.bestMissing.join(", ")}`;
 
   return {
     teamSummary: roleSummary(input.staff),
@@ -99,6 +110,7 @@ export function buildRestaurantAdvisorMemory(
         (signal) =>
           `${signal.title}: ${signal.detail} (${signal.sourceCount})`,
       ) ?? [],
+    fieldMemoryQuality,
     openTasks: openTaskLines(input.tasks),
     learningGaps: learningGapLines(input),
   };
@@ -124,6 +136,10 @@ export function formatRestaurantAdvisorMemoryForPrompt(
 
   if (memory.fieldSignals.length > 0) {
     lines.push(`Сигналы с поля: ${memory.fieldSignals.join("; ")}`);
+  }
+
+  if (memory.fieldMemoryQuality) {
+    lines.push(`Качество памяти смены: ${memory.fieldMemoryQuality}.`);
   }
 
   if (memory.openTasks.length > 0) {
@@ -154,10 +170,18 @@ export function formatRestaurantAdvisorMemoryForAnswer(
     memory.fieldSummary
       ? `• Последняя память смены: ${memory.fieldSummary}`
       : "• Память смены пока пустая.",
+    memory.fieldMemoryQuality?.includes("неполная")
+      ? `• Память смены неполная: ${memory.fieldMemoryQuality.replace(
+          /^память смены неполная:\s*/i,
+          "",
+        )}.`
+      : null,
     memory.learningGaps[0]
       ? `• Первый учебный пробел: ${memory.learningGaps[0]}.`
       : memory.openTasks[0]
         ? `• Первое открытое действие: ${memory.openTasks[0]}.`
         : "• Критичных учебных пробелов сейчас не видно.",
-  ].join("\n");
+  ]
+    .filter((line): line is string => Boolean(line))
+    .join("\n");
 }
