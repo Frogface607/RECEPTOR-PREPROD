@@ -389,12 +389,14 @@ function appendSentence(base: string, sentence: string): string {
 
 function withLearningContext({
   context,
+  question,
   learningModuleTitle,
   checklistTitle,
   reason,
   limit = 420,
 }: {
   context: string;
+  question?: string | null;
   learningModuleTitle?: string;
   checklistTitle?: string | null;
   reason?: string | null;
@@ -402,6 +404,7 @@ function withLearningContext({
 }): string {
   const base = context.trim();
   const suffixParts = [
+    question && !base.includes("Вопрос:") ? `Вопрос: ${question}.` : null,
     reason ? `Зачем: ${reason}.` : null,
     learningModuleTitle ? `Урок для команды: ${learningModuleTitle}.` : null,
     checklistTitle ? `Чеклист: ${checklistTitle}.` : null,
@@ -456,6 +459,31 @@ function taskReasonForSource(
   }
   if (sourceLabel === "Команда") {
     return "довести BI-решение до людей, иначе оно останется отчетом";
+  }
+  return null;
+}
+
+function taskQuestionForSource(sourceLabel: string | undefined): string | null {
+  if (sourceLabel === "Маржа и техкарты") {
+    return "какая цена, порция, списание или себестоимость объясняет провал маржи";
+  }
+  if (sourceLabel === "ФОТ и смены" || sourceLabel === "ФОТ и маржа") {
+    return "какая смена, человек или ставка съедает прибыль";
+  }
+  if (sourceLabel === "Выручка и смены") {
+    return "какая причина внутри смены объясняет просадку выручки";
+  }
+  if (sourceLabel === "Продажи и сервис") {
+    return "что команда должна предложить гостю, чтобы поднять чек без давления";
+  }
+  if (sourceLabel === "Данные iiko") {
+    return "каких данных не хватает, чтобы решать по фактам, а не по ощущению";
+  }
+  if (sourceLabel?.startsWith("ФОТ")) {
+    return "какие ставки, смены или сотрудники мешают доверять расчету ФОТ";
+  }
+  if (sourceLabel === "Команда") {
+    return "какое действие должен выполнить конкретный человек или роль";
   }
   return null;
 }
@@ -544,6 +572,7 @@ function actionContextNote(action: OwnerReviewAction): string {
     checklistTitle:
       action.learningChecklistTitle ??
       taskChecklistForSource(sourceLabel, action.learningModuleId),
+    question: taskQuestionForSource(sourceLabel),
     reason: taskReasonForSource(sourceLabel, action.impactLabel),
     limit: sourceLabel === "Полевой контекст" ? 900 : undefined,
   });
@@ -605,6 +634,7 @@ function taskFromHypothesis(item: OwnerReviewHypothesis): SurvivalTaskDraft {
       context,
       learningModuleTitle: item.learningModuleTitle,
       checklistTitle: hypothesisChecklistTitle(item),
+      question: taskQuestionForSource(item.taskSourceLabel),
       reason: taskReasonForSource(item.taskSourceLabel, item.impactLabel),
       limit: item.taskSourceLabel === "Полевой контекст" ? 900 : undefined,
     }),

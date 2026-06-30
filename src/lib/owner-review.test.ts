@@ -314,6 +314,9 @@ describe("buildOwnerReview", () => {
     });
     expect(review.tasks[0].contextNote).toContain("Проверка:");
     expect(review.tasks[0].contextNote).toContain(
+      "Вопрос: какая смена, человек или ставка съедает прибыль.",
+    );
+    expect(review.tasks[0].contextNote).toContain(
       "Зачем: понять, сколько ФОТ 10% стоит смене и прибыли.",
     );
     expect(review.tasks[0].contextNote).toContain(
@@ -800,6 +803,9 @@ describe("buildOwnerReview", () => {
       ),
     });
     expect(review.tasks[0].contextNote).toContain("Проверка:");
+    expect(review.tasks[0].contextNote).toContain(
+      "Вопрос: какая цена, порция, списание или себестоимость объясняет провал маржи.",
+    );
     expect(review.tasks[0].contextNote).toMatch(
       /Зачем: закрыть 20\s000\s₽ выручки без понятной себестоимости\./,
     );
