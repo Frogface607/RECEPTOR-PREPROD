@@ -96,6 +96,24 @@ function buildOnboardingContextAnswers({
     responsible_people:
       "Владелец получает управленческий бриф, управляющий отвечает за смену, кухня за меню и стоп-лист.",
     service_standards: profile?.decisionRules ?? [],
+    daily_pains: profile?.operatingRisks?.length
+      ? profile.operatingRisks
+      : [
+          "нет единого контекста по сменам",
+          "часть решений живет в чатах",
+          "стандарты передаются устно",
+        ],
+    knowledge_gaps: [
+      "кассовая дисциплина",
+      "работа с конфликтом",
+      "апселл и рекомендации",
+      "закрытие смены и передача контекста",
+    ],
+    shift_summary_rules:
+      "После смены фиксируем посадку, гостей, погоду, стоп-лист, конфликты, что продавали или не продавали, что мешало и что проверить утром.",
+    owner_decision_style:
+      ownerContext ||
+      "Владелец получает короткий утренний разбор: факт, причина, вопрос к команде и одно действие на день.",
     pos_system: "iiko",
     channels: ["iiko", "Telegram", "ручные отчеты"],
     integration_pains: profile?.operatingRisks ?? [],

@@ -10,7 +10,7 @@ import {
 
 describe("venue context questionnaire", () => {
   test("defines required context questions", () => {
-    expect(VENUE_CONTEXT_QUESTIONNAIRE.length).toBeGreaterThanOrEqual(5);
+    expect(VENUE_CONTEXT_QUESTIONNAIRE.length).toBeGreaterThanOrEqual(6);
     expect(listRequiredContextQuestionIds()).toEqual(
       expect.arrayContaining([
         "format",
@@ -50,10 +50,17 @@ describe("venue context questionnaire", () => {
     const prompt = formatContextAnswersForPrompt({
       format: "ресторан",
       owner_goals: ["видеть риски", "экономить время"],
+      daily_pains: ["новички не понимают стандарты"],
+      shift_summary_rules: "управляющий пишет итог смены после закрытия",
     });
 
     expect(prompt).toContain("Идентичность заведения");
     expect(prompt).toContain("Формат: ресторан");
     expect(prompt).toContain("Цели владельца: видеть риски; экономить время");
+    expect(prompt).toContain("Как ресторан живет на самом деле");
+    expect(prompt).toContain("Главные боли: новички не понимают стандарты");
+    expect(prompt).toContain(
+      "Итог смены: управляющий пишет итог смены после закрытия",
+    );
   });
 });
