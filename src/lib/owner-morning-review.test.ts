@@ -69,6 +69,8 @@ describe("buildOwnerMorningReviewRows", () => {
         impactLabel: "2 сигнала",
         briefingQuestion:
           "что закончилось, сколько продаж потеряли и кто отвечает за запас",
+        learningModuleTitle: "Брифинг смены и передача контекста",
+        learningChecklistTitle: "Если полевая заметка про стоп-лист",
       },
     ];
 
@@ -104,6 +106,18 @@ describe("buildOwnerMorningReviewRows", () => {
         tone: "risk",
       }),
     ]);
+    expect(rows[2].detail).toContain(
+      "Стандарт: Брифинг смены и передача контекста.",
+    );
+    expect(rows[2].detail).toContain(
+      "Чеклист: Если полевая заметка про стоп-лист.",
+    );
+    expect(rows[3].detail).toContain(
+      "Стандарт: Брифинг смены и передача контекста.",
+    );
+    expect(rows[3].detail).toContain(
+      "Чеклист: Если полевая заметка про стоп-лист.",
+    );
   });
 
   test("prompts for field notes when the owner review has no field context", () => {

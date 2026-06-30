@@ -92,6 +92,23 @@ function appendBriefingQuestion(
   return `${detail} ${questionText}`;
 }
 
+function appendLearningStandard(
+  detail: string,
+  standard: string | null | undefined,
+  checklist: string | null | undefined,
+): string {
+  const standardText = standard?.trim();
+  const checklistText = checklist?.trim();
+  if (!standardText && !checklistText) return detail;
+
+  const parts = [
+    standardText ? `Стандарт: ${standardText}.` : null,
+    checklistText ? `Чеклист: ${checklistText}.` : null,
+  ].filter((part): part is string => Boolean(part));
+
+  return `${detail} ${parts.join(" ")}`;
+}
+
 const UNTIED_FIELD_CONTEXT_QUESTION =
   "какая цифра подтверждает этот факт: выручка, ФОТ, маржа, стоп-лист или отзывы гостей";
 
@@ -132,13 +149,17 @@ function bridgeRow(
   return {
     label: "Вопрос",
     value: "Что спросить на разборе",
-    detail: [
-      `Объясняет ли полевой факт цифру «${bi.value}»?`,
-      questionSentence(hypothesis.briefingQuestion),
-      `Проверка: ${hypothesis.check}`,
-    ]
-      .filter((part): part is string => Boolean(part))
-      .join(" "),
+    detail: appendLearningStandard(
+      [
+        `Объясняет ли полевой факт цифру «${bi.value}»?`,
+        questionSentence(hypothesis.briefingQuestion),
+        `Проверка: ${hypothesis.check}`,
+      ]
+        .filter((part): part is string => Boolean(part))
+        .join(" "),
+      hypothesis.learningModuleTitle,
+      hypothesis.learningChecklistTitle,
+    ),
     tone: bi.tone === "risk" || field.tone === "risk" ? "risk" : "watch",
   };
 }
@@ -157,9 +178,13 @@ function fieldActionRow(
     value: hypothesis.impactLabel
       ? `${title} · ${hypothesis.impactLabel}`
       : title,
-    detail: appendBriefingQuestion(
-      `${hypothesis.why} Проверка: ${hypothesis.check}`,
-      hypothesis.briefingQuestion,
+    detail: appendLearningStandard(
+      appendBriefingQuestion(
+        `${hypothesis.why} Проверка: ${hypothesis.check}`,
+        hypothesis.briefingQuestion,
+      ),
+      hypothesis.learningModuleTitle,
+      hypothesis.learningChecklistTitle,
     ),
     tone:
       hypothesis.tone === "risk" || field.tone === "risk" ? "risk" : "watch",
