@@ -587,6 +587,23 @@ export function OwnerCommandPanel({
                   <span className="mt-1 line-clamp-2 block text-[12px] leading-relaxed text-muted-foreground">
                     {brainReadiness.fieldMemory.detail}
                   </span>
+                  {brainReadiness.fieldMemory.followUpQuestions.length > 0 ? (
+                    <span className="mt-2 grid gap-1.5">
+                      <span className="block text-[10px] uppercase tracking-[0.14em] text-amber-200/80">
+                        Что уточнить
+                      </span>
+                      {brainReadiness.fieldMemory.followUpQuestions
+                        .slice(0, 2)
+                        .map((question) => (
+                          <span
+                            key={question}
+                            className="block rounded-md border border-amber-400/20 bg-amber-400/8 px-2 py-1 text-[12px] leading-relaxed text-amber-100"
+                          >
+                            {question}
+                          </span>
+                        ))}
+                    </span>
+                  ) : null}
                 </span>
                 <span
                   className={

@@ -23,6 +23,7 @@ export type FieldNoteReadinessSummary = {
   complete: number;
   bestScore: number;
   bestMissing: string[];
+  followUpQuestions: string[];
 };
 
 export const FIELD_NOTE_MEMORY_PROMPTS: FieldNotePrompt[] = [
@@ -82,6 +83,16 @@ export const FIELD_NOTE_TEMPLATES: FieldNoteTemplate[] = [
     text: "Сервис / продажи:\nЧто рекомендовали:\nЧто гости брали или не брали:\nЧто проверить утром: ",
   },
 ];
+
+const FIELD_NOTE_FOLLOW_UP_QUESTIONS: Record<string, string> = {
+  факт: "Что конкретно произошло в смене?",
+  контекст: "Почему это повлияло на гостей, продажи или команду?",
+  "контекст/причина": "Почему это повлияло на гостей, продажи или команду?",
+  масштаб: "Когда это случилось и сколько гостей, столов, позиций или денег затронуло?",
+  "когда/сколько": "Когда это случилось и сколько гостей, столов, позиций или денег затронуло?",
+  действие: "Что команда уже сделала и что управляющему проверить утром?",
+  "что сделали или проверить": "Что команда уже сделала и что управляющему проверить утром?",
+};
 
 const FIELD_NOTE_GUIDE_PREFIXES = FIELD_NOTE_TEMPLATES.flatMap((template) =>
   template.text.split(/\r?\n/).map(normalize).filter(Boolean),
@@ -171,6 +182,18 @@ export function fieldNoteReadinessHint(readiness: FieldNoteReadiness): string {
   return `Чтобы советник понял контекст, добавьте: ${readiness.missing.join(", ")}.`;
 }
 
+export function buildFieldNoteFollowUpQuestions(
+  missing: readonly string[],
+): string[] {
+  const questions = missing
+    .map((item) => FIELD_NOTE_FOLLOW_UP_QUESTIONS[item])
+    .filter((item): item is string => Boolean(item));
+
+  return questions.length > 0
+    ? questions
+    : ["Что важно запомнить из смены для утреннего разбора?"];
+}
+
 export function summarizeFieldNoteReadiness(
   values: readonly string[],
 ): FieldNoteReadinessSummary {
@@ -185,6 +208,12 @@ export function summarizeFieldNoteReadiness(
     bestScore: best?.score ?? 0,
     bestMissing: best?.missing ?? FIELD_NOTE_MEMORY_PROMPTS.map((item) =>
       item.label.toLocaleLowerCase("ru-RU"),
+    ),
+    followUpQuestions: buildFieldNoteFollowUpQuestions(
+      best?.missing ??
+        FIELD_NOTE_MEMORY_PROMPTS.map((item) =>
+          item.label.toLocaleLowerCase("ru-RU"),
+        ),
     ),
   };
 }

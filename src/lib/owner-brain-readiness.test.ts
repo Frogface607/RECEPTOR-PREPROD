@@ -127,6 +127,7 @@ describe("owner brain readiness", () => {
       title: "Последний итог смены",
       value: "1/1",
       actionLabel: "Открыть",
+      followUpQuestions: [],
     });
     expect(readiness.fieldMemory.detail).toContain("ливень");
     expect(readiness.snapshot[0]).toMatchObject({
@@ -198,6 +199,10 @@ describe("owner brain readiness", () => {
       title: "Итог смены нужно уточнить",
       value: "0/1",
       actionLabel: "Дополнить",
+      followUpQuestions: [
+        "Почему это повлияло на гостей, продажи или команду?",
+        "Когда это случилось и сколько гостей, столов, позиций или денег затронуло?",
+      ],
     });
     expect(readiness.nextSource.id).toBe("field");
     expect(readiness.snapshot[1].value).toContain("Смена: нужно дописать");

@@ -2420,8 +2420,20 @@ function TeamShiftMemorySection({
               </div>
               {readiness.complete === 0 ? (
                 <div className="rounded-lg border border-amber-400/25 bg-amber-400/10 p-3 text-[12px] leading-relaxed text-amber-100">
-                  Чтобы советник понял смену, добавьте в итог:{" "}
-                  {readiness.bestMissing.join(", ")}.
+                  <p>
+                    Чтобы советник понял смену, добавьте в итог:{" "}
+                    {readiness.bestMissing.join(", ")}.
+                  </p>
+                  <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
+                    {readiness.followUpQuestions.map((question) => (
+                      <span
+                        key={question}
+                        className="rounded-md border border-amber-300/20 bg-background/30 px-2 py-1.5"
+                      >
+                        {question}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               ) : null}
               <div className="flex flex-wrap gap-2">
@@ -2445,6 +2457,16 @@ function TeamShiftMemorySection({
                 стоп-лист, конфликт, погоду, что продавали и что проверить
                 утром.
               </p>
+              <div className="grid gap-1.5 sm:grid-cols-2">
+                {readiness.followUpQuestions.map((question) => (
+                  <span
+                    key={question}
+                    className="rounded-md border border-border/50 bg-background/35 px-2.5 py-2 text-[12px] leading-relaxed text-muted-foreground"
+                  >
+                    {question}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
 

@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import {
   FIELD_NOTE_MEMORY_PROMPTS,
   FIELD_NOTE_TEMPLATES,
+  buildFieldNoteFollowUpQuestions,
   fieldNoteReadinessHint,
   getFieldNoteReadiness,
   hasMeaningfulFieldNoteBody,
@@ -134,12 +135,36 @@ describe("field note input", () => {
       complete: 1,
       bestScore: 4,
       bestMissing: [],
+      followUpQuestions: ["Что важно запомнить из смены для утреннего разбора?"],
     });
 
     expect(summarizeFieldNoteReadiness([])).toMatchObject({
       total: 0,
       complete: 0,
       bestScore: 0,
+      followUpQuestions: [
+        "Что конкретно произошло в смене?",
+        "Почему это повлияло на гостей, продажи или команду?",
+        "Когда это случилось и сколько гостей, столов, позиций или денег затронуло?",
+        "Что команда уже сделала и что управляющему проверить утром?",
+      ],
     });
+  });
+
+  test("turns missing shift memory parts into concrete manager questions", () => {
+    expect(
+      buildFieldNoteFollowUpQuestions(["контекст/причина", "когда/сколько"]),
+    ).toEqual([
+      "Почему это повлияло на гостей, продажи или команду?",
+      "Когда это случилось и сколько гостей, столов, позиций или денег затронуло?",
+    ]);
+
+    expect(
+      summarizeFieldNoteReadiness(["Итог смены: было странно. Надо обсудить."])
+        .followUpQuestions,
+    ).toEqual([
+      "Почему это повлияло на гостей, продажи или команду?",
+      "Когда это случилось и сколько гостей, столов, позиций или денег затронуло?",
+    ]);
   });
 });

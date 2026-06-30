@@ -41,6 +41,7 @@ export type OwnerBrainFieldMemory = {
   value: string;
   detail: string;
   actionLabel: string;
+  followUpQuestions: string[];
 };
 
 export type OwnerBrainReadiness = {
@@ -61,6 +62,10 @@ type BuildOwnerBrainReadinessInput = {
   comments: TeamTaskComment[];
   learningSummaries: TeamLearningMemberSummary[];
   dataMode: "live" | "mock";
+};
+
+type FieldOwnerBrainSource = OwnerBrainSource & {
+  followUpQuestions: string[];
 };
 
 function sourceWeight(status: OwnerBrainSourceStatus): number {
@@ -128,7 +133,7 @@ function fieldSource({
 }: {
   comments: TeamTaskComment[];
   tasks: TeamTask[];
-}): OwnerBrainSource {
+}): FieldOwnerBrainSource {
   const digest = buildTeamFieldContextDigest({ comments, tasks });
   const noteReadiness = summarizeFieldNoteReadiness(
     comments.map((comment) => comment.body),
@@ -150,10 +155,13 @@ function fieldSource({
         : `Заметка есть, но не хватает: ${noteReadiness.bestMissing.join(", ")}. ${digest.summary}`
       : "После смены нужен короткий итог: гости, событие, стоп-лист, конфликт, погода, что мешало продавать.",
     actionLabel: digest ? "Дополнить" : "Оставить итог",
+    followUpQuestions: noteReadiness.followUpQuestions,
   };
 }
 
-function fieldMemoryFromSource(source: OwnerBrainSource): OwnerBrainFieldMemory {
+function fieldMemoryFromSource(
+  source: FieldOwnerBrainSource,
+): OwnerBrainFieldMemory {
   if (source.status === "ready") {
     return {
       status: source.status,
@@ -161,6 +169,7 @@ function fieldMemoryFromSource(source: OwnerBrainSource): OwnerBrainFieldMemory 
       value: source.value,
       detail: source.detail,
       actionLabel: "Открыть",
+      followUpQuestions: [],
     };
   }
 
@@ -171,6 +180,7 @@ function fieldMemoryFromSource(source: OwnerBrainSource): OwnerBrainFieldMemory 
       value: source.value,
       detail: source.detail,
       actionLabel: "Дополнить",
+      followUpQuestions: source.followUpQuestions,
     };
   }
 
@@ -180,6 +190,7 @@ function fieldMemoryFromSource(source: OwnerBrainSource): OwnerBrainFieldMemory 
     value: source.value,
     detail: source.detail,
     actionLabel: "Оставить итог",
+    followUpQuestions: source.followUpQuestions,
   };
 }
 
