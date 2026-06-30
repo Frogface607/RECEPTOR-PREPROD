@@ -1787,6 +1787,29 @@ describe("buildOwnerReview", () => {
   });
 
   test("connects revenue drop hypotheses with the shift control learning module", () => {
+    const teamTasks: TeamTask[] = [
+      {
+        id: "task-shift-context",
+        title: "Разобрать вечернюю смену",
+        source: "copilot",
+        sourceLabel: "Выручка и смены",
+        priority: "medium",
+        status: "in_progress",
+        venueId: "venue-1",
+        audience: { type: "role", roleId: "venue_manager" },
+        dueLabel: "сегодня",
+      },
+    ];
+    const teamComments: TeamTaskComment[] = [
+      {
+        id: "comment-field-stock",
+        venueId: "venue-1",
+        taskId: "task-shift-context",
+        authorName: "Маша",
+        body: "Стоп-лист / закончилось: мята к 21:00.",
+        createdAtLabel: "22:30",
+      },
+    ];
     const review = buildOwnerReview({
       summary,
       dishes,
@@ -1823,7 +1846,8 @@ describe("buildOwnerReview", () => {
       labor: buildReadyLabor(),
       margin: buildReadyMargin(),
       team: buildReadyTeam(),
-      teamTasks: [],
+      teamTasks,
+      teamComments,
       teamAuditEvents: [],
     });
 
@@ -1831,6 +1855,7 @@ describe("buildOwnerReview", () => {
       expect.arrayContaining([
         expect.objectContaining({
           title: "Просадка могла прийти из смены, а не из меню",
+          taskTitle: expect.stringContaining("Разобрать просадку смены"),
           role: "manager",
           taskSourceLabel: "Выручка и смены",
           impactLabel: expect.stringMatching(/^20\s000\s₽$/),
@@ -1838,6 +1863,9 @@ describe("buildOwnerReview", () => {
           learningModuleTitle: "Открытие и закрытие смены без хаоса",
           learningChecklistTitle: "Если BI показал слабую смену",
           why: expect.stringMatching(/Недобор к базе: 20\s000\s₽\./),
+          check: expect.stringContaining(
+            "Сверить с полевым фактом: Проверить стоп-лист и потерянные продажи.",
+          ),
         }),
       ]),
     );
@@ -1854,7 +1882,7 @@ describe("buildOwnerReview", () => {
     expect(review.tasks).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          title: expect.stringContaining("кто работал"),
+          title: expect.stringContaining("Разобрать просадку смены"),
           roleId: "venue_manager",
           sourceLabel: "Выручка и смены",
           impactLabel: expect.stringMatching(/^20\s000\s₽$/),
@@ -1880,7 +1908,18 @@ describe("buildOwnerReview", () => {
     expect(review.tasks).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
+          title: expect.stringContaining("Разобрать просадку смены"),
           contextNote: expect.stringMatching(/Недобор к базе: 20\s000\s₽\./),
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          sourceLabel: "Выручка и смены",
+          contextNote: expect.stringContaining(
+            "Сверить с полевым фактом: Проверить стоп-лист и потерянные продажи.",
+          ),
         }),
       ]),
     );
@@ -1931,6 +1970,7 @@ describe("buildOwnerReview", () => {
       expect.arrayContaining([
         expect.objectContaining({
           title: "Слабую смену нужно объяснить событием",
+          taskTitle: expect.stringContaining("Разобрать слабую смену"),
           role: "manager",
           taskSourceLabel: "Выручка и смены",
           impactLabel: expect.stringMatching(/^40\s000\s₽$/),
@@ -1945,6 +1985,7 @@ describe("buildOwnerReview", () => {
     expect(review.tasks).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
+          title: expect.stringContaining("Разобрать слабую смену"),
           roleId: "venue_manager",
           sourceLabel: "Выручка и смены",
           impactLabel: expect.stringMatching(/^40\s000\s₽$/),

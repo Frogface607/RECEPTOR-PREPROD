@@ -287,6 +287,18 @@ function formatShiftDate(value: string): string {
   }).format(date);
 }
 
+function shiftTaskTitle(prefix: string, shift: ShiftStat | undefined): string {
+  return shift ? `${prefix}: ${formatShiftDate(shift.openTime)}` : prefix;
+}
+
+function shiftCheckWithFieldContext(
+  check: string,
+  fieldHypothesis: OwnerReviewHypothesis | null,
+): string {
+  if (!fieldHypothesis) return check;
+  return `${check} Сверить с полевым фактом: ${fieldHypothesis.title}.`;
+}
+
 function topByRevenue(points: RevenuePoint[], direction: "min" | "max") {
   const positive = points.filter((point) => point.revenue > 0);
   if (!positive.length) return null;
@@ -532,10 +544,15 @@ function taskFromOwnerAction(action: OwnerReviewAction): SurvivalTaskDraft {
 }
 
 function taskFromHypothesis(item: OwnerReviewHypothesis): SurvivalTaskDraft {
+  const shouldLeadWithCheck =
+    item.taskSourceLabel === "Выручка и смены" &&
+    item.check.includes("Сверить с полевым фактом");
   const context =
     item.taskSourceLabel === "Полевой контекст"
       ? `Полевой факт: ${item.why} Проверка: ${item.check}`
-      : `${item.why} Проверка: ${item.check}`;
+      : shouldLeadWithCheck
+        ? `Проверка: ${item.check} ${item.why}`
+        : `${item.why} Проверка: ${item.check}`;
 
   return {
     title: item.taskTitle
@@ -1228,7 +1245,9 @@ function draftMatchesOpenTeamTask(
   const titleMatches =
     normalizeTaskTitle(task.title) === normalizeTaskTitle(draft.title);
   const contourMatches =
-    Boolean(draft.sourceLabel) && draft.sourceLabel === task.sourceLabel;
+    draft.sourceLabel !== "Выручка и смены" &&
+    Boolean(draft.sourceLabel) &&
+    draft.sourceLabel === task.sourceLabel;
 
   if (draft.audienceMemberId) {
     return (
@@ -1388,20 +1407,41 @@ function uniqueTaskDrafts(drafts: SurvivalTaskDraft[]): SurvivalTaskDraft[] {
   });
 }
 
-function keepFieldContextTaskVisible(
+function isRevenueShiftTask(draft: SurvivalTaskDraft): boolean {
+  return draft.sourceLabel === "Выручка и смены";
+}
+
+function isFieldContextTask(draft: SurvivalTaskDraft): boolean {
+  return draft.sourceLabel === "Полевой контекст";
+}
+
+function keepOperationalTaskDraftsVisible(
   drafts: SurvivalTaskDraft[],
 ): SurvivalTaskDraft[] {
-  const fieldIndex = drafts.findIndex(
-    (draft) => draft.sourceLabel === "Полевой контекст",
-  );
-  if (fieldIndex === -1 || fieldIndex < 3) return drafts;
+  const promotedIndexes = new Set<number>();
+  const promoted: SurvivalTaskDraft[] = [];
+  const promoteIfHidden = (
+    predicate: (draft: SurvivalTaskDraft) => boolean,
+  ) => {
+    const index = drafts.findIndex(predicate);
+    if (index < 3) return;
 
-  const fieldTask = drafts[fieldIndex];
+    promotedIndexes.add(index);
+    promoted.push(drafts[index]);
+  };
+
+  promoteIfHidden(isRevenueShiftTask);
+  promoteIfHidden(isFieldContextTask);
+
+  if (promoted.length === 0) return drafts;
+
+  const [firstDraft, ...restDrafts] = drafts;
+  if (!firstDraft) return promoted;
+
   return [
-    ...drafts.slice(0, 2),
-    fieldTask,
-    ...drafts.slice(2, fieldIndex),
-    ...drafts.slice(fieldIndex + 1),
+    firstDraft,
+    ...promoted,
+    ...restDrafts.filter((_, index) => !promotedIndexes.has(index + 1)),
   ];
 }
 
@@ -2571,10 +2611,13 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
           : "Смены не дали явного ответа.",
         shiftRevenueGapText(weakestShift, input.shifts),
       ]),
-      check:
+      check: shiftCheckWithFieldContext(
         "Спросить управляющего: кто работал, какая была посадка, были ли стопы и жалобы.",
+        fieldHypothesis,
+      ),
       role: "manager",
       tone: "risk",
+      taskTitle: shiftTaskTitle("Разобрать просадку смены", weakestShift),
       taskSourceLabel: "Выручка и смены",
       impactLabel: revenueDropImpactLabel(input.brief),
       learningModuleId: "shift-open-close",
@@ -2595,10 +2638,13 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
         `Смена ${formatShiftDate(weakestShift.openTime)} дала ${formatRubles(weakestShift.revenue)}.`,
         shiftRevenueGapText(weakestShift, input.shifts),
       ]),
-      check:
+      check: shiftCheckWithFieldContext(
         "Спросить управляющего: посадка, команда, стоп-лист, погода, жалобы и апсейл в этой смене.",
+        fieldHypothesis,
+      ),
       role: "manager",
       tone: "watch",
+      taskTitle: shiftTaskTitle("Разобрать слабую смену", weakestShift),
       taskSourceLabel: "Выручка и смены",
       impactLabel: shiftRevenueImpactLabel(weakestShift, input.shifts),
       learningModuleId: "shift-open-close",
@@ -2680,7 +2726,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
   const genericHypotheses = visibleHypotheses.filter(
     (item) => !item.taskSourceLabel,
   );
-  const tasks = keepFieldContextTaskVisible(
+  const tasks = keepOperationalTaskDraftsVisible(
     withoutAlreadyOpenTeamTasks(
       uniqueTaskDrafts([
         ...(() => {
