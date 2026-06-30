@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ListPlus, Loader2, Mic2, SendHorizontal } from "lucide-react";
 import { submitFieldNoteAction, type OwnTaskStatusResult } from "./actions";
@@ -8,6 +8,48 @@ import {
   FIELD_NOTE_TEMPLATES,
   hasMeaningfulFieldNoteBody,
 } from "@/lib/team/field-note-input";
+
+type SpeechRecognitionAlternativeLike = {
+  transcript: string;
+};
+
+type SpeechRecognitionResultLike = {
+  isFinal: boolean;
+  readonly length: number;
+  [index: number]: SpeechRecognitionAlternativeLike;
+};
+
+type SpeechRecognitionResultListLike = {
+  readonly length: number;
+  [index: number]: SpeechRecognitionResultLike;
+};
+
+type SpeechRecognitionResultEventLike = Event & {
+  resultIndex: number;
+  results: SpeechRecognitionResultListLike;
+};
+
+type SpeechRecognitionErrorEventLike = Event & {
+  error?: string;
+};
+
+type SpeechRecognitionLike = {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onresult: ((event: SpeechRecognitionResultEventLike) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+
+type SpeechRecognitionConstructorLike = new () => SpeechRecognitionLike;
+
+type SpeechWindow = Window & {
+  SpeechRecognition?: SpeechRecognitionConstructorLike;
+  webkitSpeechRecognition?: SpeechRecognitionConstructorLike;
+};
 
 function resultText(result: OwnTaskStatusResult): string {
   return result.ok ? result.message : result.error;
@@ -17,9 +59,18 @@ export function FieldNoteForm() {
   const router = useRouter();
   const [body, setBody] = useState("");
   const [pending, setPending] = useState(false);
+  const [listening, setListening] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
   const canSubmit = hasMeaningfulFieldNoteBody(body) && !pending;
+
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.stop();
+      recognitionRef.current = null;
+    };
+  }, []);
 
   function addTemplate(text: string) {
     setMessage(null);
@@ -27,6 +78,79 @@ export function FieldNoteForm() {
       const value = current.trimEnd();
       return value ? `${value}\n${text}` : text;
     });
+  }
+
+  function appendTranscript(value: string) {
+    const transcript = value.trim();
+    if (!transcript) return;
+
+    setBody((current) => {
+      const trimmed = current.trimEnd();
+      return trimmed ? `${trimmed} ${transcript}` : transcript;
+    });
+  }
+
+  function stopDictation() {
+    recognitionRef.current?.stop();
+    recognitionRef.current = null;
+    setListening(false);
+  }
+
+  function startDictation() {
+    if (listening) {
+      stopDictation();
+      return;
+    }
+
+    const speechWindow = window as SpeechWindow;
+    const Recognition =
+      speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition;
+
+    if (!Recognition) {
+      setMessage(
+        "Диктовка недоступна в этом браузере. Можно написать текстом.",
+      );
+      return;
+    }
+
+    const recognition = new Recognition();
+    recognition.lang = "ru-RU";
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.onresult = (event) => {
+      let transcript = "";
+      for (
+        let index = event.resultIndex;
+        index < event.results.length;
+        index += 1
+      ) {
+        const result = event.results[index];
+        if (result?.isFinal) transcript += ` ${result[0]?.transcript ?? ""}`;
+      }
+      appendTranscript(transcript);
+    };
+    recognition.onerror = (event) => {
+      const detail = event.error ? ` (${event.error})` : "";
+      setMessage(
+        `Не удалось распознать голос${detail}. Можно сохранить текстом.`,
+      );
+      setListening(false);
+    };
+    recognition.onend = () => {
+      setListening(false);
+      recognitionRef.current = null;
+    };
+
+    recognitionRef.current = recognition;
+    setMessage(null);
+    setListening(true);
+    try {
+      recognition.start();
+    } catch {
+      recognitionRef.current = null;
+      setListening(false);
+      setMessage("Не удалось включить диктовку. Можно сохранить текстом.");
+    }
   }
 
   return (
@@ -61,6 +185,18 @@ export function FieldNoteForm() {
             делу.
           </p>
         </div>
+        <button
+          type="button"
+          onClick={startDictation}
+          className={`inline-flex h-9 shrink-0 items-center gap-2 rounded-lg border px-3 text-xs font-medium transition-colors ${
+            listening
+              ? "border-brand/45 bg-brand/15 text-brand"
+              : "border-border/60 bg-background/40 text-muted-foreground hover:border-brand/40 hover:text-foreground"
+          }`}
+        >
+          <Mic2 className="size-3.5" />
+          {listening ? "Остановить" : "Надиктовать"}
+        </button>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
