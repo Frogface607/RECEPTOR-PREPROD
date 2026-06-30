@@ -47,6 +47,7 @@ import {
   type MemberLaborProfileStatus,
   type MemberOperationPlanItem,
   type MemberSecondBrainFact,
+  type MemberSecondBrainProfile,
   type MemberSecondBrainTone,
   type MemberShiftScheduleItem,
 } from "@/lib/team/member-shift-schedule";
@@ -844,13 +845,7 @@ function MemberDailyRoutePanel({ route }: { route: MemberDailyRoute }) {
 function MemberSecondBrainCard({
   profile,
 }: {
-  profile: {
-    title: string;
-    summary: string;
-    tags: string[];
-    facts: MemberSecondBrainFact[];
-    nextQuestion: string;
-  };
+  profile: MemberSecondBrainProfile;
 }) {
   return (
     <div className="rounded-lg border border-border/60 bg-card/50 p-5">
@@ -889,6 +884,29 @@ function MemberSecondBrainCard({
           {profile.nextQuestion}
         </p>
       </div>
+      <Link
+        href={profile.memoryLink.href}
+        className={
+          "mt-3 grid gap-2 rounded-lg border p-3 transition-colors hover:bg-background/55 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center " +
+          memberSecondBrainToneClass(profile.memoryLink.tone)
+        }
+      >
+        <span className="min-w-0">
+          <span className="block text-[10px] uppercase tracking-[0.16em] opacity-75">
+            Что связываем в памяти
+          </span>
+          <span className="mt-1 block text-sm font-medium">
+            {profile.memoryLink.label}
+          </span>
+          <span className="mt-1 line-clamp-2 block text-xs leading-relaxed opacity-80">
+            {profile.memoryLink.detail}
+          </span>
+        </span>
+        <span className="inline-flex w-fit items-center gap-1.5 rounded-md border border-current/25 px-2 py-1 text-[10px] uppercase tracking-[0.12em]">
+          {profile.memoryLink.action}
+          <ArrowRight className="size-3.5" />
+        </span>
+      </Link>
     </div>
   );
 }

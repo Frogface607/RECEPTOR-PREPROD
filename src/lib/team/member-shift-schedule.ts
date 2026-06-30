@@ -92,12 +92,21 @@ export type MemberSecondBrainFact = {
   tone: MemberSecondBrainTone;
 };
 
+export type MemberSecondBrainMemoryLink = {
+  label: string;
+  detail: string;
+  href: string;
+  action: string;
+  tone: MemberSecondBrainTone;
+};
+
 export type MemberSecondBrainProfile = {
   title: string;
   summary: string;
   tags: string[];
   facts: MemberSecondBrainFact[];
   nextQuestion: string;
+  memoryLink: MemberSecondBrainMemoryLink;
 };
 
 export function buildMemberShiftSchedule(input: {
@@ -464,6 +473,14 @@ export function buildMemberSecondBrainProfile(input: {
       openTasks,
       laborProfile: input.laborProfile,
     }),
+    memoryLink: memberMemoryLink({
+      learning: input.learning,
+      nextLearning,
+      latestNote,
+      fieldMemory,
+      urgentTasks,
+      openTasks,
+    }),
   };
 }
 
@@ -622,6 +639,77 @@ function memberNextQuestion(input: {
     return `Какой следующий шаг по задаче «${input.openTasks[0].title}»?`;
   }
   return "Что сотрудник заметил на смене и какой один стандарт стоит усилить?";
+}
+
+function memberMemoryLink(input: {
+  learning: TeamLearningMemberSummary | null;
+  nextLearning: { title: string; timeLabel: string } | null;
+  latestNote: TeamTaskComment | null;
+  fieldMemory: FieldNoteReadinessSummary;
+  urgentTasks: TeamTask[];
+  openTasks: TeamTask[];
+}): MemberSecondBrainMemoryLink {
+  if (input.learning && !input.learning.canWorkShift) {
+    return {
+      label: "Связать обучение",
+      detail: input.nextLearning
+        ? `Закрывает пробел в памяти роли: ${input.nextLearning.title}.`
+        : "Закрывает пробел допуска в памяти сотрудника.",
+      href: "#learning-progress",
+      action: "Открыть обучение",
+      tone: "risk",
+    };
+  }
+
+  if (input.urgentTasks[0]) {
+    return {
+      label: "Связать задачу",
+      detail: `Срочная задача станет частью памяти смены: ${input.urgentTasks[0].title}.`,
+      href: "#team-actions",
+      action: "Открыть задачу",
+      tone: "risk",
+    };
+  }
+
+  if (!input.latestNote) {
+    return {
+      label: "Собрать итог",
+      detail:
+        "После смены этот итог свяжет человека, событие и утренний разбор.",
+      href: "#shift-summary",
+      action: "Записать итог",
+      tone: "setup",
+    };
+  }
+
+  if (input.fieldMemory.complete === 0) {
+    return {
+      label: "Дополнить итог",
+      detail: `Чтобы память стала полезной, добавьте: ${input.fieldMemory.bestMissing.join(", ")}.`,
+      href: "#shift-summary",
+      action: "Дополнить",
+      tone: "setup",
+    };
+  }
+
+  if (input.openTasks[0]) {
+    return {
+      label: "Связать задачу",
+      detail: `Следующий шаг по задаче попадет в рабочий контекст: ${input.openTasks[0].title}.`,
+      href: "#team-actions",
+      action: "Открыть задачу",
+      tone: "work",
+    };
+  }
+
+  return {
+    label: "Память связана",
+    detail:
+      "Роль, обучение, задачи и итог смены уже дают советнику рабочий контекст.",
+    href: "#shift-summary",
+    action: "Добавить наблюдение",
+    tone: "ready",
+  };
 }
 
 function trimProfileDetail(value: string): string {

@@ -473,6 +473,12 @@ describe("buildMemberShiftSchedule", () => {
       title: "Маша: рабочий контекст",
       tags: expect.arrayContaining(["Service", "активен", "нужен допуск", "итог полный"]),
       nextQuestion: "Что мешает пройти стандарт «Как рекомендовать блюдо» до смены?",
+      memoryLink: {
+        label: "Связать обучение",
+        href: "#learning-progress",
+        action: "Открыть обучение",
+        tone: "risk",
+      },
     });
     expect(profile.facts).toEqual(
       expect.arrayContaining([
@@ -510,6 +516,12 @@ describe("buildMemberShiftSchedule", () => {
       ]),
     );
     expect(profile.nextQuestion).toContain("Что произошло на последней смене");
+    expect(profile.memoryLink).toMatchObject({
+      label: "Собрать итог",
+      href: "#shift-summary",
+      action: "Записать итог",
+      tone: "setup",
+    });
   });
 
   test("asks what is missing when the member shift summary is weak", () => {
@@ -543,6 +555,46 @@ describe("buildMemberShiftSchedule", () => {
       ]),
     );
     expect(profile.nextQuestion).toContain("В итоге смены не хватает");
+    expect(profile.memoryLink).toMatchObject({
+      label: "Дополнить итог",
+      href: "#shift-summary",
+      action: "Дополнить",
+      tone: "setup",
+    });
+  });
+
+  test("routes the member profile memory link to an open task after shift memory is useful", () => {
+    const profile = buildMemberSecondBrainProfile({
+      member,
+      tasks: [
+        buildTask({
+          id: "task-open",
+          title: "Проверить стоп-лист",
+          priority: "medium",
+        }),
+      ],
+      comments: [
+        {
+          id: "comment-field",
+          venueId: "dev-venue",
+          taskId: "task-open",
+          authorName: "Маша",
+          body: "Итог смены: к 21:00 закончилась мята. Контекст: гости просили лимонады. Масштаб: 6 отказов. Действие: утром проверить заказ мяты.",
+          createdAtLabel: "23:10",
+        },
+      ],
+      schedule: [],
+      laborProfile: null,
+      learning: buildLearningSummary({ canWorkShift: true }),
+    });
+
+    expect(profile.memoryLink).toMatchObject({
+      label: "Связать задачу",
+      href: "#team-actions",
+      action: "Открыть задачу",
+      tone: "work",
+    });
+    expect(profile.memoryLink.detail).toContain("Проверить стоп-лист");
   });
 });
 
