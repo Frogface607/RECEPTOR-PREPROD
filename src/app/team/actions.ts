@@ -531,23 +531,35 @@ async function findTaskContextLabels(
     .from("team_audit_events")
     .select("metadata")
     .eq("venue_id", venueId)
-    .eq("event_type", "task_created")
+    .in("event_type", ["task_created", "task_status_updated"])
     .eq("target_type", "task")
     .eq("target_id", taskId)
     .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle<{ metadata: Record<string, unknown> | null }>();
+    .limit(10);
 
   if (error) return emptyContext;
+  const event = ((data ?? []) as Array<{
+    metadata: Record<string, unknown> | null;
+  }>).find((item) => {
+    const metadata = item.metadata;
+    return Boolean(
+      normalizeTaskSourceLabel(metadata?.sourceLabel) ||
+        normalizeTaskImpactLabel(metadata?.impactLabel) ||
+        normalizeTaskLabel(metadata?.learningModuleId) ||
+        normalizeTaskLabel(metadata?.learningModuleTitle) ||
+        normalizeTaskLabel(metadata?.learningChecklistTitle),
+    );
+  });
+
   return {
-    sourceLabel: normalizeTaskSourceLabel(data?.metadata?.sourceLabel),
-    impactLabel: normalizeTaskImpactLabel(data?.metadata?.impactLabel),
-    learningModuleId: normalizeTaskLabel(data?.metadata?.learningModuleId),
+    sourceLabel: normalizeTaskSourceLabel(event?.metadata?.sourceLabel),
+    impactLabel: normalizeTaskImpactLabel(event?.metadata?.impactLabel),
+    learningModuleId: normalizeTaskLabel(event?.metadata?.learningModuleId),
     learningModuleTitle: normalizeTaskLabel(
-      data?.metadata?.learningModuleTitle,
+      event?.metadata?.learningModuleTitle,
     ),
     learningChecklistTitle: normalizeTaskLabel(
-      data?.metadata?.learningChecklistTitle,
+      event?.metadata?.learningChecklistTitle,
     ),
   };
 }
