@@ -47,6 +47,10 @@ function managerTaskDraft(input: {
   dueLabel?: string;
   sourceLabel: string;
   impactLabel?: string;
+  contextNote?: string;
+  learningModuleId?: string;
+  learningModuleTitle?: string;
+  learningChecklistTitle?: string;
 }): SurvivalTaskDraft {
   return {
     title: input.title,
@@ -55,6 +59,10 @@ function managerTaskDraft(input: {
     dueLabel: input.dueLabel ?? "сегодня",
     sourceLabel: input.sourceLabel,
     impactLabel: input.impactLabel,
+    contextNote: input.contextNote,
+    learningModuleId: input.learningModuleId,
+    learningModuleTitle: input.learningModuleTitle,
+    learningChecklistTitle: input.learningChecklistTitle,
   };
 }
 
@@ -187,6 +195,8 @@ export function buildTeamManagerFollowUp(input: {
         dueLabel: firstTask.dueLabel,
         sourceLabel: "Контроль смены",
         impactLabel: `${urgentTasks.length} срочно`,
+        contextNote:
+          "Проверка: задача уже срочная в Team OS. Вопрос: что мешает закрыть ее до смены. Зачем: владелец должен видеть не только BI, но и управляемое действие.",
       }),
     });
   }
@@ -212,6 +222,10 @@ export function buildTeamManagerFollowUp(input: {
             : "medium",
         sourceLabel: "Связь",
         impactLabel: `${communicationGap.unread} без ответа`,
+        contextNote: `Проверка: важное объявление «${communicationGap.announcement.title}» не подтвердили ${communicationGap.unread} из ${communicationGap.recipients}. Вопрос: кто не увидел фокус смены и через какой канал дожать подтверждение. Стандарт: Ежедневный брифинг смены. Чеклист: Если команда не подтвердила важный фокус.`,
+        learningModuleId: "shift-brief",
+        learningModuleTitle: "Ежедневный брифинг смены",
+        learningChecklistTitle: "Если команда не подтвердила важный фокус",
       }),
     });
   }
@@ -234,6 +248,11 @@ export function buildTeamManagerFollowUp(input: {
         priority: "high",
         sourceLabel: "ФОТ и смены",
         impactLabel: "нет смен",
+        contextNote:
+          "Проверка: Team OS не видит сотрудников и часы за выбранный период. Вопрос: какие права, фильтры или смены iiko не дают собрать ФОТ. Стандарт: iiko и кассовая дисциплина на смене. Чеклист: Если Receptor не видит смены iiko.",
+        learningModuleId: "iiko-cash-discipline",
+        learningModuleTitle: "iiko и кассовая дисциплина на смене",
+        learningChecklistTitle: "Если Receptor не видит смены iiko",
       }),
     });
   } else if (iikoBlocker) {
@@ -259,6 +278,10 @@ export function buildTeamManagerFollowUp(input: {
             input.laborReadiness.status === "blocked" ? "high" : "medium",
           sourceLabel: "ФОТ и смены",
           impactLabel: rubles(iikoBlocker.sales),
+          contextNote: `Проверка: ${iikoBlocker.name} дал ${rubles(iikoBlocker.sales)} выручки без точного ФОТ. Вопрос: нужна карточка сотрудника или ставка, чтобы связать продажи смены с затратой на человека. Стандарт: Цифры ресторана простым языком. Чеклист: Если ФОТ не считается полностью.`,
+          learningModuleId: "restaurant-numbers-basics",
+          learningModuleTitle: "Цифры ресторана простым языком",
+          learningChecklistTitle: "Если ФОТ не считается полностью",
         }),
         roleId: iikoBlocker.roleId ?? "venue_manager",
         audienceMemberId:
@@ -282,6 +305,10 @@ export function buildTeamManagerFollowUp(input: {
             input.laborReadiness.status === "blocked" ? "high" : "medium",
           sourceLabel: "ФОТ и смены",
           impactLabel: `${input.laborReadiness.coveragePct}% ФОТ`,
+          contextNote: `Проверка: ${firstMissingRate.name} без ставки ФОТ, поэтому управленческая стоимость смены неполная. Вопрос: какая ставка или формат оплаты должен участвовать в расчете. Стандарт: Цифры ресторана простым языком. Чеклист: Если ФОТ не считается полностью.`,
+          learningModuleId: "restaurant-numbers-basics",
+          learningModuleTitle: "Цифры ресторана простым языком",
+          learningChecklistTitle: "Если ФОТ не считается полностью",
         }),
         roleId: firstMissingRate.roleId,
         audienceMemberId: firstMissingRate.id,
@@ -312,6 +339,10 @@ export function buildTeamManagerFollowUp(input: {
             employeeLaborIssue.laborCostPct !== null
               ? `${employeeLaborIssue.laborCostPct}% ФОТ`
               : `${rubles(employeeLaborIssue.revenuePerHour ?? 0)}/ч`,
+          contextNote: `Проверка: ${employeeLaborIssue.detail} Вопрос: какая смена, человек или ставка съедает прибыль. Стандарт: Цифры ресторана простым языком. Чеклист: Если BI показал перерасход ФОТ.`,
+          learningModuleId: "restaurant-numbers-basics",
+          learningModuleTitle: "Цифры ресторана простым языком",
+          learningChecklistTitle: "Если BI показал перерасход ФОТ",
         }),
         roleId: employeeLaborIssue.roleId ?? "venue_manager",
         audienceMemberId: employeeLaborIssue.memberId,
@@ -341,6 +372,11 @@ export function buildTeamManagerFollowUp(input: {
               : "high",
           sourceLabel: "Обучение",
           impactLabel: `${blockedAdmissions.length} без допуска`,
+          contextNote: `Проверка: ${learningBlocker.member.name} не допущен к смене: ${learningBlocker.nextItem?.title ?? "обязательные материалы"}. Вопрос: какой минимум знаний нужен человеку перед выходом в смену. Стандарт: Допуск сотрудника к смене. Чеклист: Если сотрудник не прошел обязательное обучение.`,
+          learningModuleId: learningBlocker.nextItem?.id,
+          learningModuleTitle:
+            learningBlocker.nextItem?.title ?? "Допуск сотрудника к смене",
+          learningChecklistTitle: "Если сотрудник не прошел обязательное обучение",
         }),
         roleId: learningBlocker.member.roleId,
         audienceMemberId: learningBlocker.member.id,
@@ -367,6 +403,10 @@ export function buildTeamManagerFollowUp(input: {
             : "medium",
         sourceLabel: "План/факт",
         impactLabel: `${input.shiftPlanVariance.planCoveragePct}% план`,
+        contextNote: `Проверка: ${varianceDetail} Вопрос: почему факт смены не совпал с планом и что изменить в расписании. Стандарт: Открытие и закрытие смены. Чеклист: Если план и факт смен не совпали.`,
+        learningModuleId: "shift-open-close",
+        learningModuleTitle: "Открытие и закрытие смены",
+        learningChecklistTitle: "Если план и факт смен не совпали",
       }),
     });
   }
@@ -386,6 +426,8 @@ export function buildTeamManagerFollowUp(input: {
         dueLabel: firstTask.dueLabel,
         sourceLabel: "Контроль смены",
         impactLabel: `${openTasks.length} открыто`,
+        contextNote:
+          "Проверка: открытая задача держит управленческий контур незакрытым. Вопрос: кто следующий ответственный и какой статус нужен сегодня. Зачем: не копить задачи без владельца.",
       }),
     });
   }

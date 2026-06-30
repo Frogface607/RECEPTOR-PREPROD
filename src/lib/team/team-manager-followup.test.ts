@@ -150,6 +150,9 @@ describe("buildTeamManagerFollowUp", () => {
         priority: "medium",
         sourceLabel: "ФОТ и смены",
         impactLabel: "80 000 ₽",
+        learningModuleId: "restaurant-numbers-basics",
+        learningChecklistTitle: "Если ФОТ не считается полностью",
+        contextNote: expect.stringContaining("80 000 ₽ выручки без точного ФОТ"),
       },
     });
   });
@@ -342,6 +345,9 @@ describe("buildTeamManagerFollowUp", () => {
         sourceLabel: "Связь",
         impactLabel: "1 без ответа",
         title: expect.stringContaining("Зал: фокус на вечер"),
+        learningModuleId: "shift-brief",
+        learningChecklistTitle: "Если команда не подтвердила важный фокус",
+        contextNote: expect.stringContaining("не подтвердили 1 из 2"),
       },
     });
   });
@@ -394,6 +400,9 @@ describe("buildTeamManagerFollowUp", () => {
         audienceMemberName: "Мария",
         sourceLabel: "ФОТ и смены",
         impactLabel: "36% ФОТ",
+        learningModuleId: "restaurant-numbers-basics",
+        learningChecklistTitle: "Если BI показал перерасход ФОТ",
+        contextNote: expect.stringContaining("какая смена, человек или ставка"),
       },
     });
   });
