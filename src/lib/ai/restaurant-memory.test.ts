@@ -102,6 +102,11 @@ describe("restaurant advisor memory", () => {
     expect(memory.learningGaps[0]).toContain("Маша");
     expect(memory.memoryGraph.join("\n")).toContain("Маша -> роль");
     expect(memory.memoryGraph.join("\n")).toContain("оставил(а) итог смены");
+    expect(memory.memoryGraphBrief).toMatchObject({
+      status: "ready",
+      sourceLabels: ["люди", "смена", "задачи"],
+      missingLabels: [],
+    });
   });
 
   test("suggests briefing questions when shift memory is incomplete and not assigned", () => {
@@ -145,6 +150,14 @@ describe("restaurant advisor memory", () => {
       memoryGraph: [
         "Маша -> оставил(а) итог смены -> Поле: ливень и стоп-лист",
       ],
+      memoryGraphBrief: {
+        relationCount: 3,
+        sourceLabels: ["люди", "смена", "задачи"],
+        missingLabels: [],
+        status: "ready",
+        summary: "3 связей: люди, смена, задачи",
+        nextAction: "можно спрашивать советника о причинах и действиях",
+      },
     });
 
     expect(text).toContain("Память ресторана");
@@ -154,6 +167,7 @@ describe("restaurant advisor memory", () => {
     expect(text).toContain("Люди и допуск");
     expect(text).toContain("Учебные пробелы");
     expect(text).toContain("Связи памяти");
+    expect(text).toContain("Карта памяти");
     expect(text).toContain("Маша -> оставил(а) итог смены");
   });
 
@@ -190,15 +204,25 @@ describe("restaurant advisor memory", () => {
       openTasks: ["Проверить стоп-лист — до 17:00"],
       learningGaps: ["Алина: Как рекомендовать блюдо без давления"],
       memoryGraph: ["Маша -> оставил(а) итог смены -> Поле: ливень"],
+      memoryGraphBrief: {
+        relationCount: 3,
+        sourceLabels: ["люди", "смена", "задачи"],
+        missingLabels: [],
+        status: "ready",
+        summary: "3 связей: люди, смена, задачи",
+        nextAction: "можно спрашивать советника о причинах и действиях",
+      },
     });
 
     expect(text).toContain("Что уже знаю");
     expect(text).toContain("Последняя память смены");
     expect(text).toContain("Память смены неполная");
     expect(text).toContain("Добор памяти уже в работе");
+    expect(text).toContain("Карта памяти");
     expect(text).toContain("Первый учебный пробел");
     expect(text).not.toContain("Сигналы с поля");
     expect(text).not.toContain("Открытые действия:");
+    expect(text).not.toContain("->");
   });
 
   test("formats next briefing question when no shift memory task is open", () => {

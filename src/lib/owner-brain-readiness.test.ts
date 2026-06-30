@@ -84,6 +84,11 @@ describe("owner brain readiness", () => {
     expect(readiness.tone).toBe("risk");
     expect(readiness.nextSource.id).toBe("context");
     expect(readiness.summary).toContain("живой контекст");
+    expect(readiness.memoryGraph).toMatchObject({
+      tone: "risk",
+      summary: "связей пока нет",
+      actionLabel: "Нужно связать",
+    });
     expect(readiness.fieldMemory).toMatchObject({
       status: "missing",
       title: "Итог смены еще не собран",
@@ -120,6 +125,12 @@ describe("owner brain readiness", () => {
     expect(readiness.score).toBeGreaterThanOrEqual(80);
     expect(readiness.tone).toBe("good");
     expect(readiness.nextSource.id).toBe("context");
+    expect(readiness.memoryGraph).toMatchObject({
+      tone: "good",
+      actionLabel: "Связано",
+      detail: "Люди, смена и задачи уже связаны в памяти советника.",
+    });
+    expect(readiness.memoryGraph.summary).toContain("люди, смена, задачи");
     expect(readiness.sources.find((source) => source.id === "field")?.status).toBe(
       "ready",
     );

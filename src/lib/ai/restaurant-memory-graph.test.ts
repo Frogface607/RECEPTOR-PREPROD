@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import {
   buildRestaurantMemoryGraph,
   formatRestaurantMemoryGraph,
+  summarizeRestaurantMemoryGraph,
 } from "./restaurant-memory-graph";
 import type { StaffMember, TeamTask, TeamTaskComment } from "@/lib/team/team-os";
 
@@ -64,9 +65,8 @@ const comments: TeamTaskComment[] = [
 
 describe("restaurant memory graph", () => {
   test("builds graph-ready relations from team, shift memory and tasks", () => {
-    const lines = formatRestaurantMemoryGraph(
-      buildRestaurantMemoryGraph({ staff, tasks, comments }),
-    );
+    const relations = buildRestaurantMemoryGraph({ staff, tasks, comments });
+    const lines = formatRestaurantMemoryGraph(relations);
 
     expect(lines).toContain("Маша -> роль -> Управляющий");
     expect(lines.join("\n")).toContain("Маша -> оставил(а) итог смены -> Поле");
@@ -75,5 +75,20 @@ describe("restaurant memory graph", () => {
     );
     expect(lines.join("\n")).toContain("Погода и внешний контекст");
     expect(lines.join("\n")).not.toContain("Receptor -> сообщил");
+  });
+
+  test("summarizes graph coverage without exposing raw edges to the UI", () => {
+    const brief = summarizeRestaurantMemoryGraph(
+      buildRestaurantMemoryGraph({ staff, tasks, comments }),
+    );
+
+    expect(brief).toMatchObject({
+      status: "ready",
+      sourceLabels: ["люди", "смена", "задачи"],
+      missingLabels: [],
+      nextAction: "можно спрашивать советника о причинах и действиях",
+    });
+    expect(brief.summary).toContain("связей");
+    expect(brief.summary).not.toContain("->");
   });
 });

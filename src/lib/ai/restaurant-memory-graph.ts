@@ -15,12 +15,27 @@ export type RestaurantMemoryRelation = {
   source: RestaurantMemoryRelationSource;
 };
 
+export type RestaurantMemoryGraphBrief = {
+  relationCount: number;
+  sourceLabels: string[];
+  missingLabels: string[];
+  status: "ready" | "work" | "missing";
+  summary: string;
+  nextAction: string;
+};
+
 type RestaurantMemoryGraphInput = {
   staff: StaffMember[];
   tasks: TeamTask[];
   comments: TeamTaskComment[];
 };
 
+const SOURCE_ORDER: RestaurantMemoryRelationSource[] = ["team", "field", "task"];
+const SOURCE_LABELS: Record<RestaurantMemoryRelationSource, string> = {
+  team: "люди",
+  field: "смена",
+  task: "задачи",
+};
 const OPEN_TASK_STATUSES = new Set<TeamTask["status"]>([
   "new",
   "accepted",
@@ -70,6 +85,19 @@ function taskPredicate(task: TeamTask): string {
 
 function relationLine(relation: RestaurantMemoryRelation): string {
   return `${relation.subject} -> ${relation.predicate} -> ${relation.object}`;
+}
+
+function relationCountLabel(count: number): string {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+  const word =
+    mod10 === 1 && mod100 !== 11
+      ? "связь"
+      : mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)
+        ? "связи"
+        : "связей";
+
+  return `${count} ${word}`;
 }
 
 export function buildRestaurantMemoryGraph(
@@ -132,4 +160,42 @@ export function formatRestaurantMemoryGraph(
   relations: RestaurantMemoryRelation[],
 ): string[] {
   return relations.map(relationLine);
+}
+
+export function summarizeRestaurantMemoryGraph(
+  relations: RestaurantMemoryRelation[],
+): RestaurantMemoryGraphBrief {
+  const sources = new Set(relations.map((relation) => relation.source));
+  const sourceLabels = SOURCE_ORDER.filter((source) => sources.has(source)).map(
+    (source) => SOURCE_LABELS[source],
+  );
+  const missingLabels = SOURCE_ORDER.filter((source) => !sources.has(source)).map(
+    (source) => SOURCE_LABELS[source],
+  );
+  const status =
+    relations.length === 0
+      ? "missing"
+      : missingLabels.length === 0
+        ? "ready"
+        : "work";
+  const summary =
+    relations.length === 0
+      ? "связей пока нет"
+      : `${relationCountLabel(relations.length)}: ${sourceLabels.join(", ")}`;
+  const nextAction = missingLabels.includes("люди")
+    ? "добавить людей и роли"
+    : missingLabels.includes("смена")
+      ? "собрать итог смены"
+      : missingLabels.includes("задачи")
+        ? "связать память с задачей"
+        : "можно спрашивать советника о причинах и действиях";
+
+  return {
+    relationCount: relations.length,
+    sourceLabels,
+    missingLabels,
+    status,
+    summary,
+    nextAction,
+  };
 }

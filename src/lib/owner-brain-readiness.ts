@@ -1,4 +1,8 @@
 import type { OwnerReviewTone } from "@/lib/owner-review";
+import {
+  buildRestaurantMemoryGraph,
+  summarizeRestaurantMemoryGraph,
+} from "@/lib/ai/restaurant-memory-graph";
 import { summarizeFieldNoteReadiness } from "@/lib/team/field-note-input";
 import { buildTeamFieldContextDigest } from "@/lib/team/team-field-context";
 import type { TeamLearningMemberSummary } from "@/lib/team/team-learning-progress";
@@ -65,10 +69,18 @@ export type OwnerBrainReadiness = {
   tone: OwnerReviewTone;
   title: string;
   summary: string;
+  memoryGraph: OwnerBrainMemoryGraph;
   nextSource: OwnerBrainSource;
   sources: OwnerBrainSource[];
   snapshot: OwnerBrainMemorySnapshot[];
   fieldMemory: OwnerBrainFieldMemory;
+};
+
+export type OwnerBrainMemoryGraph = {
+  tone: OwnerReviewTone;
+  summary: string;
+  detail: string;
+  actionLabel: string;
 };
 
 type BuildOwnerBrainReadinessInput = {
@@ -422,6 +434,39 @@ function buildMemorySnapshot({
   return [known, missing, next];
 }
 
+function buildOwnerMemoryGraph({
+  staff,
+  tasks,
+  comments,
+}: {
+  staff: StaffMember[];
+  tasks: TeamTask[];
+  comments: TeamTaskComment[];
+}): OwnerBrainMemoryGraph {
+  const brief = summarizeRestaurantMemoryGraph(
+    buildRestaurantMemoryGraph({ staff, tasks, comments }),
+  );
+  const tone: OwnerReviewTone =
+    brief.status === "ready"
+      ? "good"
+      : brief.status === "work"
+        ? "watch"
+        : "risk";
+
+  return {
+    tone,
+    summary: brief.summary,
+    detail:
+      brief.missingLabels.length > 0
+        ? `Следующее связать: ${brief.nextAction}.`
+        : "Люди, смена и задачи уже связаны в памяти советника.",
+    actionLabel:
+      brief.missingLabels.length > 0
+        ? "Нужно связать"
+        : "Связано",
+  };
+}
+
 export function buildOwnerBrainReadiness(
   input: BuildOwnerBrainReadinessInput,
 ): OwnerBrainReadiness {
@@ -454,6 +499,11 @@ export function buildOwnerBrainReadiness(
         : tone === "watch"
           ? "Доберите следующий источник памяти, чтобы советы опирались не только на цифры."
           : "Сначала соберите живой контекст: профиль заведения, команда, итог смены и допуск.",
+    memoryGraph: buildOwnerMemoryGraph({
+      staff: input.staff,
+      tasks: input.tasks,
+      comments: input.comments,
+    }),
     nextSource,
     sources,
     snapshot,

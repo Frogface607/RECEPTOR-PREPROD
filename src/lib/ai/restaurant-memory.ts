@@ -3,6 +3,8 @@ import { summarizeFieldNoteReadiness } from "@/lib/team/field-note-input";
 import {
   buildRestaurantMemoryGraph,
   formatRestaurantMemoryGraph,
+  summarizeRestaurantMemoryGraph,
+  type RestaurantMemoryGraphBrief,
 } from "@/lib/ai/restaurant-memory-graph";
 import { buildTeamLearningSummaries } from "@/lib/team/team-learning-progress";
 import {
@@ -26,6 +28,7 @@ export type RestaurantAdvisorMemory = {
   openTasks: string[];
   learningGaps: string[];
   memoryGraph: string[];
+  memoryGraphBrief?: RestaurantMemoryGraphBrief;
 };
 
 type RestaurantMemoryInput = {
@@ -178,13 +181,13 @@ export function buildRestaurantAdvisorMemory(
     fieldReadiness.complete === 0 && !fieldTaskStatus
       ? fieldReadiness.followUpQuestions
       : [];
-  const memoryGraph = formatRestaurantMemoryGraph(
-    buildRestaurantMemoryGraph({
-      staff: input.staff,
-      tasks: input.tasks,
-      comments: input.comments,
-    }),
-  );
+  const memoryGraphRelations = buildRestaurantMemoryGraph({
+    staff: input.staff,
+    tasks: input.tasks,
+    comments: input.comments,
+  });
+  const memoryGraph = formatRestaurantMemoryGraph(memoryGraphRelations);
+  const memoryGraphBrief = summarizeRestaurantMemoryGraph(memoryGraphRelations);
 
   return {
     teamSummary: roleSummary(input.staff),
@@ -201,6 +204,7 @@ export function buildRestaurantAdvisorMemory(
     openTasks: openTaskLines(input.tasks),
     learningGaps: learningGapLines(input),
     memoryGraph,
+    memoryGraphBrief,
   };
 }
 
@@ -256,6 +260,12 @@ export function formatRestaurantAdvisorMemoryForPrompt(
     lines.push(`Связи памяти: ${memory.memoryGraph.join("; ")}`);
   }
 
+  if (memory.memoryGraphBrief) {
+    lines.push(
+      `Карта памяти: ${memory.memoryGraphBrief.summary}. Следующее: ${memory.memoryGraphBrief.nextAction}.`,
+    );
+  }
+
   return lines.join("\n");
 }
 
@@ -284,6 +294,9 @@ export function formatRestaurantAdvisorMemoryForAnswer(
       : null,
     memory.fieldMemoryTaskStatus
       ? `• Добор памяти уже в работе: ${memory.fieldMemoryTaskStatus}.`
+      : null,
+    memory.memoryGraphBrief
+      ? `• Карта памяти: ${memory.memoryGraphBrief.summary}. Следующее: ${memory.memoryGraphBrief.nextAction}.`
       : null,
     !memory.fieldMemoryTaskStatus && memory.fieldMemoryFollowUpQuestions[0]
       ? `• Следующий вопрос для брифа: ${memory.fieldMemoryFollowUpQuestions[0]}`

@@ -528,6 +528,28 @@ export function OwnerCommandPanel({
                 {brainReadiness.summary}
               </p>
 
+              <div className="mt-3 grid gap-2 rounded-lg border border-border/50 bg-background/35 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                <span className="min-w-0">
+                  <span className="block text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                    Карта связей
+                  </span>
+                  <span className="mt-1 block text-sm font-medium text-foreground">
+                    {brainReadiness.memoryGraph.summary}
+                  </span>
+                  <span className="mt-1 line-clamp-2 block text-[12px] leading-relaxed text-muted-foreground">
+                    {brainReadiness.memoryGraph.detail}
+                  </span>
+                </span>
+                <span
+                  className={
+                    "inline-flex w-fit items-center gap-2 rounded-md border px-2 py-1 text-[11px] font-medium " +
+                    TONE_CLASS[brainReadiness.memoryGraph.tone]
+                  }
+                >
+                  {brainReadiness.memoryGraph.actionLabel}
+                </span>
+              </div>
+
               <div className="mt-3 grid gap-2">
                 {brainReadiness.snapshot.map((item) => (
                   <Link
