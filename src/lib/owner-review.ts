@@ -1923,7 +1923,8 @@ function fieldContextEvidence(
     (signal) =>
       signal.kind === "conflict" ||
       signal.kind === "stock" ||
-      signal.kind === "team",
+      signal.kind === "team" ||
+      signal.kind === "money",
   );
 
   return {
@@ -1978,7 +1979,8 @@ function fieldContextHypothesis(
     tone:
       signal.kind === "conflict" ||
       signal.kind === "stock" ||
-      signal.kind === "team"
+      signal.kind === "team" ||
+      signal.kind === "money"
         ? "risk"
         : "watch",
     taskSourceLabel: "Полевой контекст",
@@ -2043,6 +2045,18 @@ function fieldContextTaskFor(kind: TeamFieldSignal["kind"]): {
         "Уточнить посадку, событие, состав смены и средний чек, чтобы понять, что повторить или исправить перед похожим днем.",
       learningModuleId: "shift-brief",
       learningModuleTitle: "Брифинг смены и передача контекста",
+    };
+  }
+  if (kind === "money") {
+    return {
+      title: "Разобрать ФОТ и маржу смены",
+      question:
+        "что смена продавала, где потеряла валовую прибыль и какой фокус дать на следующий бриф",
+      checklistTitle: "Если BI показал недобор валовой прибыли",
+      check:
+        "Сверить ФОТ смены, средний чек, скидки и продажи маржинальных позиций, чтобы понять: проблема в графике, сервисе, цене, порции или фокусе продаж.",
+      learningModuleId: "tech-card-discipline",
+      learningModuleTitle: "Техкарты, себестоимость и дисциплина меню",
     };
   }
   if (kind === "guest") {

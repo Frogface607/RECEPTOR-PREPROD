@@ -2967,6 +2967,94 @@ describe("buildOwnerReview", () => {
     );
   });
 
+  test("routes money field notes to the labor and margin checklist", () => {
+    const teamTasks: TeamTask[] = [
+      {
+        id: "task-field",
+        title: "Полевой контекст смены",
+        source: "manager",
+        sourceLabel: "Поле",
+        priority: "medium",
+        status: "in_progress",
+        venueId: "venue-1",
+        audience: { type: "role", roleId: "venue_manager" },
+        dueLabel: "ежедневно",
+      },
+    ];
+    const teamComments: TeamTaskComment[] = [
+      {
+        id: "comment-money-field",
+        venueId: "venue-1",
+        taskId: "task-field",
+        authorName: "Саша",
+        body: "Маржа / ФОТ: ФОТ 34%, маржинальные закуски почти не предлагали, скидок было много.",
+        createdAtLabel: "22:40",
+      },
+    ];
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      teamTasks,
+      teamComments,
+    });
+
+    expect(review.evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Поле",
+          value: "1 сигнал",
+          detail: expect.stringContaining("Маржа и ФОТ смены"),
+          tone: "risk",
+        }),
+      ]),
+    );
+    expect(review.hypotheses).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Разобрать ФОТ и маржу смены",
+          taskSourceLabel: "Полевой контекст",
+          check: expect.stringContaining("продажи маржинальных позиций"),
+          learningModuleId: "tech-card-discipline",
+          learningModuleTitle: "Техкарты, себестоимость и дисциплина меню",
+          learningChecklistTitle: "Если BI показал недобор валовой прибыли",
+          briefingQuestion:
+            "что смена продавала, где потеряла валовую прибыль и какой фокус дать на следующий бриф",
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Разобрать ФОТ и маржу смены",
+          sourceLabel: "Полевой контекст",
+          learningModuleId: "tech-card-discipline",
+          learningChecklistTitle: "Если BI показал недобор валовой прибыли",
+          contextNote: expect.stringContaining(
+            "Полевой факт: Саша: Поле",
+          ),
+        }),
+      ]),
+    );
+    const fieldTaskContext = review.tasks.find(
+      (task) => task.title === "Разобрать ФОТ и маржу смены",
+    )?.contextNote;
+    expect(fieldTaskContext).toContain(
+      "Вопрос: что смена продавала, где потеряла валовую прибыль и какой фокус дать на следующий бриф?",
+    );
+    expect(fieldTaskContext).toContain(
+      "Стандарт: Техкарты, себестоимость и дисциплина меню.",
+    );
+    expect(fieldTaskContext).toContain(
+      "Чеклист: Если BI показал недобор валовой прибыли.",
+    );
+  });
+
   test("turns untagged field notes into a Team OS task to connect them with BI", () => {
     const teamTasks: TeamTask[] = [
       {
