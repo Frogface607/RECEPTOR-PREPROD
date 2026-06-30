@@ -227,6 +227,86 @@ describe("buildMenuMarginReadiness", () => {
     expect(nextAction.action).toContain("RMS-права");
   });
 
+  test("prioritizes margin setup by aggregate blocked revenue contour", () => {
+    const readiness = buildMenuMarginReadiness({
+      dishes: [
+        {
+          dishName: "Unmapped steak",
+          dishGroup: "Kitchen",
+          dishAmountInt: 10,
+          dishSumInt: 50000,
+        },
+        {
+          dishName: "Mapped pasta",
+          dishGroup: "Kitchen",
+          dishAmountInt: 20,
+          dishSumInt: 40000,
+        },
+        {
+          dishName: "Mapped soup",
+          dishGroup: "Kitchen",
+          dishAmountInt: 30,
+          dishSumInt: 35000,
+        },
+      ],
+      products: [
+        {
+          id: "pasta-base",
+          name: "Pasta base",
+          sizePrices: [],
+        },
+        {
+          id: "soup-base",
+          name: "Soup base",
+          sizePrices: [],
+        },
+      ],
+      mappings: [
+        {
+          id: "m-pasta",
+          venueId: "venue-1",
+          dishKey: "mapped pasta",
+          dishName: "Mapped pasta",
+          dishGroup: "Kitchen",
+          iikoProductId: "pasta-base",
+          iikoProductName: "Pasta base",
+          iikoArticle: "",
+          mappingType: "manual",
+          status: "active",
+          confidence: 1,
+          note: "",
+        },
+        {
+          id: "m-soup",
+          venueId: "venue-1",
+          dishKey: "mapped soup",
+          dishName: "Mapped soup",
+          dishGroup: "Kitchen",
+          iikoProductId: "soup-base",
+          iikoProductName: "Soup base",
+          iikoArticle: "",
+          mappingType: "manual",
+          status: "active",
+          confidence: 1,
+          note: "",
+        },
+      ],
+    });
+
+    expect(readiness).toMatchObject({
+      missingLinkRevenue: 50000,
+      missingCostRevenue: 75000,
+    });
+    expect(buildMenuMarginNextAction(readiness)).toMatchObject({
+      kind: "missing-cost",
+      title: "RMS не отдает закупочную цену",
+      blocker: expect.objectContaining({
+        dishName: "Mapped pasta",
+        revenue: 40000,
+      }),
+    });
+  });
+
   test("uses readable tech-card composition as the next margin step", () => {
     const readiness = buildMenuMarginReadiness({
       dishes: [

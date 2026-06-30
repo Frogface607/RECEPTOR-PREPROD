@@ -604,7 +604,7 @@ export function getProductCostReference(
 export function buildMenuMarginNextAction(
   readiness: MenuMarginReadiness,
 ): MenuMarginNextAction {
-  const blocker = readiness.topBlockers[0] ?? null;
+  const blocker = primaryMarginBlocker(readiness);
 
   if (blocker?.reason === "missing-cost" && blocker.hasTechCard) {
     const linkedProduct = blocker.productName ?? "выбранным товаром iiko";
@@ -650,6 +650,33 @@ export function buildMenuMarginNextAction(
       "Свяжите блюдо с правильным товаром iiko, затем проверьте, пришла ли закупочная цена.",
     blocker,
   };
+}
+
+function primaryMarginBlocker(
+  readiness: MenuMarginReadiness,
+): MenuMarginBlocker | null {
+  const missingCostBlocker =
+    readiness.topBlockers.find((item) => item.reason === "missing-cost") ??
+    null;
+  const missingLinkBlocker =
+    readiness.topBlockers.find((item) => item.reason === "missing-link") ??
+    null;
+
+  if (
+    missingCostBlocker &&
+    readiness.missingCostRevenue > readiness.missingLinkRevenue
+  ) {
+    return missingCostBlocker;
+  }
+
+  if (
+    missingLinkBlocker &&
+    readiness.missingLinkRevenue > readiness.missingCostRevenue
+  ) {
+    return missingLinkBlocker;
+  }
+
+  return readiness.topBlockers[0] ?? null;
 }
 
 function positive(value: number | undefined): number | null {
