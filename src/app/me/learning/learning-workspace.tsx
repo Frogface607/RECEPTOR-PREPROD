@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
+import Link from "next/link";
 import {
   ArrowRight,
   BookOpenCheck,
@@ -427,11 +428,30 @@ export function LearningWorkspace({
                 <div className="rounded-lg border border-border/45 bg-background/35 p-3">
                   <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                     <MessageSquareText className="size-3.5 text-brand" />
-                    В память ресторана
+                    Что запомнит ресторан
                   </div>
                   <p className="mt-2 text-sm leading-relaxed text-foreground/85">
                     {shiftCard.fieldNote}
                   </p>
+                </div>
+              </div>
+              <div className="mt-3 rounded-lg border border-border/45 bg-background/35 p-3">
+                <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+                  <div className="min-w-0">
+                    <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                      Шаблон итога смены
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-foreground/85">
+                      {shiftCard.fieldNoteTemplate}
+                    </p>
+                  </div>
+                  <Link
+                    href="/me#shift-summary"
+                    className="inline-flex h-9 w-fit items-center gap-2 rounded-lg border border-brand/35 bg-brand/10 px-3 text-xs font-medium text-brand transition-colors hover:bg-brand/15"
+                  >
+                    Оставить итог
+                    <ArrowRight className="size-3.5" />
+                  </Link>
                 </div>
               </div>
             </div>
@@ -584,7 +604,7 @@ export function LearningWorkspace({
                   </p>
                   <p className="mt-1 text-[12px] text-muted-foreground">
                     {submittedScore.passed
-                      ? "Стандарт подтвержден."
+                      ? "Стандарт подтвержден. Примените его на смене и оставьте итог в память ресторана."
                       : "Нужно повторить материал и пересдать."}
                     {activeProgress?.completedAt
                       ? ` Последняя попытка: ${formatProgressDate(

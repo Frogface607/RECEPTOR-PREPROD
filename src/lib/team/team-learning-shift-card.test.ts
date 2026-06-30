@@ -12,6 +12,11 @@ describe("team learning shift card", () => {
     expect(card.reason).toContain("деньги");
     expect(card.action).toContain("предложи");
     expect(card.fieldNote).toContain("гости");
+    expect(card.fieldNoteTemplate).toContain(
+      'Итог смены по стандарту "Как рекомендовать блюдо без давления"',
+    );
+    expect(card.fieldNoteTemplate).toContain("факт");
+    expect(card.fieldNoteTemplate).toContain("что проверить");
   });
 
   test("uses checklist title as the shift focus", () => {

@@ -5,6 +5,7 @@ export type TeamLearningShiftCard = {
   reason: string;
   action: string;
   fieldNote: string;
+  fieldNoteTemplate: string;
   checklistLabel: string | null;
 };
 
@@ -93,6 +94,7 @@ export function buildTeamLearningShiftCard(
     fieldNote:
       rule?.fieldNote ??
       "После смены оставь короткий факт: что получилось, что мешало и что проверить утром.",
+    fieldNoteTemplate: `Итог смены по стандарту "${item.title}": факт - ...; контекст - ...; когда/сколько - ...; что проверить - ...`,
     checklistLabel,
   };
 }
