@@ -101,6 +101,11 @@ import {
 } from "@/lib/team/team-manager-followup";
 import { buildTeamCommunicationDrafts } from "@/lib/team/team-communication-drafts";
 import {
+  buildTeamDailyWorkflow,
+  type TeamDailyWorkflowStep,
+  type TeamDailyWorkflowTone,
+} from "@/lib/team/team-daily-workflow";
+import {
   buildLaborEmployeeDiagnostics,
   buildLaborShiftDiagnostics,
   type LaborEmployeeDiagnostic,
@@ -308,6 +313,12 @@ export default async function TeamPage({
     laborReadiness,
     shiftPlanVariance,
   });
+  const dailyWorkflow = buildTeamDailyWorkflow({
+    opsReadiness,
+    managerFollowUp,
+    learningFocus: learningFocusPlan,
+    fieldContext: learningFieldContext,
+  });
   const selectedMemberId = memberId || focusMemberId;
   const selectedMember = selectedMemberId
     ? (workspace.staff.find((member) => member.id === selectedMemberId) ?? null)
@@ -453,6 +464,12 @@ export default async function TeamPage({
                 />
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className="border-b border-border/40">
+          <div className="mx-auto max-w-7xl px-6 py-6">
+            <TeamDailyWorkflowStrip steps={dailyWorkflow} />
           </div>
         </section>
 
@@ -2233,6 +2250,67 @@ function ShiftMetric({
       </p>
     </div>
   );
+}
+
+function TeamDailyWorkflowStrip({ steps }: { steps: TeamDailyWorkflowStep[] }) {
+  return (
+    <div className="grid gap-4 lg:grid-cols-[220px_1fr] lg:items-start">
+      <div>
+        <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
+          Ритм дня
+        </p>
+        <h2 className="mt-2 text-xl font-medium">Как ведем смену</h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          Один маршрут: подготовить, обучить, собрать факт и принять решение.
+        </p>
+      </div>
+      <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+        {steps.map((step) => (
+          <TeamDailyWorkflowStepLink key={step.id} step={step} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TeamDailyWorkflowStepLink({
+  step,
+}: {
+  step: TeamDailyWorkflowStep;
+}) {
+  return (
+    <Link
+      href={step.href}
+      className="group flex min-h-[150px] flex-col justify-between rounded-lg border border-border/55 bg-card/45 p-4 transition-colors hover:border-brand/40 hover:bg-card/70"
+    >
+      <div>
+        <div className="flex items-center justify-between gap-3">
+          <span
+            className={
+              "rounded-md border px-2 py-1 text-[10px] uppercase tracking-[0.12em] " +
+              dailyWorkflowToneClass(step.tone)
+            }
+          >
+            {step.label}
+          </span>
+          <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-brand" />
+        </div>
+        <h3 className="mt-3 text-sm font-medium leading-snug text-foreground">
+          {step.title}
+        </h3>
+      </div>
+      <p className="mt-3 line-clamp-3 text-xs leading-relaxed text-muted-foreground">
+        {step.detail}
+      </p>
+    </Link>
+  );
+}
+
+function dailyWorkflowToneClass(tone: TeamDailyWorkflowTone): string {
+  if (tone === "risk")
+    return "border-destructive/30 bg-destructive/10 text-destructive";
+  if (tone === "work") return "border-brand/30 bg-brand/10 text-brand";
+  return "border-[color:var(--pro)]/30 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
 }
 
 function shiftDiagnosticToneClass(tone: LaborShiftDiagnostic["tone"]): string {
