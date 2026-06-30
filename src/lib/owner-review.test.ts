@@ -2326,6 +2326,20 @@ describe("buildOwnerReview", () => {
         }),
       ]),
     );
+    expect(review.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Разобрать конфликт смены с цифрами",
+          target: "team-actions",
+          role: "manager",
+          sourceLabel: "Полевой контекст",
+          impactLabel: "3 сигнала",
+          learningModuleId: "shift-brief",
+          learningChecklistTitle: "После смены собери полевой факт",
+          detail: expect.stringContaining("Связанные факты:"),
+        }),
+      ]),
+    );
     expect(review.hypotheses).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

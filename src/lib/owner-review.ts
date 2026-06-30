@@ -528,9 +528,14 @@ function withHypothesisChecklist(
 
 function actionContextNote(action: OwnerReviewAction): string {
   const sourceLabel = action.sourceLabel ?? actionSourceLabel(action);
-  const context = action.detail.startsWith("Проверка:")
-    ? action.detail
-    : `Проверка: ${action.detail}`;
+  const context =
+    sourceLabel === "Полевой контекст"
+      ? action.detail.startsWith("Полевой факт:")
+        ? action.detail
+        : `Полевой факт: ${action.detail}`
+      : action.detail.startsWith("Проверка:")
+        ? action.detail
+        : `Проверка: ${action.detail}`;
   return withLearningContext({
     context,
     learningModuleTitle: action.learningModuleTitle,
@@ -1433,30 +1438,28 @@ function isFieldContextTask(draft: SurvivalTaskDraft): boolean {
 function keepOperationalTaskDraftsVisible(
   drafts: SurvivalTaskDraft[],
 ): SurvivalTaskDraft[] {
+  const firstDraft = drafts[0];
+  if (!firstDraft) return drafts;
+
   const promotedIndexes = new Set<number>();
   const promoted: SurvivalTaskDraft[] = [];
-  const promoteIfHidden = (
-    predicate: (draft: SurvivalTaskDraft) => boolean,
-  ) => {
+  const promote = (predicate: (draft: SurvivalTaskDraft) => boolean) => {
     const index = drafts.findIndex(predicate);
-    if (index < 3) return;
+    if (index === -1 || index === 0 || promotedIndexes.has(index)) return;
 
     promotedIndexes.add(index);
     promoted.push(drafts[index]);
   };
 
-  promoteIfHidden(isRevenueShiftTask);
-  promoteIfHidden(isFieldContextTask);
+  promote(isFieldContextTask);
+  promote(isRevenueShiftTask);
 
   if (promoted.length === 0) return drafts;
-
-  const [firstDraft, ...restDrafts] = drafts;
-  if (!firstDraft) return promoted;
 
   return [
     firstDraft,
     ...promoted,
-    ...restDrafts.filter((_, index) => !promotedIndexes.has(index + 1)),
+    ...drafts.filter((_, index) => index !== 0 && !promotedIndexes.has(index)),
   ];
 }
 
@@ -1740,6 +1743,27 @@ function fieldContextTaskFor(kind: TeamFieldSignal["kind"]): {
     title: "Проверить сервис и допродажи",
     check:
       "На брифинге разобрать, что команда рекомендовала гостям, какие позиции продавались лучше и где нужен простой скрипт допродажи.",
+  };
+}
+
+function ownerActionFromFieldContext(
+  digest: TeamFieldContextDigest | null,
+): OwnerReviewAction | null {
+  const hypothesis = fieldContextHypothesis(digest);
+  if (!hypothesis) return null;
+
+  return {
+    title: hypothesis.taskTitle ?? hypothesis.title,
+    detail: `${hypothesis.why} Проверка: ${hypothesis.check}`,
+    role: hypothesis.role,
+    tone: hypothesis.tone,
+    target: "team-actions",
+    impactLabel: hypothesis.impactLabel,
+    sourceLabel: hypothesis.taskSourceLabel,
+    taskTitle: hypothesis.taskTitle,
+    learningModuleId: hypothesis.learningModuleId,
+    learningModuleTitle: hypothesis.learningModuleTitle,
+    learningChecklistTitle: hypothesis.learningChecklistTitle,
   };
 }
 
@@ -2556,6 +2580,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
           ? ownerActionFromShiftPlanVariance(input.shiftPlanVariance)
           : null,
         ownerActionFromCommunication(operationalProof),
+        ownerActionFromFieldContext(fieldContext),
         ownerActionFromLaborMargin({
           labor: input.labor,
           margin: input.margin,
