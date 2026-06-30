@@ -12,8 +12,11 @@ import {
   GraduationCap,
   Inbox,
   LayoutDashboard,
+  Lightbulb,
+  ListChecks,
   LogOut,
   Megaphone,
+  MessageSquareText,
   UserRound,
 } from "lucide-react";
 import { AppShell } from "@/components/dashboard/app-shell";
@@ -46,6 +49,7 @@ import {
   hasAnnouncementRead,
   listCommentsForTask,
   taskChecklistHintFromContext,
+  taskContextBriefFromContext,
   taskContextWithoutLearningHint,
   taskLearningHintFromContext,
   type TeamAnnouncement,
@@ -294,9 +298,6 @@ export default async function MyCabinetPage({
     nextActionTask?.learningModuleTitle ??
     nextActionLearningItem?.title ??
     nextActionContextLearningTitle;
-  const nextActionContextBody = taskContextWithoutLearningHint(
-    nextActionTaskContext?.body,
-  );
   const nextActionAnnouncement = nextAction?.announcementId
     ? (workspace.announcements.find(
         (announcement) => announcement.id === nextAction.announcementId,
@@ -435,14 +436,7 @@ export default async function MyCabinetPage({
                       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                         {nextAction.detail}
                       </p>
-                      {nextActionTaskContext && nextActionContextBody ? (
-                        <p className="mt-3 line-clamp-2 rounded-md border border-border/45 bg-background/35 px-3 py-2 text-[12px] leading-relaxed text-muted-foreground">
-                          <span className="font-medium text-foreground/80">
-                            {nextActionTaskContext.authorName}:
-                          </span>{" "}
-                          {nextActionContextBody}
-                        </p>
-                      ) : null}
+                      <TaskContextBlock context={nextActionTaskContext} />
                       {nextActionLearningTitle ? (
                         <div className="mt-3 flex flex-wrap items-center gap-2 rounded-md border border-sky-400/20 bg-sky-400/5 px-3 py-2 text-[12px] leading-relaxed text-sky-100/90">
                           <BookOpenCheck className="size-3.5 text-sky-200" />
@@ -776,7 +770,6 @@ function TaskCard({
     getLearningItemByTitle(task.learningModuleTitle ?? contextLearningTitle);
   const learningTitle =
     task.learningModuleTitle ?? learningItem?.title ?? contextLearningTitle;
-  const contextBody = taskContextWithoutLearningHint(context?.body);
 
   return (
     <article className="rounded-lg border border-border/60 bg-card/50 p-4">
@@ -821,14 +814,7 @@ function TaskCard({
       <p className="mt-3 text-sm leading-relaxed text-foreground/90">
         {task.title}
       </p>
-      {context && contextBody ? (
-        <p className="mt-3 line-clamp-2 rounded-md border border-border/45 bg-background/35 px-3 py-2 text-[12px] leading-relaxed text-muted-foreground">
-          <span className="font-medium text-foreground/80">
-            {context.authorName}:
-          </span>{" "}
-          {contextBody}
-        </p>
-      ) : null}
+      <TaskContextBlock context={context} />
       {learningTitle ? (
         <div className="mt-3 flex flex-wrap items-center gap-2 rounded-md border border-sky-400/20 bg-sky-400/5 px-3 py-2 text-[12px] leading-relaxed text-sky-100/90">
           <BookOpenCheck className="size-3.5 text-sky-200" />
@@ -848,6 +834,50 @@ function TaskCard({
       ) : null}
       <TaskStatusButtons key={`${task.id}-${task.status}`} task={task} />
     </article>
+  );
+}
+
+function TaskContextBlock({ context }: { context: TeamTaskComment | null }) {
+  const contextBody = taskContextWithoutLearningHint(context?.body);
+  const contextBrief = taskContextBriefFromContext(context?.body);
+  const hasContextBrief = Boolean(
+    contextBrief.fieldFact || contextBrief.check || contextBrief.reason,
+  );
+
+  if (!context || !contextBody) return null;
+
+  if (hasContextBrief) {
+    return (
+      <div className="mt-3 space-y-1 rounded-md border border-border/45 bg-background/35 px-3 py-2 text-[12px] leading-relaxed">
+        {contextBrief.fieldFact ? (
+          <p className="flex items-start gap-2 text-foreground/80">
+            <MessageSquareText className="mt-0.5 size-3.5 shrink-0 text-brand" />
+            <span>{contextBrief.fieldFact}</span>
+          </p>
+        ) : null}
+        {contextBrief.check ? (
+          <p className="flex items-start gap-2 text-muted-foreground">
+            <ListChecks className="mt-0.5 size-3.5 shrink-0 text-brand" />
+            <span>{contextBrief.check}</span>
+          </p>
+        ) : null}
+        {contextBrief.reason ? (
+          <p className="flex items-start gap-2 text-amber-100/85">
+            <Lightbulb className="mt-0.5 size-3.5 shrink-0 text-amber-200" />
+            <span>{contextBrief.reason}</span>
+          </p>
+        ) : null}
+      </div>
+    );
+  }
+
+  return (
+    <p className="mt-3 line-clamp-2 rounded-md border border-border/45 bg-background/35 px-3 py-2 text-[12px] leading-relaxed text-muted-foreground">
+      <span className="font-medium text-foreground/80">
+        {context.authorName}:
+      </span>{" "}
+      {contextBody}
+    </p>
   );
 }
 
