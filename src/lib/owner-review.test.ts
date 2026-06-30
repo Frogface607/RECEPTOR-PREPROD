@@ -1384,6 +1384,8 @@ describe("buildOwnerReview", () => {
         }),
       ],
     });
+    expect(review.operationalPulse?.detail).toContain("ФОТ и маржа");
+    expect(review.operationalPulse?.detail).toContain("120 000 ₽");
   });
 
   test("shows team announcements as owner communication proof", () => {

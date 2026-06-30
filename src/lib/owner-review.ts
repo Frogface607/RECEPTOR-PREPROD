@@ -174,6 +174,8 @@ export type OwnerOperationalProof = {
   nextOpenTaskImpactLabel: string | null;
   closedLoops: number;
   lastClosedLoop: string | null;
+  lastClosedLoopLabel: string | null;
+  lastClosedLoopImpactLabel: string | null;
   announcements: number;
   announcementReads: number;
   unreadImportantAnnouncements: number;
@@ -751,6 +753,21 @@ function nextOpenTaskText(
   return ` Следующая задача: ${trimEvidenceDetail(title)}.${impactText}`;
 }
 
+function closedLoopResultText(proof: OwnerOperationalProof): string {
+  if (proof.closedLoops <= 0) return "";
+  const labelText = proof.lastClosedLoopLabel
+    ? ` Контур: ${trimEvidenceDetail(proof.lastClosedLoopLabel)}.`
+    : "";
+  const impactText = proof.lastClosedLoopImpactLabel
+    ? ` Вес: ${trimEvidenceDetail(proof.lastClosedLoopImpactLabel)}.`
+    : "";
+  const summaryText = proof.lastClosedLoop
+    ? ` Последнее: ${trimEvidenceDetail(proof.lastClosedLoop)}.`
+    : "";
+
+  return `${proof.closedLoops} закрыто недавно.${labelText}${impactText}${summaryText}`;
+}
+
 function normalizeTaskTitle(value: string): string {
   return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("ru-RU");
 }
@@ -941,6 +958,8 @@ function buildOperationalProof(
     nextOpenTaskImpactLabel: taskQueue.openTasks[0]?.task.impactLabel ?? null,
     closedLoops: closedLoopEvents.length,
     lastClosedLoop: closedLoopEvents[0]?.summary ?? null,
+    lastClosedLoopLabel: closedLoopEvents[0]?.sourceLabel ?? null,
+    lastClosedLoopImpactLabel: closedLoopEvents[0]?.impactLabel ?? null,
     announcements: announcements?.length ?? 0,
     announcementReads: announcementReads?.length ?? 0,
     unreadImportantAnnouncements: communicationGap?.unread ?? 0,
@@ -1010,7 +1029,9 @@ function operationalPulse(
   if (proof.closedLoops > 0) {
     return {
       title: "Команда закрывает действия",
-      detail: `${proof.closedLoops} закрыто недавно. Экран владельца учитывает эти действия в готовности прибыли и операционном контуре.`,
+      detail: `${closedLoopResultText(
+        proof,
+      )} Экран владельца учитывает эти действия в готовности прибыли и операционном контуре.`,
       tone: "good",
       openTasks: proof.openTasks,
       urgentOpenTasks: proof.urgentOpenTasks,
@@ -1056,9 +1077,10 @@ function operationalProofEvidence(
 ): OwnerReviewEvidence {
   const detail =
     proof.closedLoops > 0
-      ? `${proof.closedLoops} закрыто недавно. Последнее: ${trimEvidenceDetail(
-          proof.lastClosedLoop ?? "задача закрыта в Team OS",
-        )}.${nextOpenTaskText(proof.nextOpenTaskTitle, proof.nextOpenTaskImpactLabel)}`
+      ? `${closedLoopResultText(proof)}${nextOpenTaskText(
+          proof.nextOpenTaskTitle,
+          proof.nextOpenTaskImpactLabel,
+        )}`
       : proof.openTasks > 0
         ? `${proof.urgentOpenTasks} срочных${proof.openTaskContours.length ? `: ${proof.openTaskContours.join(", ")}` : ""}.${nextOpenTaskText(proof.nextOpenTaskTitle, proof.nextOpenTaskImpactLabel)} Закрытые контуры появятся после выполнения задач в Team OS.`
         : "Открытых задач нет; новых закрытий в последних событиях не было.";
