@@ -108,6 +108,9 @@ describe("team learning catalog", () => {
         expect.objectContaining({
           title: "Если BI показал недобор валовой прибыли",
         }),
+        expect.objectContaining({
+          title: "Если категория держит оборот",
+        }),
       ]),
     );
     expect(shiftBrief?.sections).toEqual(

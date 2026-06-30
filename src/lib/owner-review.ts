@@ -3001,6 +3001,9 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       impactLabel: formatRubles(topCategory.dishSumInt),
       learningModuleId: "tech-card-discipline",
       learningModuleTitle: "Техкарта как договор внутри команды",
+      learningChecklistTitle: "Если категория держит оборот",
+      briefingQuestion:
+        "какие позиции категории дают деньги, маржу и риск стоп-листа",
     });
   }
 

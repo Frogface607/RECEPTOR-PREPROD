@@ -1948,6 +1948,9 @@ describe("buildOwnerReview", () => {
           taskSourceLabel: "Маржа и техкарты",
           learningModuleId: "tech-card-discipline",
           learningModuleTitle: "Техкарта как договор внутри команды",
+          learningChecklistTitle: "Если категория держит оборот",
+          briefingQuestion:
+            "какие позиции категории дают деньги, маржу и риск стоп-листа",
         }),
       ]),
     );
@@ -1959,8 +1962,19 @@ describe("buildOwnerReview", () => {
           sourceLabel: "Маржа и техкарты",
           learningModuleId: "tech-card-discipline",
           learningModuleTitle: "Техкарта как договор внутри команды",
+          learningChecklistTitle: "Если категория держит оборот",
           contextNote: expect.stringContaining(
             "Урок для команды: Техкарта как договор внутри команды.",
+          ),
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          sourceLabel: "Маржа и техкарты",
+          contextNote: expect.stringContaining(
+            "Чеклист: Если категория держит оборот.",
           ),
         }),
       ]),
