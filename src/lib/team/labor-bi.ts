@@ -320,7 +320,7 @@ export function buildLaborInsights(
       (shift) =>
         shift.laborCostPct !== null && shift.laborCostPct > targetLaborCostPct,
     )
-    .sort((a, b) => (b.laborCostPct ?? 0) - (a.laborCostPct ?? 0))[0];
+    .sort((a, b) => expensiveShiftDelta(a, b, targetLaborCostPct))[0];
   if (expensiveShift) {
     const overTarget = laborCostOverTarget(
       expensiveShift.laborCost,
@@ -409,7 +409,7 @@ export function buildLaborNextAction(
       (shift) =>
         shift.laborCostPct !== null && shift.laborCostPct > targetLaborCostPct,
     )
-    .sort((a, b) => (b.laborCostPct ?? 0) - (a.laborCostPct ?? 0))[0];
+    .sort((a, b) => expensiveShiftDelta(a, b, targetLaborCostPct))[0];
 
   if (expensiveShift) {
     const overTarget = laborCostOverTarget(
@@ -982,6 +982,18 @@ function laborCostOverTarget(
     0,
     roundMoney(laborCost - revenue * (targetLaborCostPct / 100)),
   );
+}
+
+function expensiveShiftDelta(
+  left: LaborShiftSummary,
+  right: LaborShiftSummary,
+  targetLaborCostPct: number,
+): number {
+  const overspendDelta =
+    laborCostOverTarget(right.laborCost, right.revenue, targetLaborCostPct) -
+    laborCostOverTarget(left.laborCost, left.revenue, targetLaborCostPct);
+  if (overspendDelta !== 0) return overspendDelta;
+  return (right.laborCostPct ?? 0) - (left.laborCostPct ?? 0);
 }
 
 function formatLaborCoverageGap(labor: LaborBiSummary): string {

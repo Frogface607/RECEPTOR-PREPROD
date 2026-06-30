@@ -325,6 +325,57 @@ describe("buildLaborBi", () => {
     expect(buildLaborNextAction(labor).detail).toMatch(/5\s500 ₽/);
   });
 
+  test("prioritizes expensive labor by controllable overspend, not only percent", () => {
+    const labor = buildLaborBi({
+      shifts: [
+        {
+          shiftId: "high-percent-small-shift",
+          openTime: "2026-06-26T12:00:00",
+          closeTime: "2026-06-26T18:00:00",
+          revenue: 20000,
+          items: 60,
+          employee: "Смена",
+          workers: [
+            {
+              name: "Мария",
+              hours: 6,
+              shiftPay: 8000,
+              sales: 20000,
+            },
+          ],
+        },
+        {
+          shiftId: "lower-percent-bigger-loss",
+          openTime: "2026-06-27T12:00:00",
+          closeTime: "2026-06-27T22:00:00",
+          revenue: 100000,
+          items: 220,
+          employee: "Смена",
+          workers: [
+            {
+              name: "Илья",
+              hours: 10,
+              shiftPay: 30000,
+              sales: 100000,
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(
+      buildLaborNextAction(labor, {
+        targetLaborCostPct: 25,
+      }),
+    ).toMatchObject({
+      kind: "expensive-labor",
+      impactLabel: expect.stringMatching(/^5\s000 ₽$/),
+      shift: expect.objectContaining({
+        shiftId: "lower-percent-bigger-loss",
+      }),
+    });
+  });
+
   test("ranks employee diagnostics by missing rates and personal labor pressure", () => {
     const labor = buildLaborBi({
       shifts: [
