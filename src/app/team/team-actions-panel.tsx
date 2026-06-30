@@ -38,7 +38,10 @@ import {
 import { buildIikoStaffImportCandidates } from "@/lib/team/team-iiko-staff-import";
 import {
   TEAM_ROLES,
+  buildShiftMemoryTaskAnswerComment,
+  isShiftMemoryFollowUpTask,
   listCommentsForTask,
+  taskShiftMemoryQuestionFromContext,
   taskChecklistHintFromContext,
   taskContextBriefDisplayFromContext,
   taskContextWithoutLearningHint,
@@ -58,6 +61,7 @@ import {
   type TeamLaborReadinessStatus,
 } from "@/lib/team/team-labor-readiness";
 import {
+  addTaskCommentAction,
   bulkUpdateTeamMemberLaborRatesAction,
   createTeamTaskAction,
   importIikoTeamMembersAction,
@@ -287,6 +291,9 @@ export function TeamActionsPanel({
   );
   const [nextStatus, setNextStatus] =
     useState<TeamTask["status"]>("in_progress");
+  const [shiftMemoryAnswers, setShiftMemoryAnswers] = useState<
+    Record<string, string>
+  >({});
   const [journalFilter, setJournalFilter] =
     useState<TeamAuditJournalCategoryId>("all");
 
@@ -363,6 +370,31 @@ export function TeamActionsPanel({
         status,
       }),
     );
+  }
+
+  function updateShiftMemoryAnswer(taskId: string, value: string): void {
+    setShiftMemoryAnswers((current) => ({ ...current, [taskId]: value }));
+  }
+
+  function saveShiftMemoryAnswer(taskId: string, question: string | null): void {
+    const answer = shiftMemoryAnswers[taskId]?.trim() ?? "";
+    if (!answer) return;
+
+    runAction(async () => {
+      const result = await addTaskCommentAction({
+        venueId,
+        taskId,
+        body: buildShiftMemoryTaskAnswerComment({ question, answer }),
+      });
+      if (result.ok) {
+        setShiftMemoryAnswers((current) => {
+          const next = { ...current };
+          delete next[taskId];
+          return next;
+        });
+      }
+      return result;
+    });
   }
 
   async function copyLogin(member: StaffMember) {
@@ -854,6 +886,11 @@ export function TeamActionsPanel({
                   const contextBrief = taskContextBriefDisplayFromContext(
                     context?.body,
                   );
+                  const shiftMemoryQuestion =
+                    focused && isShiftMemoryFollowUpTask(task)
+                      ? taskShiftMemoryQuestionFromContext(context?.body)
+                      : null;
+                  const shiftMemoryAnswer = shiftMemoryAnswers[task.id] ?? "";
                   const hasContextBrief = Boolean(
                     contextBrief.fieldFact ||
                     contextBrief.question ||
@@ -955,6 +992,48 @@ export function TeamActionsPanel({
                           </div>
                         ) : null}
                       </button>
+                      {shiftMemoryQuestion ? (
+                        <div className="mt-3 rounded-lg border border-brand/25 bg-card/45 p-3">
+                          <div className="flex items-start gap-2">
+                            <MessageSquareText className="mt-0.5 size-4 shrink-0 text-brand" />
+                            <div className="min-w-0">
+                              <p className="text-[10px] uppercase tracking-[0.14em] text-brand">
+                                Ответ в память смены
+                              </p>
+                              <p className="mt-1 text-sm font-medium leading-relaxed text-foreground">
+                                {shiftMemoryQuestion}
+                              </p>
+                              <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
+                                Ответ сохранится как комментарий к задаче и
+                                попадет в утренний разбор владельца.
+                              </p>
+                            </div>
+                          </div>
+                          <textarea
+                            value={shiftMemoryAnswer}
+                            onChange={(event) =>
+                              updateShiftMemoryAnswer(task.id, event.target.value)
+                            }
+                            className={`${FIELD_CLASS} mt-3 min-h-20 resize-none text-xs`}
+                            placeholder="Например: из-за ливня после 19:00 отменили 3 брони; зал предложил посадку у бара; утром проверить стоп-лист и обзвонить отмененные брони."
+                          />
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              disabled={pending || !shiftMemoryAnswer.trim()}
+                              onClick={() =>
+                                saveShiftMemoryAnswer(task.id, shiftMemoryQuestion)
+                              }
+                              className="inline-flex h-8 items-center justify-center rounded-lg border border-brand/35 bg-brand/10 px-3 text-xs font-medium text-brand transition-colors hover:bg-brand/15 disabled:opacity-45"
+                            >
+                              Сохранить в память
+                            </button>
+                            <span className="self-center text-[11px] text-muted-foreground">
+                              После ответа можно закрыть задачу как сделанную.
+                            </span>
+                          </div>
+                        </div>
+                      ) : null}
                       <div className="mt-3 flex flex-wrap gap-2">
                         {learningItem ? (
                           <Link

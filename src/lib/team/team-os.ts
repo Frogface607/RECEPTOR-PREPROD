@@ -657,6 +657,31 @@ function stripContextMarker(value: string | null, marker: string): string | null
   return stripped || null;
 }
 
+function compactText(value: string): string {
+  return value.trim().replace(/\s+/g, " ");
+}
+
+function firstQuestionFromManagerList(
+  context: string | null | undefined,
+): string | null {
+  const section = contextSection(context, "Вопросы для управляющего:", [
+    "Зачем:",
+    "Урок для команды:",
+    "Стандарт:",
+    "Стандарт задачи:",
+    "Чеклист:",
+  ]);
+  const body = stripContextMarker(section, "Вопросы для управляющего:");
+  if (!body) return null;
+
+  const firstItem = body
+    .split(/\s+-\s+/)
+    .map((item) => compactText(item.replace(/^-\s*/, "")))
+    .find(Boolean);
+
+  return firstItem ?? null;
+}
+
 export function taskContextBriefDisplayFromContext(
   context: string | null | undefined,
 ): TeamTaskContextBrief {
@@ -668,6 +693,36 @@ export function taskContextBriefDisplayFromContext(
     check: stripContextMarker(brief.check, "Проверка:"),
     reason: stripContextMarker(brief.reason, "Зачем:"),
   };
+}
+
+export function isShiftMemoryFollowUpTask(task: TeamTask): boolean {
+  return (
+    task.sourceLabel === "Память смены" &&
+    task.learningChecklistTitle === "Если итог смены неполный"
+  );
+}
+
+export function taskShiftMemoryQuestionFromContext(
+  context: string | null | undefined,
+): string | null {
+  return (
+    taskContextBriefDisplayFromContext(context).question ??
+    firstQuestionFromManagerList(context)
+  );
+}
+
+export function buildShiftMemoryTaskAnswerComment({
+  question,
+  answer,
+}: {
+  question?: string | null;
+  answer: string;
+}): string {
+  const normalizedAnswer = compactText(answer);
+  const normalizedQuestion = question ? compactText(question) : "";
+  return normalizedQuestion
+    ? `Итог смены: ${normalizedQuestion} ${normalizedAnswer}`
+    : `Итог смены: ${normalizedAnswer}`;
 }
 
 export function listAnnouncementsForRole(

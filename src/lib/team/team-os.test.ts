@@ -1,9 +1,11 @@
 import { describe, expect, test } from "vitest";
 import {
+  buildShiftMemoryTaskAnswerComment,
   buildRoleHome,
   countAnnouncementReads,
   getTeamRole,
   hasAnnouncementRead,
+  isShiftMemoryFollowUpTask,
   listAnnouncementsForRole,
   listCommentsForTask,
   listRolePermissions,
@@ -15,7 +17,9 @@ import {
   taskContextBriefFromContext,
   taskContextWithoutLearningHint,
   taskLearningHintFromContext,
+  taskShiftMemoryQuestionFromContext,
 } from "./team-os";
+import { getFieldNoteReadiness } from "./field-note-input";
 
 describe("Team OS roles and permissions", () => {
   test("keeps owner-level cockpit hidden from service staff", () => {
@@ -125,6 +129,44 @@ describe("Team OS roles and permissions", () => {
       check: "Сверить стоп-лист и потерянные продажи.",
       reason: "связать факты смены с BI.",
     });
+  });
+
+  test("extracts shift memory task question and formats answer as field memory", () => {
+    const context =
+      "Проверка: советнику не хватает живого контекста смены.\nЧто уже есть: Трение в команде: Маша — было странно\nВопросы для управляющего:\n- Почему это повлияло на гостей, продажи или команду?\n- Когда это случилось и сколько гостей, столов, позиций или денег затронуло?\nЗачем: без этих ответов владелец видит цифры, но не понимает причину смены.";
+    const question = taskShiftMemoryQuestionFromContext(context);
+    const comment = buildShiftMemoryTaskAnswerComment({
+      question,
+      answer:
+        "Из-за ливня после 19:00 отменили 3 брони, зал предложил посадку у бара, утром проверить стоп-лист и обзвонить отмененные брони.",
+    });
+
+    expect(question).toBe(
+      "Почему это повлияло на гостей, продажи или команду?",
+    );
+    expect(comment).toContain("Итог смены:");
+    expect(comment).toContain("Из-за ливня после 19:00");
+    expect(getFieldNoteReadiness(comment)).toMatchObject({
+      hasFact: true,
+      hasContext: true,
+      hasScale: true,
+      hasAction: true,
+      score: 4,
+    });
+    expect(
+      isShiftMemoryFollowUpTask({
+        id: "shift-memory",
+        venueId: "venue",
+        title: "Уточнить итог смены",
+        source: "copilot",
+        sourceLabel: "Память смены",
+        learningChecklistTitle: "Если итог смены неполный",
+        priority: "medium",
+        status: "new",
+        audience: { type: "role", roleId: "venue_manager" },
+        dueLabel: "до утреннего разбора",
+      }),
+    ).toBe(true);
   });
 
   test("filters announcements by role visibility", () => {
