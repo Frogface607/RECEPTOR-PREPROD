@@ -2122,8 +2122,10 @@ describe("buildOwnerReview", () => {
     expect(review.tasks).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
+          title: "Разобрать конфликт смены с цифрами",
           sourceLabel: "Полевой контекст",
           learningModuleTitle: "Брифинг смены и передача контекста",
+          contextNote: expect.stringContaining("Проверка: На брифинге"),
         }),
       ]),
     );

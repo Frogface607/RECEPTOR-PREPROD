@@ -65,6 +65,7 @@ export type OwnerReviewHypothesis = {
   check: string;
   role: OwnerReviewRole;
   tone: OwnerReviewTone;
+  taskTitle?: string;
   taskSourceLabel?: string;
   impactLabel?: string;
   learningModuleId?: string;
@@ -520,7 +521,9 @@ function taskFromOwnerAction(action: OwnerReviewAction): SurvivalTaskDraft {
 
 function taskFromHypothesis(item: OwnerReviewHypothesis): SurvivalTaskDraft {
   return {
-    title: trimTaskTitle(item.check),
+    title: item.taskTitle
+      ? trimTaskTitle(item.taskTitle)
+      : trimTaskTitle(item.check),
     priority: rolePriority(item.tone),
     roleId: roleTask(item.role),
     dueLabel: roleDue(item.role),
@@ -1589,6 +1592,7 @@ function fieldContextHypothesis(
         ? "risk"
         : "watch",
     taskSourceLabel: "Полевой контекст",
+    taskTitle: task.title,
     impactLabel:
       signal.sourceCount > 1 ? `${signal.sourceCount} сигнала` : "1 сигнал",
     learningModuleId: "shift-brief",
