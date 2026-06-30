@@ -19,6 +19,7 @@ import {
 import { createTeamTaskAction } from "@/app/team/actions";
 import { Button } from "@/components/ui/button";
 import type { SurvivalTaskDraft } from "@/lib/survival-score";
+import { buildTeamHref } from "@/lib/team/team-links";
 import { learningModuleHref } from "@/lib/team/team-learning";
 import {
   taskContextBriefFromContext,
@@ -76,6 +77,7 @@ export function SurvivalTaskActions({
   drafts: SurvivalTaskDraft[];
 }) {
   const [states, setStates] = useState<TaskState>({});
+  const [taskIds, setTaskIds] = useState<Record<number, string>>({});
   const [message, setMessage] = useState("");
   const [isPending, startTransition] = useTransition();
 
@@ -102,6 +104,10 @@ export function SurvivalTaskActions({
 
       if (result.ok) {
         setStates((current) => ({ ...current, [index]: "saved" }));
+        const taskId = result.taskId;
+        if (taskId) {
+          setTaskIds((current) => ({ ...current, [index]: taskId }));
+        }
         setMessage(createdMessage(draft, result.message));
       } else {
         setStates((current) => ({ ...current, [index]: "error" }));
@@ -117,6 +123,14 @@ export function SurvivalTaskActions({
       {drafts.map((draft, index) => {
         const state = states[index] ?? "idle";
         const saved = state === "saved";
+        const savedTaskId = taskIds[index];
+        const savedTaskHref = savedTaskId
+          ? buildTeamHref({
+              venueId,
+              hash: "#team-actions",
+              params: { focusTaskId: savedTaskId },
+            })
+          : null;
         const AudienceIcon = draft.audienceMemberName ? UserRound : UsersRound;
         const contextBrief = taskContextBriefFromContext(draft.contextNote);
         const checklistTitle =
@@ -212,30 +226,39 @@ export function SurvivalTaskActions({
                 </p>
               </div>
 
-              <Button
-                type="button"
-                variant={saved ? "secondary" : "outline"}
-                size="sm"
-                disabled={isPending || saved}
-                onClick={() => createTask(draft, index)}
-                className="shrink-0"
-              >
-                {saved ? (
-                  <>
-                    <CheckCircle2 className="size-3.5" />
-                    создано
-                  </>
-                ) : isPending ? (
-                  <>
-                    <Loader2 className="size-3.5 animate-spin" />
-                    пишу
-                  </>
-                ) : (
-                  <>
-                    <Plus className="size-3.5" /> в задачи
-                  </>
-                )}
-              </Button>
+              <div className="flex shrink-0 flex-col gap-2 sm:items-end">
+                <Button
+                  type="button"
+                  variant={saved ? "secondary" : "outline"}
+                  size="sm"
+                  disabled={isPending || saved}
+                  onClick={() => createTask(draft, index)}
+                >
+                  {saved ? (
+                    <>
+                      <CheckCircle2 className="size-3.5" />
+                      создано
+                    </>
+                  ) : isPending ? (
+                    <>
+                      <Loader2 className="size-3.5 animate-spin" />
+                      пишу
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="size-3.5" /> в задачи
+                    </>
+                  )}
+                </Button>
+                {savedTaskHref ? (
+                  <Link
+                    href={savedTaskHref}
+                    className="text-[11px] font-medium text-brand underline-offset-4 hover:underline"
+                  >
+                    Открыть в Team OS
+                  </Link>
+                ) : null}
+              </div>
             </div>
           </div>
         );

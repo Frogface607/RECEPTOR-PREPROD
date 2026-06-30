@@ -209,7 +209,12 @@ const CreateAnnouncementInput = z
   });
 
 export type TeamActionResult =
-  | { ok: true; mode: "saved" | "sandbox"; message: string }
+  | {
+      ok: true;
+      mode: "saved" | "sandbox";
+      message: string;
+      taskId?: string;
+    }
   | { ok: false; error: string };
 
 type WritableTeamContext = Extract<
@@ -1461,10 +1466,10 @@ export async function createTeamTaskAction(
         return {
           ok: true,
           mode: "saved",
-          message:
-            existingTaskContextUpdated
-              ? "Задача уже есть, контекст обновлен."
-              : "Задача уже есть.",
+          taskId: existingTask.id,
+          message: existingTaskContextUpdated
+            ? "Задача уже есть, контекст обновлен."
+            : "Задача уже есть.",
         };
       }
     } catch (error) {
@@ -1571,6 +1576,7 @@ export async function createTeamTaskAction(
   return {
     ok: true,
     mode: "saved",
+    taskId: task?.id,
     message: contextCommentSaved
       ? "Задача создана, контекст добавлен."
       : "Задача создана.",
