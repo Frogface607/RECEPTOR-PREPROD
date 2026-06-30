@@ -1845,94 +1845,115 @@ function RolePersonalBrief({
 
           <MemberOperationPlanCard items={operationPlan} />
 
-          <div className="rounded-lg border border-border/60 bg-card/50 p-5">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-              <div className="flex items-center gap-3">
-                <CalendarDays className="size-5 text-brand" />
-                <div>
-                  <h3 className="text-lg font-medium">Смены периода</h3>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {periodLabel} · {laborSourceLabel(laborSource)}
-                  </p>
-                </div>
-              </div>
-              <Badge variant="outline">{schedule.length}</Badge>
-            </div>
+          <details className="group border-t border-border/35 pt-2">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-1 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+              <span>Подробности кабинета</span>
+              <span className="flex flex-wrap items-center justify-end gap-2 text-[10px] uppercase tracking-[0.12em]">
+                <span className="rounded-md border border-border/45 bg-card/45 px-2 py-1">
+                  смен {formatInteger(schedule.length)}
+                </span>
+                <span className="rounded-md border border-border/45 bg-card/45 px-2 py-1">
+                  задач {formatInteger(openTasks.length)}
+                </span>
+                <span className="rounded-md border border-border/45 bg-card/45 px-2 py-1">
+                  чеклист {formatInteger(checklist.length)}
+                </span>
+              </span>
+            </summary>
 
-            <div className="mt-4 grid gap-2">
-              {schedule.length > 0 ? (
-                schedule.map((shift) => (
-                  <MemberShiftRow key={shift.shiftId} shift={shift} />
-                ))
-              ) : (
-                <div className="rounded-lg border border-border/45 bg-background/35 p-3">
-                  <p className="text-sm font-medium">Смен по сотруднику нет</p>
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    Если сотрудник был на смене, проверьте совпадение имени в
-                    iiko и Team OS или права на выгрузку смен.
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="grid gap-5 lg:grid-cols-2">
-            <div className="rounded-lg border border-border/60 bg-card/50 p-5">
-              <div className="flex items-center gap-3">
-                <ClipboardCheck className="size-5 text-brand" />
-                <h3 className="text-lg font-medium">На смену</h3>
-              </div>
-              <div className="mt-4 grid gap-2">
-                {checklist.map((item) => (
-                  <div
-                    key={item}
-                    className="rounded-lg border border-border/45 bg-background/35 p-3 text-[13px] leading-relaxed text-foreground/85"
-                  >
-                    {item}
+            <div className="mt-3 grid gap-5">
+              <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex items-center gap-3">
+                    <CalendarDays className="size-5 text-brand" />
+                    <div>
+                      <h3 className="text-lg font-medium">Смены периода</h3>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {periodLabel} · {laborSourceLabel(laborSource)}
+                      </p>
+                    </div>
                   </div>
-                ))}
-                {nextLearning ? (
-                  <Link
-                    href="#learning-progress"
-                    className="rounded-lg border border-brand/25 bg-brand/10 p-3 transition-colors hover:border-brand/45"
-                  >
-                    <p className="text-[10px] uppercase tracking-[0.16em] text-brand">
-                      Следующий стандарт
-                    </p>
-                    <p className="mt-1 text-sm font-medium">
-                      {nextLearning.title}
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {nextLearning.timeLabel}
-                    </p>
-                  </Link>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="rounded-lg border border-border/60 bg-card/50 p-5">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <ClipboardList className="size-5 text-brand" />
-                  <h3 className="text-lg font-medium">Мои задачи</h3>
+                  <Badge variant="outline">{schedule.length}</Badge>
                 </div>
-                <Badge variant="outline">{openTasks.length}</Badge>
+
+                <div className="mt-4 grid gap-2">
+                  {schedule.length > 0 ? (
+                    schedule.map((shift) => (
+                      <MemberShiftRow key={shift.shiftId} shift={shift} />
+                    ))
+                  ) : (
+                    <div className="rounded-lg border border-border/45 bg-background/35 p-3">
+                      <p className="text-sm font-medium">
+                        Смен по сотруднику нет
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                        Если сотрудник был на смене, проверьте совпадение имени
+                        в iiko и Team OS или права на выгрузку смен.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="mt-4 grid gap-3">
-                {openTasks.slice(0, 3).map((task) => (
-                  <TaskRow key={task.id} task={task} compact />
-                ))}
-                {openTasks.length === 0 ? (
-                  <div className="rounded-lg border border-border/45 bg-background/35 p-3">
-                    <p className="text-sm font-medium">Задач нет</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Можно принимать смену без незакрытой очереди.
-                    </p>
+
+              <div className="grid gap-5 lg:grid-cols-2">
+                <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+                  <div className="flex items-center gap-3">
+                    <ClipboardCheck className="size-5 text-brand" />
+                    <h3 className="text-lg font-medium">На смену</h3>
                   </div>
-                ) : null}
+                  <div className="mt-4 grid gap-2">
+                    {checklist.map((item) => (
+                      <div
+                        key={item}
+                        className="rounded-lg border border-border/45 bg-background/35 p-3 text-[13px] leading-relaxed text-foreground/85"
+                      >
+                        {item}
+                      </div>
+                    ))}
+                    {nextLearning ? (
+                      <Link
+                        href="#learning-progress"
+                        className="rounded-lg border border-brand/25 bg-brand/10 p-3 transition-colors hover:border-brand/45"
+                      >
+                        <p className="text-[10px] uppercase tracking-[0.16em] text-brand">
+                          Следующий стандарт
+                        </p>
+                        <p className="mt-1 text-sm font-medium">
+                          {nextLearning.title}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {nextLearning.timeLabel}
+                        </p>
+                      </Link>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-border/60 bg-card/50 p-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <ClipboardList className="size-5 text-brand" />
+                      <h3 className="text-lg font-medium">Мои задачи</h3>
+                    </div>
+                    <Badge variant="outline">{openTasks.length}</Badge>
+                  </div>
+                  <div className="mt-4 grid gap-3">
+                    {openTasks.slice(0, 3).map((task) => (
+                      <TaskRow key={task.id} task={task} compact />
+                    ))}
+                    {openTasks.length === 0 ? (
+                      <div className="rounded-lg border border-border/45 bg-background/35 p-3">
+                        <p className="text-sm font-medium">Задач нет</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Можно принимать смену без незакрытой очереди.
+                        </p>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          </details>
         </div>
       </div>
     </section>
