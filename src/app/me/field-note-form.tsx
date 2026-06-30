@@ -2,10 +2,18 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ListPlus, Loader2, Mic2, SendHorizontal } from "lucide-react";
+import {
+  CheckCircle2,
+  Circle,
+  ListPlus,
+  Loader2,
+  Mic2,
+  SendHorizontal,
+} from "lucide-react";
 import { submitFieldNoteAction, type OwnTaskStatusResult } from "./actions";
 import {
   FIELD_NOTE_TEMPLATES,
+  getFieldNoteReadiness,
   hasMeaningfulFieldNoteBody,
 } from "@/lib/team/field-note-input";
 
@@ -63,6 +71,7 @@ export function FieldNoteForm() {
   const [message, setMessage] = useState<string | null>(null);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
+  const readiness = getFieldNoteReadiness(body);
   const canSubmit = hasMeaningfulFieldNoteBody(body) && !pending;
 
   useEffect(() => {
@@ -221,6 +230,30 @@ export function FieldNoteForm() {
         placeholder="Например: гости спрашивали безалкогольный коктейль, к 21:00 закончилась мята, кухня задержала два стола..."
         className="mt-4 min-h-28 w-full resize-y rounded-lg border border-border/60 bg-background/45 px-3 py-3 text-sm leading-relaxed text-foreground outline-none transition-colors placeholder:text-muted-foreground/65 focus:border-brand/45"
       />
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        {[
+          { label: "Факт", done: readiness.hasFact },
+          { label: "Когда/сколько", done: readiness.hasScale },
+          { label: "Что сделали", done: readiness.hasAction },
+        ].map((item) => (
+          <span
+            key={item.label}
+            className={`inline-flex h-7 items-center gap-1.5 rounded-lg border px-2.5 text-[11px] ${
+              item.done
+                ? "border-brand/35 bg-brand/10 text-brand"
+                : "border-border/55 bg-background/35 text-muted-foreground"
+            }`}
+          >
+            {item.done ? (
+              <CheckCircle2 className="size-3.5" />
+            ) : (
+              <Circle className="size-3.5" />
+            )}
+            {item.label}
+          </span>
+        ))}
+      </div>
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
         <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
