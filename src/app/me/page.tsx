@@ -441,12 +441,14 @@ export default async function MyCabinetPage({
                       {nextActionLearningTitle ? (
                         <div className="mt-3 flex flex-wrap items-center gap-2 rounded-md border border-sky-400/20 bg-sky-400/5 px-3 py-2 text-[12px] leading-relaxed text-sky-100/90">
                           <BookOpenCheck className="size-3.5 text-sky-200" />
-                          <span>
-                            Поможет стандарт: {nextActionLearningTitle}
-                            {nextActionContextChecklistTitle
-                              ? `. Чеклист: ${nextActionContextChecklistTitle}`
-                              : ""}
-                          </span>
+                          <div className="min-w-0 flex-1">
+                            <p>Поможет стандарт: {nextActionLearningTitle}</p>
+                            {nextActionContextChecklistTitle ? (
+                              <p className="mt-1 text-sky-100">
+                                Чеклист: {nextActionContextChecklistTitle}
+                              </p>
+                            ) : null}
+                          </div>
                           {nextActionLearningItem ? (
                             <Link
                               href={learningModuleHref(
@@ -819,10 +821,14 @@ function TaskCard({
       {learningTitle ? (
         <div className="mt-3 flex flex-wrap items-center gap-2 rounded-md border border-sky-400/20 bg-sky-400/5 px-3 py-2 text-[12px] leading-relaxed text-sky-100/90">
           <BookOpenCheck className="size-3.5 text-sky-200" />
-          <span>
-            Поможет стандарт: {learningTitle}
-            {contextChecklistTitle ? `. Чеклист: ${contextChecklistTitle}` : ""}
-          </span>
+          <div className="min-w-0 flex-1">
+            <p>Поможет стандарт: {learningTitle}</p>
+            {contextChecklistTitle ? (
+              <p className="mt-1 text-sky-100">
+                Чеклист: {contextChecklistTitle}
+              </p>
+            ) : null}
+          </div>
           {learningItem ? (
             <Link
               href={learningModuleHref(learningItem.id, contextChecklistTitle)}

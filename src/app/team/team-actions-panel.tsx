@@ -937,15 +937,17 @@ export function TeamActionsPanel({
                           </p>
                         ) : null}
                         {learningHint ? (
-                          <p className="mt-2 flex items-start gap-2 rounded-md border border-sky-400/20 bg-sky-400/5 px-3 py-2 text-[12px] leading-relaxed text-sky-100/90">
+                          <div className="mt-2 flex items-start gap-2 rounded-md border border-sky-400/20 bg-sky-400/5 px-3 py-2 text-[12px] leading-relaxed text-sky-100/90">
                             <BookOpenCheck className="mt-0.5 size-3.5 shrink-0 text-sky-200" />
-                            <span>
-                              Команде поможет: {learningHint}
-                              {contextChecklistHint
-                                ? `. Чеклист: ${contextChecklistHint}`
-                                : ""}
-                            </span>
-                          </p>
+                            <div className="min-w-0">
+                              <p>Команде поможет: {learningHint}</p>
+                              {contextChecklistHint ? (
+                                <p className="mt-1 text-sky-100">
+                                  Чеклист: {contextChecklistHint}
+                                </p>
+                              ) : null}
+                            </div>
+                          </div>
                         ) : null}
                       </button>
                       <div className="mt-3 flex flex-wrap gap-2">
