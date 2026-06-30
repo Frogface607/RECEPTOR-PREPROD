@@ -11,6 +11,7 @@ import {
   listTasksForRole,
   roleCan,
   taskChecklistHintFromContext,
+  taskContextBriefFromContext,
   taskContextWithoutLearningHint,
   taskLearningHintFromContext,
 } from "./team-os";
@@ -87,6 +88,21 @@ describe("Team OS roles and permissions", () => {
     );
     expect(taskContextWithoutLearningHint(context)).toBe(
       "Проверьте кассовую дисциплину.",
+    );
+  });
+
+  test("extracts field briefing sections from task context", () => {
+    const context =
+      "Полевой факт: Маша: Выручка и смены — закончилась мята к 21:00. Проверка: Сверить стоп-лист и потерянные продажи. Зачем: связать факты смены с BI. Урок для команды: Брифинг смены и передача контекста. Чеклист: После смены собери полевой факт.";
+
+    expect(taskContextBriefFromContext(context)).toEqual({
+      fieldFact:
+        "Полевой факт: Маша: Выручка и смены — закончилась мята к 21:00.",
+      check: "Проверка: Сверить стоп-лист и потерянные продажи.",
+      reason: "Зачем: связать факты смены с BI.",
+    });
+    expect(taskContextWithoutLearningHint(context)).toBe(
+      "Полевой факт: Маша: Выручка и смены — закончилась мята к 21:00. Проверка: Сверить стоп-лист и потерянные продажи. Зачем: связать факты смены с BI.",
     );
   });
 

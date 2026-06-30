@@ -11,6 +11,9 @@ import {
   Copy,
   History,
   KeyRound,
+  Lightbulb,
+  ListChecks,
+  MessageSquareText,
   PauseCircle,
   PlayCircle,
   Plus,
@@ -36,6 +39,7 @@ import {
   TEAM_ROLES,
   listCommentsForTask,
   taskChecklistHintFromContext,
+  taskContextBriefFromContext,
   taskContextWithoutLearningHint,
   taskLearningHintFromContext,
   type StaffMember,
@@ -841,6 +845,14 @@ export function TeamActionsPanel({
                   const contextBody = taskContextWithoutLearningHint(
                     context?.body,
                   );
+                  const contextBrief = taskContextBriefFromContext(
+                    context?.body,
+                  );
+                  const hasContextBrief = Boolean(
+                    contextBrief.fieldFact ||
+                    contextBrief.check ||
+                    contextBrief.reason,
+                  );
 
                   return (
                     <div
@@ -887,7 +899,28 @@ export function TeamActionsPanel({
                         <p className="mt-1 text-[11px] text-muted-foreground">
                           {taskAudienceLabel(task, staff)} · {task.dueLabel}
                         </p>
-                        {context && contextBody ? (
+                        {hasContextBrief ? (
+                          <div className="mt-2 space-y-1 rounded-md border border-border/40 bg-card/35 px-3 py-2 text-[12px] leading-relaxed">
+                            {contextBrief.fieldFact ? (
+                              <p className="flex items-start gap-2 text-foreground/80">
+                                <MessageSquareText className="mt-0.5 size-3.5 shrink-0 text-brand" />
+                                <span>{contextBrief.fieldFact}</span>
+                              </p>
+                            ) : null}
+                            {contextBrief.check ? (
+                              <p className="flex items-start gap-2 text-muted-foreground">
+                                <ListChecks className="mt-0.5 size-3.5 shrink-0 text-brand" />
+                                <span>{contextBrief.check}</span>
+                              </p>
+                            ) : null}
+                            {contextBrief.reason ? (
+                              <p className="flex items-start gap-2 text-amber-100/85">
+                                <Lightbulb className="mt-0.5 size-3.5 shrink-0 text-amber-200" />
+                                <span>{contextBrief.reason}</span>
+                              </p>
+                            ) : null}
+                          </div>
+                        ) : context && contextBody ? (
                           <p className="mt-2 line-clamp-2 rounded-md border border-border/40 bg-card/35 px-3 py-2 text-[12px] leading-relaxed text-muted-foreground">
                             <span className="font-medium text-foreground/80">
                               {context.authorName}:

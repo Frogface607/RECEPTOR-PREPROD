@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import type { SurvivalTaskDraft } from "@/lib/survival-score";
 import { learningModuleHref } from "@/lib/team/team-learning";
 import {
+  taskContextBriefFromContext,
   taskChecklistHintFromContext,
   type TeamRoleId,
   type TeamTask,
@@ -63,42 +64,6 @@ function createdMessage(draft: SurvivalTaskDraft, message: string): string {
     ? ` Чеклист: ${draft.learningChecklistTitle}.`
     : "";
   return `${message} Контур: ${sourceLabel(draft)}.${impact}${learning}${checklist} Адресат: ${audiencePrefix(draft).toLowerCase()} ${audienceLabel(draft)}.`;
-}
-
-function businessReasonFromContext(
-  contextNote: string | undefined,
-): string | null {
-  if (!contextNote) return null;
-  const marker = "Зачем:";
-  const start = contextNote.indexOf(marker);
-  if (start < 0) return null;
-  const raw = contextNote.slice(start);
-  const suffixStart = [
-    raw.indexOf("Урок для команды:"),
-    raw.indexOf("Чеклист:"),
-  ]
-    .filter((index) => index >= 0)
-    .sort((a, b) => a - b)[0];
-  const reason = suffixStart >= 0 ? raw.slice(0, suffixStart) : raw;
-  return reason.replace(/\s+/g, " ").trim() || null;
-}
-
-function fieldFactFromContext(contextNote: string | undefined): string | null {
-  if (!contextNote) return null;
-  const marker = "Полевой факт:";
-  const start = contextNote.indexOf(marker);
-  if (start < 0) return null;
-  const raw = contextNote.slice(start);
-  const suffixStart = [
-    raw.indexOf("Проверка:"),
-    raw.indexOf("Зачем:"),
-    raw.indexOf("Урок для команды:"),
-    raw.indexOf("Чеклист:"),
-  ]
-    .filter((index) => index >= 0)
-    .sort((a, b) => a - b)[0];
-  const fact = suffixStart >= 0 ? raw.slice(0, suffixStart) : raw;
-  return fact.replace(/\s+/g, " ").trim() || null;
 }
 
 export function SurvivalTaskActions({
@@ -151,8 +116,7 @@ export function SurvivalTaskActions({
         const state = states[index] ?? "idle";
         const saved = state === "saved";
         const AudienceIcon = draft.audienceMemberName ? UserRound : UsersRound;
-        const fieldFact = fieldFactFromContext(draft.contextNote);
-        const businessReason = businessReasonFromContext(draft.contextNote);
+        const contextBrief = taskContextBriefFromContext(draft.contextNote);
         const checklistTitle =
           draft.learningChecklistTitle ??
           taskChecklistHintFromContext(draft.contextNote);
@@ -193,16 +157,16 @@ export function SurvivalTaskActions({
                 <p className="mt-2 text-[13px] leading-relaxed text-foreground/85">
                   {draft.title}
                 </p>
-                {fieldFact ? (
+                {contextBrief.fieldFact ? (
                   <p className="mt-1 flex items-start gap-2 text-[11px] leading-relaxed text-foreground/75">
                     <MessageSquareText className="mt-0.5 size-3.5 shrink-0 text-brand" />
-                    <span>{fieldFact}</span>
+                    <span>{contextBrief.fieldFact}</span>
                   </p>
                 ) : null}
-                {businessReason ? (
+                {contextBrief.reason ? (
                   <p className="mt-1 flex items-start gap-2 text-[11px] leading-relaxed text-amber-100/90">
                     <Lightbulb className="mt-0.5 size-3.5 shrink-0 text-amber-200" />
-                    <span>{businessReason}</span>
+                    <span>{contextBrief.reason}</span>
                   </p>
                 ) : null}
                 {draft.learningModuleTitle ? (

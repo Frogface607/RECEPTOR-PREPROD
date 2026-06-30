@@ -77,6 +77,12 @@ export type TeamTaskComment = {
   createdAtLabel: string;
 };
 
+export type TeamTaskContextBrief = {
+  fieldFact: string | null;
+  check: string | null;
+  reason: string | null;
+};
+
 export type TeamAnnouncementAudience =
   { type: "role"; roleId: TeamRoleId } | { type: "venue"; venueId: string };
 
@@ -587,6 +593,45 @@ export function taskContextWithoutLearningHint(
     .replace(/\s*Чеклист:\s*[^\n]+?(?:\.\s*)?$/g, "")
     .replace(/\s*Урок для команды:\s*[^\n]+?(?:\.\s*)?$/g, "")
     .trim();
+}
+
+function contextSection(
+  context: string | null | undefined,
+  marker: string,
+  nextMarkers: string[],
+): string | null {
+  if (!context) return null;
+  const start = context.indexOf(marker);
+  if (start < 0) return null;
+  const raw = context.slice(start);
+  const suffixStart = nextMarkers
+    .map((nextMarker) => raw.indexOf(nextMarker))
+    .filter((index) => index >= 0)
+    .sort((a, b) => a - b)[0];
+  const section = suffixStart >= 0 ? raw.slice(0, suffixStart) : raw;
+  return section.replace(/\s+/g, " ").trim() || null;
+}
+
+export function taskContextBriefFromContext(
+  context: string | null | undefined,
+): TeamTaskContextBrief {
+  return {
+    fieldFact: contextSection(context, "Полевой факт:", [
+      "Проверка:",
+      "Зачем:",
+      "Урок для команды:",
+      "Чеклист:",
+    ]),
+    check: contextSection(context, "Проверка:", [
+      "Зачем:",
+      "Урок для команды:",
+      "Чеклист:",
+    ]),
+    reason: contextSection(context, "Зачем:", [
+      "Урок для команды:",
+      "Чеклист:",
+    ]),
+  };
 }
 
 export function listAnnouncementsForRole(
