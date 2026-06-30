@@ -81,7 +81,10 @@ export type OwnerBrainMemoryGraph = {
   summary: string;
   detail: string;
   actionLabel: string;
+  target: OwnerBrainMemoryGraphTarget;
 };
+
+export type OwnerBrainMemoryGraphTarget = OwnerBrainSourceId | "advisor";
 
 type BuildOwnerBrainReadinessInput = {
   context: unknown;
@@ -452,6 +455,21 @@ function buildOwnerMemoryGraph({
       : brief.status === "work"
         ? "watch"
         : "risk";
+  const missingLabel = brief.missingLabels[0] ?? null;
+  const target: OwnerBrainMemoryGraphTarget = missingLabel === "люди"
+    ? "team"
+    : missingLabel === "смена"
+      ? "field"
+      : missingLabel === "задачи"
+        ? "team"
+        : "advisor";
+  const actionLabel = missingLabel === "люди"
+    ? "Добавить людей"
+    : missingLabel === "смена"
+      ? "Собрать итог"
+      : missingLabel === "задачи"
+        ? "Связать задачу"
+        : "Спросить советника";
 
   return {
     tone,
@@ -460,10 +478,8 @@ function buildOwnerMemoryGraph({
       brief.missingLabels.length > 0
         ? `Следующее связать: ${brief.nextAction}.`
         : "Люди, смена и задачи уже связаны в памяти советника.",
-    actionLabel:
-      brief.missingLabels.length > 0
-        ? "Нужно связать"
-        : "Связано",
+    actionLabel,
+    target,
   };
 }
 

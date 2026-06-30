@@ -87,7 +87,8 @@ describe("owner brain readiness", () => {
     expect(readiness.memoryGraph).toMatchObject({
       tone: "risk",
       summary: "связей пока нет",
-      actionLabel: "Нужно связать",
+      actionLabel: "Добавить людей",
+      target: "team",
     });
     expect(readiness.fieldMemory).toMatchObject({
       status: "missing",
@@ -127,7 +128,8 @@ describe("owner brain readiness", () => {
     expect(readiness.nextSource.id).toBe("context");
     expect(readiness.memoryGraph).toMatchObject({
       tone: "good",
-      actionLabel: "Связано",
+      actionLabel: "Спросить советника",
+      target: "advisor",
       detail: "Люди, смена и задачи уже связаны в памяти советника.",
     });
     expect(readiness.memoryGraph.summary).toContain("люди, смена, задачи");
@@ -180,6 +182,42 @@ describe("owner brain readiness", () => {
       sourceId: "learning",
       value: "Допуск: 1/2",
     });
+  });
+
+  test("routes the memory graph to shift memory when people exist but no field note exists", () => {
+    const readiness = buildOwnerBrainReadiness({
+      context: DEMO_CONTEXT_ANSWERS,
+      staff,
+      tasks,
+      comments: [],
+      learningSummaries: staff.map((member) => learningSummary(member)),
+      dataMode: "live",
+    });
+
+    expect(readiness.memoryGraph).toMatchObject({
+      tone: "watch",
+      actionLabel: "Собрать итог",
+      target: "field",
+    });
+    expect(readiness.memoryGraph.detail).toContain("собрать итог смены");
+  });
+
+  test("routes the memory graph to tasks when people and shift memory exist without task links", () => {
+    const readiness = buildOwnerBrainReadiness({
+      context: DEMO_CONTEXT_ANSWERS,
+      staff,
+      tasks: [],
+      comments,
+      learningSummaries: staff.map((member) => learningSummary(member)),
+      dataMode: "live",
+    });
+
+    expect(readiness.memoryGraph).toMatchObject({
+      tone: "watch",
+      actionLabel: "Связать задачу",
+      target: "team",
+    });
+    expect(readiness.memoryGraph.detail).toContain("связать память с задачей");
   });
 
   test("keeps shift memory in progress when the note has no context or scale", () => {

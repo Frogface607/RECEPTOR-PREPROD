@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import type {
+  OwnerBrainMemoryGraph,
   OwnerBrainMemorySnapshot,
   OwnerBrainReadiness,
   OwnerBrainSource,
@@ -271,6 +272,27 @@ function brainSnapshotHref(
     : brainSourceHref(fallback, venueId, teamPeriodParams);
 }
 
+function dashboardChatHref(
+  venueId: string,
+  teamPeriodParams?: TeamPeriodParams,
+): string {
+  const params = new URLSearchParams(teamPeriodParams);
+  params.set("chat", "1");
+  return `/dashboard/${encodeURIComponent(venueId)}?${params.toString()}`;
+}
+
+function brainMemoryGraphHref(
+  graph: OwnerBrainMemoryGraph,
+  venueId: string,
+  teamPeriodParams?: TeamPeriodParams,
+): string {
+  if (graph.target === "advisor") {
+    return dashboardChatHref(venueId, teamPeriodParams);
+  }
+
+  return brainSourceIdHref(graph.target, venueId, teamPeriodParams);
+}
+
 function actionCta(action: OwnerReviewAction): string {
   if (action.existingTaskId) return "Открыть задачу";
   if (action.target === "margin-risk") return "Разобрать";
@@ -528,7 +550,14 @@ export function OwnerCommandPanel({
                 {brainReadiness.summary}
               </p>
 
-              <div className="mt-3 grid gap-2 rounded-lg border border-border/50 bg-background/35 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+              <Link
+                href={brainMemoryGraphHref(
+                  brainReadiness.memoryGraph,
+                  venueId,
+                  teamPeriodParams,
+                )}
+                className="mt-3 grid gap-2 rounded-lg border border-border/50 bg-background/35 p-3 transition-colors hover:border-brand/45 hover:bg-brand/10 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+              >
                 <span className="min-w-0">
                   <span className="block text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
                     Карта связей
@@ -547,8 +576,9 @@ export function OwnerCommandPanel({
                   }
                 >
                   {brainReadiness.memoryGraph.actionLabel}
+                  <ArrowRight className="size-3.5" />
                 </span>
-              </div>
+              </Link>
 
               <div className="mt-3 grid gap-2">
                 {brainReadiness.snapshot.map((item) => (
