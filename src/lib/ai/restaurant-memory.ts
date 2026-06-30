@@ -2,6 +2,7 @@ import { buildTeamFieldContextDigest } from "@/lib/team/team-field-context";
 import { summarizeFieldNoteReadiness } from "@/lib/team/field-note-input";
 import {
   buildRestaurantMemoryGraphModel,
+  explainRestaurantMemoryGraph,
   formatRestaurantMemoryGraph,
   summarizeRestaurantMemoryGraph,
   type RestaurantMemoryGraphBrief,
@@ -29,6 +30,7 @@ export type RestaurantAdvisorMemory = {
   learningGaps: string[];
   memoryGraph: string[];
   memoryGraphMarkdown?: string;
+  memoryGraphTrace?: string[];
   memoryGraphBrief?: RestaurantMemoryGraphBrief;
 };
 
@@ -188,6 +190,9 @@ export function buildRestaurantAdvisorMemory(
     comments: input.comments,
   });
   const memoryGraph = formatRestaurantMemoryGraph(memoryGraphModel.relations);
+  const memoryGraphTrace = explainRestaurantMemoryGraph(
+    memoryGraphModel.relations,
+  );
   const memoryGraphBrief = summarizeRestaurantMemoryGraph(
     memoryGraphModel.relations,
   );
@@ -209,6 +214,7 @@ export function buildRestaurantAdvisorMemory(
     memoryGraph,
     memoryGraphMarkdown:
       memoryGraphModel.edges.length > 0 ? memoryGraphModel.markdownSnapshot : undefined,
+    memoryGraphTrace,
     memoryGraphBrief,
   };
 }
@@ -271,6 +277,10 @@ export function formatRestaurantAdvisorMemoryForPrompt(
     );
   }
 
+  if (memory.memoryGraphTrace && memory.memoryGraphTrace.length > 0) {
+    lines.push(`Почему так думаю: ${memory.memoryGraphTrace.join(" ")}`);
+  }
+
   return lines.join("\n");
 }
 
@@ -302,6 +312,9 @@ export function formatRestaurantAdvisorMemoryForAnswer(
       : null,
     memory.memoryGraphBrief
       ? `• Карта памяти: ${memory.memoryGraphBrief.summary}. Следующее: ${memory.memoryGraphBrief.nextAction}.`
+      : null,
+    memory.memoryGraphTrace?.[0]
+      ? `• Почему так думаю: ${memory.memoryGraphTrace.slice(0, 3).join(" ")}`
       : null,
     !memory.fieldMemoryTaskStatus && memory.fieldMemoryFollowUpQuestions[0]
       ? `• Следующий вопрос для брифа: ${memory.fieldMemoryFollowUpQuestions[0]}`

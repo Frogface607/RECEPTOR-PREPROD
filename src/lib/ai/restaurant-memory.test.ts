@@ -104,6 +104,8 @@ describe("restaurant advisor memory", () => {
     expect(memory.memoryGraph.join("\n")).toContain("оставил(а) итог смены");
     expect(memory.memoryGraphMarkdown).toContain("# Карта памяти ресторана");
     expect(memory.memoryGraphMarkdown).toContain("person:маша");
+    expect(memory.memoryGraphTrace?.join("\n")).toContain("Люди: Маша");
+    expect(memory.memoryGraphTrace?.join("\n")).not.toContain("->");
     expect(memory.memoryGraphBrief).toMatchObject({
       status: "ready",
       sourceLabels: ["люди", "смена", "задачи"],
@@ -152,6 +154,10 @@ describe("restaurant advisor memory", () => {
       memoryGraph: [
         "Маша -> оставил(а) итог смены -> Поле: ливень и стоп-лист",
       ],
+      memoryGraphTrace: [
+        "Люди: Маша — Управляющий.",
+        "Смена: Маша дал(а) контекст — ливень и стоп-лист.",
+      ],
       memoryGraphBrief: {
         relationCount: 3,
         sourceLabels: ["люди", "смена", "задачи"],
@@ -170,6 +176,7 @@ describe("restaurant advisor memory", () => {
     expect(text).toContain("Учебные пробелы");
     expect(text).toContain("Связи памяти");
     expect(text).toContain("Карта памяти");
+    expect(text).toContain("Почему так думаю");
     expect(text).toContain("Маша -> оставил(а) итог смены");
   });
 
@@ -206,6 +213,10 @@ describe("restaurant advisor memory", () => {
       openTasks: ["Проверить стоп-лист — до 17:00"],
       learningGaps: ["Алина: Как рекомендовать блюдо без давления"],
       memoryGraph: ["Маша -> оставил(а) итог смены -> Поле: ливень"],
+      memoryGraphTrace: [
+        "Люди: Маша — Управляющий.",
+        "Смена: Маша дал(а) контекст — ливень.",
+      ],
       memoryGraphBrief: {
         relationCount: 3,
         sourceLabels: ["люди", "смена", "задачи"],
@@ -221,6 +232,7 @@ describe("restaurant advisor memory", () => {
     expect(text).toContain("Память смены неполная");
     expect(text).toContain("Добор памяти уже в работе");
     expect(text).toContain("Карта памяти");
+    expect(text).toContain("Почему так думаю");
     expect(text).toContain("Первый учебный пробел");
     expect(text).not.toContain("Сигналы с поля");
     expect(text).not.toContain("Открытые действия:");

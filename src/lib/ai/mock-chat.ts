@@ -333,6 +333,9 @@ function memoryBriefLines(memory: RestaurantAdvisorMemory | undefined): string[]
       ? `Обучить в первую очередь: ${memory.learningGaps[0]}.`
       : null,
     memory.openTasks[0] ? `Открытое действие: ${memory.openTasks[0]}.` : null,
+    memory.memoryGraphTrace?.[0]
+      ? `Почему так думаю: ${memory.memoryGraphTrace.slice(0, 3).join(" ")}`
+      : null,
   ].filter((line): line is string => Boolean(line));
 }
 

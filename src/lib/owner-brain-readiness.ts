@@ -1,6 +1,7 @@
 import type { OwnerReviewTone } from "@/lib/owner-review";
 import {
   buildRestaurantMemoryGraph,
+  explainRestaurantMemoryGraph,
   summarizeRestaurantMemoryGraph,
 } from "@/lib/ai/restaurant-memory-graph";
 import { summarizeFieldNoteReadiness } from "@/lib/team/field-note-input";
@@ -80,6 +81,7 @@ export type OwnerBrainMemoryGraph = {
   tone: OwnerReviewTone;
   summary: string;
   detail: string;
+  trace: string[];
   actionLabel: string;
   target: OwnerBrainMemoryGraphTarget;
 };
@@ -446,9 +448,8 @@ function buildOwnerMemoryGraph({
   tasks: TeamTask[];
   comments: TeamTaskComment[];
 }): OwnerBrainMemoryGraph {
-  const brief = summarizeRestaurantMemoryGraph(
-    buildRestaurantMemoryGraph({ staff, tasks, comments }),
-  );
+  const relations = buildRestaurantMemoryGraph({ staff, tasks, comments });
+  const brief = summarizeRestaurantMemoryGraph(relations);
   const tone: OwnerReviewTone =
     brief.status === "ready"
       ? "good"
@@ -478,6 +479,7 @@ function buildOwnerMemoryGraph({
       brief.missingLabels.length > 0
         ? `Следующее связать: ${brief.nextAction}.`
         : "Люди, смена и задачи уже связаны в памяти советника.",
+    trace: brief.traceLines ?? explainRestaurantMemoryGraph(relations),
     actionLabel,
     target,
   };

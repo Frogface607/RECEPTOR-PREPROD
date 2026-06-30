@@ -52,6 +52,7 @@ export type RestaurantMemoryGraphBrief = {
   status: "ready" | "work" | "missing";
   summary: string;
   nextAction: string;
+  traceLines?: string[];
 };
 
 type RestaurantMemoryGraphInput = {
@@ -115,6 +116,11 @@ function taskPredicate(task: TeamTask): string {
 
 function relationLine(relation: RestaurantMemoryRelation): string {
   return `${relation.subject} -> ${relation.predicate} -> ${relation.object}`;
+}
+
+function objectEvidence(value: string): string {
+  const [, detail] = value.match(/^[^:]+:\s*(.+)$/) ?? [];
+  return compact(detail ?? value, 120);
 }
 
 function nodeId(kind: RestaurantMemoryNodeKind, label: string): string {
@@ -244,6 +250,31 @@ export function formatRestaurantMemoryGraph(
   return relations.map(relationLine);
 }
 
+export function explainRestaurantMemoryGraph(
+  relations: RestaurantMemoryRelation[],
+): string[] {
+  const team = relations.find((relation) => relation.source === "team");
+  const field =
+    relations.find(
+      (relation) =>
+        relation.source === "field" &&
+        relation.predicate === "оставил(а) итог смены",
+    ) ?? relations.find((relation) => relation.source === "field");
+  const task =
+    relations.find(
+      (relation) =>
+        relation.source === "task" && relation.subject === "Память смены",
+    ) ?? relations.find((relation) => relation.source === "task");
+
+  return [
+    team ? `Люди: ${team.subject} — ${team.object}.` : null,
+    field
+      ? `Смена: ${field.subject} дал(а) контекст — ${objectEvidence(field.object)}.`
+      : null,
+    task ? `Задачи: ${task.subject} — ${objectEvidence(task.object)}.` : null,
+  ].filter((line): line is string => Boolean(line));
+}
+
 export function formatRestaurantMemoryGraphMarkdown({
   nodes,
   edges,
@@ -346,5 +377,6 @@ export function summarizeRestaurantMemoryGraph(
     status,
     summary,
     nextAction,
+    traceLines: explainRestaurantMemoryGraph(relations),
   };
 }

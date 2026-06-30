@@ -580,6 +580,24 @@ export function OwnerCommandPanel({
                 </span>
               </Link>
 
+              {brainReadiness.memoryGraph.trace.length > 0 ? (
+                <div className="mt-3 border-t border-border/45 pt-3">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                    Почему советник так думает
+                  </p>
+                  <div className="mt-2 grid gap-1.5">
+                    {brainReadiness.memoryGraph.trace.map((item) => (
+                      <p
+                        key={item}
+                        className="text-[12px] leading-relaxed text-muted-foreground"
+                      >
+                        {item}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
               <div className="mt-3 grid gap-2">
                 {brainReadiness.snapshot.map((item) => (
                   <Link

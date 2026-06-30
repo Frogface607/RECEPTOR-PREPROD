@@ -18,6 +18,11 @@ const RESTAURANT_MEMORY: RestaurantAdvisorMemory = {
   openTasks: ["Проверить стоп-лист — до 17:00"],
   learningGaps: ["Алина: Как рекомендовать блюдо без давления"],
   memoryGraph: ["Маша -> оставил(а) итог смены -> Поле: ливень"],
+  memoryGraphTrace: [
+    "Люди: Маша — Управляющий.",
+    "Смена: Маша дал(а) контекст — ливень.",
+    "Задачи: Поле — Проверить стоп-лист.",
+  ],
 };
 
 function client() {
@@ -88,6 +93,7 @@ describe("runMockChatTurn — routing", () => {
     expect(text?.text).toContain("Память смены:");
     expect(text?.text).toContain("Добор памяти смены");
     expect(text?.text).toContain("Обучить в первую очередь");
+    expect(text?.text).toContain("Почему так думаю");
     expect(text?.text).toContain("итога смены");
     expect(text?.text).toContain("короткий факт с поля");
   });
@@ -101,6 +107,7 @@ describe("runMockChatTurn — routing", () => {
     expect(text?.text).toContain("Что уже знаю");
     expect(text?.text).toContain("Итог смены: ливень");
     expect(text?.text).toContain("Добор памяти уже в работе");
+    expect(text?.text).toContain("Почему так думаю");
     expect(text?.text).toContain("Рабочий ритм Receptor");
   });
 

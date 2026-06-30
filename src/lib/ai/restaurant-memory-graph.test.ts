@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import {
   buildRestaurantMemoryGraph,
   buildRestaurantMemoryGraphModel,
+  explainRestaurantMemoryGraph,
   formatRestaurantMemoryGraph,
   formatRestaurantMemoryGraphMarkdown,
   summarizeRestaurantMemoryGraph,
@@ -79,6 +80,21 @@ describe("restaurant memory graph", () => {
     expect(lines.join("\n")).not.toContain("Receptor -> сообщил");
   });
 
+  test("explains memory graph relations in product language", () => {
+    const trace = explainRestaurantMemoryGraph(
+      buildRestaurantMemoryGraph({ staff, tasks, comments }),
+    );
+
+    expect(trace).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("Люди: Маша"),
+        expect.stringContaining("Смена: Маша"),
+        expect.stringContaining("Задачи: Память смены"),
+      ]),
+    );
+    expect(trace.join("\n")).not.toContain("->");
+  });
+
   test("keeps a lightweight node-edge model with a markdown snapshot", () => {
     const model = buildRestaurantMemoryGraphModel({ staff, tasks, comments });
 
@@ -120,6 +136,7 @@ describe("restaurant memory graph", () => {
       missingLabels: [],
       nextAction: "можно спрашивать советника о причинах и действиях",
     });
+    expect(brief.traceLines?.join("\n")).toContain("Люди: Маша");
     expect(brief.summary).toContain("связей");
     expect(brief.summary).not.toContain("->");
   });
