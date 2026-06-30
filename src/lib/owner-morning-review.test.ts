@@ -86,7 +86,7 @@ describe("buildOwnerMorningReviewRows", () => {
       expect.objectContaining({
         label: "Поле",
         value: "2 сигнала · Проверить стоп-лист и потерянные продажи",
-        detail: expect.stringContaining("сколько выручки"),
+        detail: "Стоп-лист: Маша — закончилась мята",
         tone: "risk",
       }),
       expect.objectContaining({
@@ -101,23 +101,15 @@ describe("buildOwnerMorningReviewRows", () => {
         label: "Действие",
         value: "Проверить стоп-лист и потерянные продажи · 2 сигнала",
         detail: expect.stringContaining(
-          "Вопрос: что закончилось, сколько продаж потеряли и кто отвечает за запас?",
+          "Проверка: Сверить, какие позиции закончились",
         ),
         tone: "risk",
       }),
     ]);
-    expect(rows[2].detail).toContain(
-      "Стандарт: Брифинг смены и передача контекста.",
-    );
-    expect(rows[2].detail).toContain(
-      "Чеклист: Если полевая заметка про стоп-лист.",
-    );
-    expect(rows[3].detail).toContain(
-      "Стандарт: Брифинг смены и передача контекста.",
-    );
-    expect(rows[3].detail).toContain(
-      "Чеклист: Если полевая заметка про стоп-лист.",
-    );
+    expect(rows[2].detail).not.toContain("Стандарт:");
+    expect(rows[2].detail).not.toContain("Чеклист:");
+    expect(rows[3].detail).not.toContain("Стандарт:");
+    expect(rows[3].detail).not.toContain("Чеклист:");
   });
 
   test("prompts for field notes when the owner review has no field context", () => {
@@ -146,12 +138,8 @@ describe("buildOwnerMorningReviewRows", () => {
     expect(rows[2].detail).toContain(
       "Вопрос: какая смена, человек или ставка съедает прибыль?",
     );
-    expect(rows[2].detail).toContain(
-      "Стандарт: Цифры ресторана простым языком.",
-    );
-    expect(rows[2].detail).toContain(
-      "Чеклист: Если BI показал перерасход ФОТ.",
-    );
+    expect(rows[2].detail).not.toContain("Стандарт:");
+    expect(rows[2].detail).not.toContain("Чеклист:");
     expect(rows).toHaveLength(3);
   });
 
@@ -195,7 +183,7 @@ describe("buildOwnerMorningReviewRows", () => {
           label: "Действие",
           value: "Разобрать ФОТ и маржу смены · 1 сигнал",
           detail: expect.stringContaining(
-            "Чеклист: Если BI показал недобор валовой прибыли.",
+            "Проверка: Сверить ФОТ смены",
           ),
           tone: "risk",
         }),

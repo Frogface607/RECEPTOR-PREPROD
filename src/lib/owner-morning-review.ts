@@ -92,23 +92,6 @@ function appendBriefingQuestion(
   return `${detail} ${questionText}`;
 }
 
-function appendLearningStandard(
-  detail: string,
-  standard: string | null | undefined,
-  checklist: string | null | undefined,
-): string {
-  const standardText = standard?.trim();
-  const checklistText = checklist?.trim();
-  if (!standardText && !checklistText) return detail;
-
-  const parts = [
-    standardText ? `Стандарт: ${standardText}.` : null,
-    checklistText ? `Чеклист: ${checklistText}.` : null,
-  ].filter((part): part is string => Boolean(part));
-
-  return `${detail} ${parts.join(" ")}`;
-}
-
 const UNTIED_FIELD_CONTEXT_QUESTION =
   "какая цифра подтверждает этот факт: выручка, ФОТ, маржа, стоп-лист или отзывы гостей";
 
@@ -118,7 +101,7 @@ function fieldRow(review: OwnerReview): OwnerMorningReviewRow {
 
   if (field) {
     const detail = hypothesis
-      ? `${field.detail} Проверка: ${hypothesis.check}`
+      ? field.detail
       : appendBriefingQuestion(field.detail, UNTIED_FIELD_CONTEXT_QUESTION);
 
     return {
@@ -153,17 +136,12 @@ function bridgeRow(
   return {
     label: "Вопрос",
     value: "Что спросить на разборе",
-    detail: appendLearningStandard(
-      [
-        `Объясняет ли полевой факт цифру «${bi.value}»?`,
-        questionSentence(hypothesis.briefingQuestion),
-        `Проверка: ${hypothesis.check}`,
-      ]
-        .filter((part): part is string => Boolean(part))
-        .join(" "),
-      hypothesis.learningModuleTitle,
-      hypothesis.learningChecklistTitle,
-    ),
+    detail: [
+      questionSentence(hypothesis.briefingQuestion),
+      `Проверка: ${hypothesis.check}`,
+    ]
+      .filter((part): part is string => Boolean(part))
+      .join(" "),
     tone: bi.tone === "risk" || field.tone === "risk" ? "risk" : "watch",
   };
 }
@@ -186,14 +164,7 @@ function fieldActionRow(
     value: hypothesis.impactLabel
       ? `${title} · ${hypothesis.impactLabel}`
       : title,
-    detail: appendLearningStandard(
-      appendBriefingQuestion(
-        `${hypothesis.why} Проверка: ${hypothesis.check}`,
-        hypothesis.briefingQuestion,
-      ),
-      hypothesis.learningModuleTitle,
-      hypothesis.learningChecklistTitle,
-    ),
+    detail: `Проверка: ${hypothesis.check}`,
     tone:
       hypothesis.tone === "risk" || field.tone === "risk" ? "risk" : "watch",
   };
@@ -209,13 +180,9 @@ function actionRow(
       value: mainAction.impactLabel
         ? `${mainAction.title} · ${mainAction.impactLabel}`
         : mainAction.title,
-      detail: appendLearningStandard(
-        appendBriefingQuestion(
-          mainAction.detail,
-          mainAction.briefingQuestion,
-        ),
-        mainAction.learningModuleTitle,
-        mainAction.learningChecklistTitle,
+      detail: appendBriefingQuestion(
+        mainAction.detail,
+        mainAction.briefingQuestion,
       ),
       tone: mainAction.tone,
     };
