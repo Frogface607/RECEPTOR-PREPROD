@@ -2332,6 +2332,8 @@ function ShiftMetric({
 }
 
 function TeamDailyWorkflowStrip({ steps }: { steps: TeamDailyWorkflowStep[] }) {
+  const focusStep = steps.find((step) => step.tone !== "ready") ?? steps[0];
+
   return (
     <div className="grid gap-4 lg:grid-cols-[220px_1fr] lg:items-start">
       <div>
@@ -2342,6 +2344,22 @@ function TeamDailyWorkflowStrip({ steps }: { steps: TeamDailyWorkflowStep[] }) {
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           Один маршрут: подготовить, обучить, собрать факт и принять решение.
         </p>
+        {focusStep ? (
+          <Link
+            href={focusStep.href}
+            className="group mt-3 block rounded-lg border border-border/45 bg-card/35 p-3 transition-colors hover:border-brand/40 hover:bg-card/55"
+          >
+            <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+              Почему фокус дня
+            </span>
+            <span className="mt-1 flex items-start justify-between gap-2 text-[12px] leading-relaxed text-muted-foreground">
+              <span>
+                {focusStep.label}: {focusStep.reason}
+              </span>
+              <ArrowRight className="mt-0.5 size-3.5 shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:text-brand" />
+            </span>
+          </Link>
+        ) : null}
       </div>
       <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
         {steps.map((step) => (

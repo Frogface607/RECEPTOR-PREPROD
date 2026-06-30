@@ -71,15 +71,20 @@ describe("buildTeamDailyWorkflow", () => {
     ]);
     expect(steps[0]).toMatchObject({
       title: "Закрыть срочные задачи",
+      reason: "Память команды показывает: 1 срочно нужно закрыть до смены.",
       tone: "risk",
     });
     expect(steps[1]).toMatchObject({
       title: "Усилить сервис и продажи: Официант",
+      reason:
+        'Память смены связала роль "Официант" с материалом "Как рекомендовать блюдо без давления".',
       tone: "work",
     });
     expect(steps[2]).toMatchObject({
       title: "Разобрать факты смены",
       href: "#shift-summary",
+      reason:
+        "Память смены уже дала контекст, его надо связать с утренним решением.",
       tone: "work",
     });
   });
@@ -114,10 +119,13 @@ describe("buildTeamDailyWorkflow", () => {
     expect(steps[2]).toMatchObject({
       title: "Собрать итог смены",
       href: "#shift-summary",
+      reason: "Без короткого итога советник видит цифры, но не причину смены.",
       tone: "risk",
     });
     expect(steps[3]).toMatchObject({
       title: "Дать один фокус",
+      reason:
+        "Память собрана достаточно, чтобы дать один фокус без лишнего шума.",
       tone: "ready",
     });
   });

@@ -10,6 +10,7 @@ export type TeamDailyWorkflowStep = {
   label: string;
   title: string;
   detail: string;
+  reason: string;
   href: string;
   tone: TeamDailyWorkflowTone;
 };
@@ -34,6 +35,9 @@ export function buildTeamDailyWorkflow(input: {
       detail:
         primaryFollowUp?.detail ??
         `${input.opsReadiness.score}% готовности: роли, допуск и ФОТ под контролем.`,
+      reason: primaryFollowUp
+        ? `Память команды показывает: ${primaryFollowUp.metric.toLocaleLowerCase("ru-RU")} нужно закрыть до смены.`
+        : `Готовность ${input.opsReadiness.score}%: перед сменой достаточно сверить роли и план.`,
       href: primaryFollowUp?.href ?? "#shift-coverage",
       tone: primaryFollowUp
         ? followUpTone(primaryFollowUp.tone)
@@ -46,6 +50,9 @@ export function buildTeamDailyWorkflow(input: {
       detail: primaryLearning
         ? `${primaryLearning.moduleTitle}. ${primaryLearning.reason}`
         : "Критичных учебных блокеров нет, можно закрепить следующий стандарт.",
+      reason: primaryLearning
+        ? `Память смены связала роль "${primaryLearning.roleTitle}" с материалом "${primaryLearning.moduleTitle}".`
+        : "Допуски в норме: обучение можно вести как закрепление стандарта.",
       href: primaryLearning?.href ?? "#learning-progress",
       tone: primaryLearning ? learningTone(primaryLearning.tone) : "ready",
     },
@@ -58,6 +65,9 @@ export function buildTeamDailyWorkflow(input: {
       detail:
         input.fieldContext?.summary ??
         "Нужен короткий факт от команды: гости, стоп-лист, конфликт, погода, продажи или что проверить утром.",
+      reason: input.fieldContext
+        ? "Память смены уже дала контекст, его надо связать с утренним решением."
+        : "Без короткого итога советник видит цифры, но не причину смены.",
       href: "#shift-summary",
       tone: input.fieldContext ? "work" : "risk",
     },
@@ -68,6 +78,9 @@ export function buildTeamDailyWorkflow(input: {
       detail:
         primaryAction?.detail ??
         "Владелец видит готовность команды и может дать один понятный управленческий сигнал.",
+      reason: primaryAction
+        ? "Это действие связывает готовность команды с решением владельца на утро."
+        : "Память собрана достаточно, чтобы дать один фокус без лишнего шума.",
       href: primaryAction?.href ?? "#team-actions",
       tone: primaryAction ? opsActionTone(primaryAction.tone) : "ready",
     },
