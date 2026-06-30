@@ -6,6 +6,7 @@ import {
   BookOpenCheck,
   CheckCircle2,
   Lightbulb,
+  ListChecks,
   Loader2,
   MessageSquareText,
   Plus,
@@ -161,6 +162,12 @@ export function SurvivalTaskActions({
                   <p className="mt-1 flex items-start gap-2 text-[11px] leading-relaxed text-foreground/75">
                     <MessageSquareText className="mt-0.5 size-3.5 shrink-0 text-brand" />
                     <span>{contextBrief.fieldFact}</span>
+                  </p>
+                ) : null}
+                {contextBrief.check ? (
+                  <p className="mt-1 flex items-start gap-2 text-[11px] leading-relaxed text-muted-foreground">
+                    <ListChecks className="mt-0.5 size-3.5 shrink-0 text-brand" />
+                    <span>{contextBrief.check}</span>
                   </p>
                 ) : null}
                 {contextBrief.reason ? (
