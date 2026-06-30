@@ -69,21 +69,24 @@ function primaryBiRow(review: OwnerReview): OwnerMorningReviewRow {
   };
 }
 
-function fieldRow(review: OwnerReview): OwnerMorningReviewRow {
-  const field = review.evidence.find((item) => item.label === "Поле");
-  const fieldHypothesis =
+function fieldHypothesis(review: OwnerReview) {
+  return (
     review.hypotheses.find(
       (item) => item.taskSourceLabel === "Полевой контекст",
-    ) ?? null;
+    ) ?? null
+  );
+}
+
+function fieldRow(review: OwnerReview): OwnerMorningReviewRow {
+  const field = review.evidence.find((item) => item.label === "Поле");
+  const hypothesis = fieldHypothesis(review);
 
   if (field) {
     return {
       label: "Поле",
-      value: fieldHypothesis
-        ? `${field.value} · ${fieldHypothesis.title}`
-        : field.value,
-      detail: fieldHypothesis
-        ? `${field.detail} Проверка: ${fieldHypothesis.check}`
+      value: hypothesis ? `${field.value} · ${hypothesis.title}` : field.value,
+      detail: hypothesis
+        ? `${field.detail} Проверка: ${hypothesis.check}`
         : field.detail,
       tone: field.tone,
     };
@@ -95,6 +98,22 @@ function fieldRow(review: OwnerReview): OwnerMorningReviewRow {
     detail:
       "Попросите управляющего собрать короткий факт смены: гости, стоп-лист, конфликт, событие или трение команды.",
     tone: "watch",
+  };
+}
+
+function bridgeRow(
+  review: OwnerReview,
+  bi: OwnerMorningReviewRow,
+): OwnerMorningReviewRow | null {
+  const field = review.evidence.find((item) => item.label === "Поле");
+  const hypothesis = fieldHypothesis(review);
+  if (!field || !hypothesis || bi.tone === "good") return null;
+
+  return {
+    label: "Связка",
+    value: `${bi.value} + ${hypothesis.title}`,
+    detail: `Проверьте, объясняет ли полевой факт цифру: ${hypothesis.check}`,
+    tone: bi.tone === "risk" || field.tone === "risk" ? "risk" : "watch",
   };
 }
 
@@ -137,9 +156,13 @@ export function buildOwnerMorningReviewRows({
   review: OwnerReview;
   mainAction?: OwnerReviewAction | null;
 }): OwnerMorningReviewRow[] {
+  const bi = primaryBiRow(review);
+  const bridge = bridgeRow(review, bi);
+
   return [
-    primaryBiRow(review),
+    bi,
     fieldRow(review),
+    ...(bridge ? [bridge] : []),
     actionRow(review, mainAction),
   ];
 }

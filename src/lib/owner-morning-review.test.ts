@@ -85,6 +85,14 @@ describe("buildOwnerMorningReviewRows", () => {
         tone: "risk",
       }),
       expect.objectContaining({
+        label: "Связка",
+        value: expect.stringContaining(
+          "ФОТ: 38% + Проверить стоп-лист и потерянные продажи",
+        ),
+        detail: expect.stringContaining("объясняет ли полевой факт цифру"),
+        tone: "risk",
+      }),
+      expect.objectContaining({
         label: "Действие",
         value: "Разобрать дорогую смену · 38% ФОТ",
         detail: expect.stringContaining("состав смены"),
@@ -105,5 +113,6 @@ describe("buildOwnerMorningReviewRows", () => {
       tone: "watch",
     });
     expect(rows[1].detail).toContain("собрать короткий факт смены");
+    expect(rows).toHaveLength(3);
   });
 });
