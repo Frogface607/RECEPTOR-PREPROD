@@ -1,7 +1,13 @@
 import type { TeamTask, TeamTaskComment } from "./team-os";
 
 export type TeamFieldSignalKind =
-  "conflict" | "stock" | "event" | "guest" | "team" | "service";
+  | "conflict"
+  | "stock"
+  | "event"
+  | "guest"
+  | "team"
+  | "money"
+  | "service";
 
 export type TeamFieldSignal = {
   kind: TeamFieldSignalKind;
@@ -66,6 +72,20 @@ const SIGNAL_RULES: Array<{
     keywords: ["неудоб", "не успев", "хаос", "долго", "меша", "устал"],
   },
   {
+    kind: "money",
+    title: "Маржа и ФОТ смены",
+    keywords: [
+      "марж",
+      "фот",
+      "себестоим",
+      "средний чек",
+      "среднего чека",
+      "дорогая смена",
+      "скидк",
+      "ставк",
+    ],
+  },
+  {
     kind: "service",
     title: "Сервис и продажи",
     keywords: ["апсел", "допрод", "рекоменд", "продаж", "сервис", "задерж"],
@@ -105,6 +125,7 @@ function isFieldContextTask(task: TeamTask | undefined): boolean {
 function signalWeight(kind: TeamFieldSignalKind): number {
   if (kind === "conflict" || kind === "stock") return 500;
   if (kind === "team") return 400;
+  if (kind === "money") return 350;
   if (kind === "event") return 300;
   if (kind === "guest") return 200;
   return 100;

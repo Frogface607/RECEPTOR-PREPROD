@@ -136,6 +136,7 @@ describe("team learning catalog", () => {
             expect.stringContaining("Факт:"),
             expect.stringContaining("Масштаб:"),
             expect.stringContaining("Действие:"),
+            expect.stringContaining("ФОТ"),
           ]),
         }),
         expect.objectContaining({

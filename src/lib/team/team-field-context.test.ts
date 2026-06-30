@@ -159,16 +159,27 @@ describe("buildTeamFieldContextDigest", () => {
         body: "Сервис / продажи: гости хорошо брали лимонад по рекомендации.",
         createdAtLabel: "22:30",
       },
+      {
+        id: "comment-money",
+        venueId: "venue-1",
+        taskId: "task-service",
+        authorName: "Саша",
+        body: "Маржа / ФОТ: ФОТ 34%, маржинальные закуски почти не предлагали.",
+        createdAtLabel: "22:40",
+      },
     ];
 
     const digest = buildTeamFieldContextDigest({ comments, tasks });
 
     expect(digest).toMatchObject({
-      totalNotes: 3,
+      totalNotes: 4,
       signals: expect.arrayContaining([
         expect.objectContaining({ kind: "event" }),
         expect.objectContaining({ kind: "team" }),
-        expect.objectContaining({ kind: "service" }),
+        expect.objectContaining({
+          kind: "money",
+          title: "Маржа и ФОТ смены",
+        }),
       ]),
     });
   });
