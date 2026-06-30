@@ -705,6 +705,7 @@ function taskFromLaborSetupProgress(
   progress: TeamLaborSetupProgress | undefined,
 ): SurvivalTaskDraft | null {
   if (!progress || progress.status === "ready") return null;
+  const blockerText = laborSetupBlockersText(progress);
 
   if (progress.status === "needs-shifts") {
     const learningModuleTitle = "iiko и кассовая дисциплина на смене";
@@ -748,7 +749,7 @@ function taskFromLaborSetupProgress(
       learningModuleTitle,
       learningChecklistTitle,
       contextNote: withLearningContext({
-        context: `Проверка: ${progress.missingStaffCards} карточек сотрудников не связано с iiko, ${formatRubles(progress.unpricedRevenue)} выручки без точного ФОТ.`,
+        context: `Проверка: ${progress.missingStaffCards} карточек сотрудников не связано с iiko, ${formatRubles(progress.unpricedRevenue)} выручки без точного ФОТ.${blockerText}`,
         question:
           "какие сотрудники iiko должны быть связаны с Team OS, чтобы ФОТ стал доказанным",
         reason:
@@ -776,7 +777,7 @@ function taskFromLaborSetupProgress(
       learningModuleTitle,
       learningChecklistTitle,
       contextNote: withLearningContext({
-        context: `Проверка: у ${firstRateTarget.name}${extraTargets > 0 ? ` и еще ${extraTargets}` : ""} нет ставки ФОТ, ${formatRubles(progress.unpricedRevenue)} выручки под вопросом.`,
+        context: `Проверка: у ${firstRateTarget.name}${extraTargets > 0 ? ` и еще ${extraTargets}` : ""} нет ставки ФОТ, ${formatRubles(progress.unpricedRevenue)} выручки под вопросом.${blockerText}`,
         question:
           "какая ставка или роль нужна, чтобы корректно посчитать ФОТ смены",
         reason:
@@ -799,13 +800,23 @@ function taskFromLaborSetupProgress(
     learningModuleTitle,
     learningChecklistTitle,
     contextNote: withLearningContext({
-      context: `Проверка: ${progress.missingRateCards} сотрудников без ставки, ${formatRubles(progress.unpricedRevenue)} выручки под вопросом.`,
+      context: `Проверка: ${progress.missingRateCards} сотрудников без ставки, ${formatRubles(progress.unpricedRevenue)} выручки под вопросом.${blockerText}`,
       question: "какие ставки нужно заполнить, чтобы ФОТ стал доказанным",
       reason: "не завышать прибыль из-за незаполненной стоимости команды",
       learningModuleTitle,
       checklistTitle: learningChecklistTitle,
     }),
   };
+}
+
+function laborSetupBlockersText(progress: TeamLaborSetupProgress): string {
+  const items = progress.setupBlockers.map((blocker) => {
+    const reason =
+      blocker.action === "add-member" ? "нет карточки" : "нет ставки";
+    return `${blocker.name} - ${reason}, ${formatRubles(blocker.revenue)} за ${formatInteger(blocker.shifts)} смен`;
+  });
+
+  return items.length > 0 ? ` Первые блокеры: ${items.join("; ")}.` : "";
 }
 
 function openTaskContourLabels(tasks: TeamTask[]): string[] {

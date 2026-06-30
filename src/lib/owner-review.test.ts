@@ -2716,6 +2716,8 @@ describe("buildOwnerReview", () => {
     expect(review.tasks[0].contextNote).toContain(
       "Вопрос: какая ставка или роль нужна, чтобы корректно посчитать ФОТ смены.",
     );
+    expect(review.tasks[0].contextNote).toContain("Первые блокеры:");
+    expect(review.tasks[0].contextNote).toContain("Петр - нет ставки");
     expect(review.tasks[0].contextNote).toContain(
       "Чеклист: Если ФОТ не считается полностью.",
     );
