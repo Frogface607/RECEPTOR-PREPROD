@@ -35,6 +35,13 @@ describe("team learning catalog", () => {
     expect(cash?.roles).toContain("venue_manager");
     expect(numbers?.roles).toContain("owner");
     expect(numbers?.quiz).toHaveLength(3);
+    expect(numbers?.sections).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Если BI показал перерасход ФОТ",
+        }),
+      ]),
+    );
   });
 
   test("finds a learning item by id", () => {
@@ -51,6 +58,26 @@ describe("team learning catalog", () => {
       "restaurant-numbers-basics",
     );
     expect(getLearningItemByTitle("  ")).toBeUndefined();
+  });
+
+  test("includes BI task checklists in linked learning standards", () => {
+    const shift = getLearningItem("shift-open-close");
+    const techCard = getLearningItem("tech-card-discipline");
+
+    expect(shift?.sections).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Если BI показал слабую смену",
+        }),
+      ]),
+    );
+    expect(techCard?.sections).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Если BI показал недобор валовой прибыли",
+        }),
+      ]),
+    );
   });
 
   test("calculates pass/fail score from selected answers", () => {
