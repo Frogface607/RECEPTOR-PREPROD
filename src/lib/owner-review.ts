@@ -508,6 +508,12 @@ function taskChecklistForSource(
   if (learningModuleId === "restaurant-numbers-basics") {
     return "Если BI показал перерасход ФОТ";
   }
+  if (
+    learningModuleId === "sales-eight-upsell" &&
+    sourceLabel === "Продажи и сервис"
+  ) {
+    return "Если BI показал точку для апселла";
+  }
   if (learningModuleId === "tech-card-discipline") {
     if (sourceLabel === "Маржа и техкарты" || sourceLabel === "ФОТ и маржа") {
       return "Если BI показал недобор валовой прибыли";

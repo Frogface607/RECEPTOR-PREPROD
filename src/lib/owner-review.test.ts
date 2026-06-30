@@ -1847,6 +1847,7 @@ describe("buildOwnerReview", () => {
           taskSourceLabel: "Продажи и сервис",
           learningModuleId: "sales-eight-upsell",
           learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
+          learningChecklistTitle: "Если BI показал точку для апселла",
         }),
       ]),
     );
@@ -1858,8 +1859,19 @@ describe("buildOwnerReview", () => {
           sourceLabel: "Продажи и сервис",
           learningModuleId: "sales-eight-upsell",
           learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
+          learningChecklistTitle: "Если BI показал точку для апселла",
           contextNote: expect.stringContaining(
             "Урок для команды: Восьмерка продаж и апселл в сервисе.",
+          ),
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          sourceLabel: "Продажи и сервис",
+          contextNote: expect.stringContaining(
+            "Чеклист: Если BI показал точку для апселла.",
           ),
         }),
       ]),

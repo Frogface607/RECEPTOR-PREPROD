@@ -73,6 +73,13 @@ describe("team learning catalog", () => {
         }),
       ]),
     );
+    expect(getLearningItem("sales-eight-upsell")?.sections).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Если BI показал точку для апселла",
+        }),
+      ]),
+    );
     expect(techCard?.sections).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
