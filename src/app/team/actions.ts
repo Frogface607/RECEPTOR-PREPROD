@@ -11,10 +11,9 @@ import { listLearningItemsForRole } from "@/lib/team/team-learning";
 import type { TeamLearningStandardStatus } from "@/lib/team/team-learning-standards";
 import { TEAM_ROLES, type TeamRoleId, type TeamTask } from "@/lib/team/team-os";
 import {
-  normalizeTaskLabel,
-  normalizeTaskImpactLabel,
-  normalizeTaskSourceLabel,
-} from "@/lib/team/team-task-labels";
+  EMPTY_TEAM_TASK_CONTEXT_LABELS,
+  taskContextLabelsFromAuditMetadata,
+} from "@/lib/team/team-task-context-labels";
 import {
   selectIikoMemberImportTasksToClose,
   selectLaborRateTasksToClose,
@@ -515,16 +514,8 @@ async function findTaskContextLabels(
   learningModuleTitle: string | null;
   learningChecklistTitle: string | null;
 }> {
-  const emptyContext = {
-    sourceLabel: null,
-    impactLabel: null,
-    learningModuleId: null,
-    learningModuleTitle: null,
-    learningChecklistTitle: null,
-  };
-
   if (ctx.mode === "sandbox" || !ctx.supabase) {
-    return emptyContext;
+    return EMPTY_TEAM_TASK_CONTEXT_LABELS;
   }
 
   const { data, error } = await ctx.supabase
@@ -537,31 +528,10 @@ async function findTaskContextLabels(
     .order("created_at", { ascending: false })
     .limit(10);
 
-  if (error) return emptyContext;
-  const event = ((data ?? []) as Array<{
-    metadata: Record<string, unknown> | null;
-  }>).find((item) => {
-    const metadata = item.metadata;
-    return Boolean(
-      normalizeTaskSourceLabel(metadata?.sourceLabel) ||
-        normalizeTaskImpactLabel(metadata?.impactLabel) ||
-        normalizeTaskLabel(metadata?.learningModuleId) ||
-        normalizeTaskLabel(metadata?.learningModuleTitle) ||
-        normalizeTaskLabel(metadata?.learningChecklistTitle),
-    );
-  });
-
-  return {
-    sourceLabel: normalizeTaskSourceLabel(event?.metadata?.sourceLabel),
-    impactLabel: normalizeTaskImpactLabel(event?.metadata?.impactLabel),
-    learningModuleId: normalizeTaskLabel(event?.metadata?.learningModuleId),
-    learningModuleTitle: normalizeTaskLabel(
-      event?.metadata?.learningModuleTitle,
-    ),
-    learningChecklistTitle: normalizeTaskLabel(
-      event?.metadata?.learningChecklistTitle,
-    ),
-  };
+  if (error) return EMPTY_TEAM_TASK_CONTEXT_LABELS;
+  return taskContextLabelsFromAuditMetadata(
+    ((data ?? []) as Array<{ metadata: Record<string, unknown> | null }>),
+  );
 }
 
 async function closeLaborRateTasksForMembers(
