@@ -1682,6 +1682,7 @@ describe("buildOwnerReview", () => {
         expect.objectContaining({
           taskSourceLabel: "Полевой контекст",
           title: "Проверить стоп-лист и потерянные продажи",
+          learningChecklistTitle: "После смены собери полевой факт",
         }),
       ]),
     );
@@ -1691,6 +1692,7 @@ describe("buildOwnerReview", () => {
           title: "Проверить стоп-лист и потерянные продажи",
           sourceLabel: "Полевой контекст",
           roleId: "venue_manager",
+          learningChecklistTitle: "После смены собери полевой факт",
         }),
       ]),
     );

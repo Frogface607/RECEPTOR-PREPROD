@@ -448,6 +448,12 @@ function taskChecklistForSource(
   if (learningModuleId === "shift-open-close") {
     return "Если BI показал слабую смену";
   }
+  if (
+    learningModuleId === "shift-brief" &&
+    sourceLabel === "Полевой контекст"
+  ) {
+    return "После смены собери полевой факт";
+  }
   if (learningModuleId === "restaurant-numbers-basics") {
     return "Если BI показал перерасход ФОТ";
   }
