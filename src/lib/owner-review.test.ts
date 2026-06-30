@@ -2112,7 +2112,8 @@ describe("buildOwnerReview", () => {
     expect(review.hypotheses).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          title: "Полевой сигнал нужно связать с цифрами",
+          title: "Разобрать конфликт смены с цифрами",
+          check: expect.stringContaining("возвраты"),
           taskSourceLabel: "Полевой контекст",
           learningModuleId: "shift-brief",
         }),

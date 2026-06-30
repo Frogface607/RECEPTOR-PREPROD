@@ -18,6 +18,7 @@ import {
 import {
   buildTeamFieldContextDigest,
   type TeamFieldContextDigest,
+  type TeamFieldSignal,
 } from "@/lib/team/team-field-context";
 import type {
   TeamShiftPlanVarianceIssue,
@@ -1574,12 +1575,12 @@ function fieldContextHypothesis(
 ): OwnerReviewHypothesis | null {
   const signal = digest?.signals[0];
   if (!signal) return null;
+  const task = fieldContextTaskFor(signal.kind);
 
   return {
-    title: "Полевой сигнал нужно связать с цифрами",
+    title: task.title,
     why: signal.detail,
-    check:
-      "На брифинге спросить команду, как этот сигнал повлиял на выручку, гостевой опыт, стоп-лист или ФОТ смены.",
+    check: task.check,
     role: "manager",
     tone:
       signal.kind === "conflict" ||
@@ -1592,6 +1593,52 @@ function fieldContextHypothesis(
       signal.sourceCount > 1 ? `${signal.sourceCount} сигнала` : "1 сигнал",
     learningModuleId: "shift-brief",
     learningModuleTitle: "Брифинг смены и передача контекста",
+  };
+}
+
+function fieldContextTaskFor(kind: TeamFieldSignal["kind"]): {
+  title: string;
+  check: string;
+} {
+  if (kind === "conflict") {
+    return {
+      title: "Разобрать конфликт смены с цифрами",
+      check:
+        "На брифинге уточнить причину конфликта, стол/блюдо/время ожидания и проверить, повлияло ли это на возвраты, скидки или повторные жалобы.",
+    };
+  }
+  if (kind === "stock") {
+    return {
+      title: "Проверить стоп-лист и потерянные продажи",
+      check:
+        "Сверить, какие позиции закончились, сколько они давали выручки в периоде и кто отвечает за заказ, заготовки и вечерний стоп-лист.",
+    };
+  }
+  if (kind === "team") {
+    return {
+      title: "Снять трение команды перед сменой",
+      check:
+        "Спросить, где команда теряет время или путается, и превратить ответ в один чеклист, задачу или короткое обучение по роли.",
+    };
+  }
+  if (kind === "event") {
+    return {
+      title: "Связать событие с выручкой смены",
+      check:
+        "Уточнить посадку, событие, состав смены и средний чек, чтобы понять, что повторить или исправить перед похожим днем.",
+    };
+  }
+  if (kind === "guest") {
+    return {
+      title: "Проверить частый вопрос гостей",
+      check:
+        "Посчитать, повторяется ли запрос гостей, и решить: добавить позицию, подготовить скрипт официантам или вынести ответ в меню.",
+    };
+  }
+  return {
+    title: "Проверить сервис и допродажи",
+    check:
+      "На брифинге разобрать, что команда рекомендовала гостям, какие позиции продавались лучше и где нужен простой скрипт допродажи.",
   };
 }
 
