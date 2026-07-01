@@ -1,4 +1,9 @@
 import { describe, expect, test } from "vitest";
+import {
+  taskChecklistHintFromContext,
+  taskContextBriefDisplayFromContext,
+  taskLearningHintFromContext,
+} from "./team-os";
 import type { StaffMember, TeamTask } from "./team-os";
 import {
   buildTeamLearningSummaries,
@@ -94,10 +99,40 @@ describe("buildTeamLearningRolePlans", () => {
       audienceType: "member",
       audienceMemberId: "service-2",
       memberName: "Петр",
+      moduleId: "service-recommendation",
       moduleTitle: "Как рекомендовать блюдо без давления",
       roleTitle: "Официант",
+      checklistTitle: "Если сотрудник не прошел обязательное обучение",
+      practiceAction:
+        "На смене выбери одну позицию или пару к заказу и предложи ее гостю в подходящей ситуации.",
+      memoryPrompt:
+        "После смены зафиксируй, что спрашивали гости, какая рекомендация сработала и где было неудобно продавать.",
+      contextNote: expect.stringContaining(
+        "Вопрос: После смены зафиксируй, что спрашивали гости",
+      ),
       dueLabel: "до смены",
     });
+    expect(draft?.contextNote).toContain(
+      "Проверка: На смене выбери одну позицию",
+    );
+    expect(draft?.contextNote).toContain(
+      "Стандарт: Как рекомендовать блюдо без давления.",
+    );
+    expect(draft?.contextNote).toContain(
+      "Чеклист: Если сотрудник не прошел обязательное обучение.",
+    );
+    expect(taskLearningHintFromContext(draft?.contextNote)).toBe(
+      "Как рекомендовать блюдо без давления",
+    );
+    expect(taskChecklistHintFromContext(draft?.contextNote)).toBe(
+      "Если сотрудник не прошел обязательное обучение",
+    );
+    expect(taskContextBriefDisplayFromContext(draft?.contextNote)).toMatchObject(
+      {
+        question: expect.stringContaining("что спрашивали гости"),
+        check: expect.stringContaining("выбери одну позицию"),
+      },
+    );
   });
 
   test("finds an existing open task for the same blocked admission", () => {

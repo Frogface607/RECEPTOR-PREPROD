@@ -46,8 +46,13 @@ export type TeamLearningAdmissionTaskDraft = {
   audienceType: "member";
   audienceMemberId: string;
   memberName: string;
+  moduleId: string | null;
   moduleTitle: string;
   roleTitle: string;
+  checklistTitle: string;
+  practiceAction: string;
+  memoryPrompt: string;
+  contextNote: string;
   dueLabel: string;
 };
 
@@ -85,7 +90,28 @@ export function buildLearningAdmissionTaskDraft(
   const blocker = plan.blockedMembers[0] ?? null;
   if (!blocker) return null;
 
-  const moduleTitle = plan.nextItem?.title ?? blocker.nextItemTitle;
+  const checklistTitle = "Если сотрудник не прошел обязательное обучение";
+  const item =
+    plan.nextItem ??
+    plan.items.find((candidate) => candidate.title === blocker.nextItemTitle) ??
+    plan.items[0] ??
+    null;
+  const moduleTitle = item?.title ?? blocker.nextItemTitle;
+  const practice = item
+    ? learningFocusPractice(item, checklistTitle)
+    : {
+        practiceAction:
+          "Перед выходом в смену пройти материал и назвать управляющему одно правило, которое применит сегодня.",
+        memoryPrompt:
+          "После смены оставить короткий факт: что из стандарта применил, где помогло или где возник вопрос.",
+      };
+  const contextNote = [
+    `Вопрос: ${practice.memoryPrompt}`,
+    `Проверка: ${practice.practiceAction}`,
+    "Зачем: обучение должно вернуться живым фактом в память ресторана, а не остаться просто пройденным уроком.",
+    `Стандарт: ${moduleTitle}.`,
+    `Чеклист: ${checklistTitle}.`,
+  ].join("\n");
 
   return {
     title: `Пройти обучение: ${moduleTitle}`,
@@ -93,8 +119,13 @@ export function buildLearningAdmissionTaskDraft(
     audienceType: "member",
     audienceMemberId: blocker.memberId,
     memberName: blocker.memberName,
+    moduleId: item?.id ?? null,
     moduleTitle,
     roleTitle: plan.roleTitle,
+    checklistTitle,
+    practiceAction: practice.practiceAction,
+    memoryPrompt: practice.memoryPrompt,
+    contextNote,
     dueLabel: "до смены",
   };
 }

@@ -37,6 +37,12 @@ export function LearningAdmissionTaskButton({
               audienceType: draft.audienceType,
               audienceMemberId: draft.audienceMemberId,
               dueLabel: draft.dueLabel,
+              contextNote: draft.contextNote,
+              sourceLabel: "Обучение",
+              impactLabel: "допуск к смене",
+              learningModuleId: draft.moduleId ?? undefined,
+              learningModuleTitle: draft.moduleTitle,
+              learningChecklistTitle: draft.checklistTitle,
               dedupeOpenTask: true,
             });
 
@@ -49,6 +55,16 @@ export function LearningAdmissionTaskButton({
         <Plus className="size-3.5" />
         {pending ? "Создаем" : "Создать задачу"}
       </Button>
+      <div className="max-w-[280px] space-y-1 text-left text-[11px] leading-snug text-muted-foreground sm:text-right">
+        <p>
+          <span className="text-foreground/75">В смене:</span>{" "}
+          {draft.practiceAction}
+        </p>
+        <p>
+          <span className="text-foreground/75">В память:</span>{" "}
+          {draft.memoryPrompt}
+        </p>
+      </div>
       {message ? (
         <p
           className={
