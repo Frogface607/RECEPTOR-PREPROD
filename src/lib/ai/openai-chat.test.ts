@@ -22,6 +22,9 @@ const RESTAURANT_MEMORY: RestaurantAdvisorMemory = {
   learningAdoptionGaps: [
     "Алина: Как рекомендовать блюдо без давления сдан, нужен факт смены после практики",
   ],
+  closedStandardFollowUps: [
+    "Алина: Как рекомендовать блюдо без давления закрыт; после смены нужен факт",
+  ],
   memoryGraph: ["Маша -> оставил(а) итог смены -> Поле: ливень"],
 };
 
@@ -110,9 +113,13 @@ describe("runOpenAIChatTurn", () => {
     expect(firstBody.instructions).toContain("Добор памяти смены уже поставлен");
     expect(firstBody.instructions).toContain("Учебные пробелы");
     expect(firstBody.instructions).toContain("Стандарты без факта смены");
+    expect(firstBody.instructions).toContain(
+      "Закрытые стандарты ждут факта смены",
+    );
     expect(firstBody.instructions).toContain("Связи памяти");
     expect(firstBody.instructions).toContain("Маша -> оставил(а) итог смены");
     expect(firstBody.instructions).toContain("операционный ритм Receptor");
+    expect(firstBody.instructions).toContain("не считай его внедренным");
     expect(firstBody.instructions).toContain("короткий итог смены");
     expect(tool?.tool).toBe("get_revenue");
     expect(text?.text).toContain("Выручка");

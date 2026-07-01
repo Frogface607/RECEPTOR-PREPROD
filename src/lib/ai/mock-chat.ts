@@ -335,6 +335,9 @@ function memoryBriefLines(memory: RestaurantAdvisorMemory | undefined): string[]
     memory.learningAdoptionGaps[0]
       ? `Проверить внедрение стандарта: ${memory.learningAdoptionGaps[0]}.`
       : null,
+    memory.closedStandardFollowUps?.[0]
+      ? `Закрытый стандарт ждет факт смены: ${memory.closedStandardFollowUps[0]}.`
+      : null,
     memory.openTasks[0] ? `Открытое действие: ${memory.openTasks[0]}.` : null,
     memory.memoryGraphTrace?.[0]
       ? `Почему так думаю: ${memory.memoryGraphTrace.slice(0, 3).join(" ")}`

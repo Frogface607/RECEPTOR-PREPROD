@@ -964,11 +964,39 @@ function closedLoopResultText(proof: OwnerOperationalProof): string {
   const impactText = proof.lastClosedLoopImpactLabel
     ? ` Вес: ${trimEvidenceDetail(proof.lastClosedLoopImpactLabel)}.`
     : "";
-  const summaryText = proof.lastClosedLoop
+  const closedStandardTitle = extractClosedStandardTitle(proof.lastClosedLoop);
+  const summaryText = proof.lastClosedLoop && !closedStandardTitle
     ? ` Последнее: ${trimEvidenceDetail(proof.lastClosedLoop)}.`
     : "";
+  const standardText = closedStandardTitle
+    ? ` Операционный стандарт: ${trimEvidenceDetail(
+        closedStandardTitle,
+      )}. Следующий факт смены: где применили стандарт, что изменилось и что проверить утром.`
+    : "";
 
-  return `${proof.closedLoops} закрыто недавно.${labelText}${impactText}${summaryText}`;
+  return `${proof.closedLoops} закрыто недавно.${labelText}${impactText}${summaryText}${standardText}`;
+}
+
+function closedLoopTextForActiveContour(
+  proof: OwnerOperationalProof,
+): string {
+  return proof.closedLoops > 0 ? ` ${closedLoopResultText(proof)}` : "";
+}
+
+function extractClosedStandardTitle(summary: string | null): string | null {
+  if (!summary) return null;
+
+  const patterns = [
+    /задач[аи]\s+стандарта\s+после\s+сдачи:\s*(.+?)(?:\.|$)/iu,
+    /задач[аи]\s+обучения\s+после\s+сдачи\s+модуля:\s*(.+?)(?:\.|$)/iu,
+  ];
+
+  for (const pattern of patterns) {
+    const title = summary.match(pattern)?.[1]?.trim();
+    if (title) return title;
+  }
+
+  return null;
 }
 
 function normalizeTaskTitle(value: string): string {
@@ -1183,7 +1211,7 @@ function operationalPulse(
   if (proof.urgentOpenTasks > 0) {
     return {
       title: "Есть срочные действия команды",
-      detail: `${urgentTasksLabel(proof.urgentOpenTasks)} держат контур открытым.${openTaskContourText(proof.openTaskContours)}${nextOpenTaskText(proof.nextOpenTaskTitle, proof.nextOpenTaskImpactLabel)} Закройте их в задачах команды, чтобы выводы владельца стали доказанными.`,
+      detail: `${urgentTasksLabel(proof.urgentOpenTasks)} держат контур открытым.${openTaskContourText(proof.openTaskContours)}${nextOpenTaskText(proof.nextOpenTaskTitle, proof.nextOpenTaskImpactLabel)}${closedLoopTextForActiveContour(proof)} Закройте их в задачах команды, чтобы выводы владельца стали доказанными.`,
       tone: "risk",
       openTasks: proof.openTasks,
       urgentOpenTasks: proof.urgentOpenTasks,
@@ -1197,7 +1225,7 @@ function operationalPulse(
   if (proof.openTasks > 0) {
     return {
       title: "Контур в работе",
-      detail: `${openTasksLabel(proof.openTasks)} еще ждут исполнения.${openTaskContourText(proof.openTaskContours)}${nextOpenTaskText(proof.nextOpenTaskTitle, proof.nextOpenTaskImpactLabel)} После закрытия задач владелец увидит это как управленческий результат.`,
+      detail: `${openTasksLabel(proof.openTasks)} еще ждут исполнения.${openTaskContourText(proof.openTaskContours)}${nextOpenTaskText(proof.nextOpenTaskTitle, proof.nextOpenTaskImpactLabel)}${closedLoopTextForActiveContour(proof)} После закрытия задач владелец увидит это как управленческий результат.`,
       tone: "watch",
       openTasks: proof.openTasks,
       urgentOpenTasks: proof.urgentOpenTasks,

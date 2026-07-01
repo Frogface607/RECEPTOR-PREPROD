@@ -1567,8 +1567,22 @@ describe("buildOwnerReview", () => {
           label: "Контуры",
           detail: expect.stringContaining("ФОТ 35%"),
         }),
+        expect.objectContaining({
+          label: "Контуры",
+          detail: expect.stringContaining(
+            "Операционный стандарт: Как рекомендовать блюдо без давления",
+          ),
+        }),
+        expect.objectContaining({
+          label: "Контуры",
+          detail: expect.stringContaining("Следующий факт смены"),
+        }),
       ]),
     );
+    expect(review.operationalPulse?.detail).toContain(
+      "Операционный стандарт: Как рекомендовать блюдо без давления",
+    );
+    expect(review.operationalPulse?.detail).toContain("Следующий факт смены");
   });
 
   test("shows FOT and shift plan fixes in the owner operational pulse", () => {

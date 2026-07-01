@@ -12,6 +12,7 @@ import { buildTeamLearningAdoptionSignal } from "@/lib/team/team-learning-adopti
 import {
   getTeamRole,
   type StaffMember,
+  type TeamAuditEvent,
   type TeamTask,
   type TeamTaskComment,
 } from "@/lib/team/team-os";
@@ -30,6 +31,7 @@ export type RestaurantAdvisorMemory = {
   openTasks: string[];
   learningGaps: string[];
   learningAdoptionGaps: string[];
+  closedStandardFollowUps?: string[];
   memoryGraph: string[];
   memoryGraphMarkdown?: string;
   memoryGraphTrace?: string[];
@@ -40,6 +42,7 @@ type RestaurantMemoryInput = {
   staff: StaffMember[];
   tasks: TeamTask[];
   comments: TeamTaskComment[];
+  auditEvents?: TeamAuditEvent[];
   learningProgress: TeamLearningProgress[];
   learningStandards: TeamLearningStandardOverride[];
 };
@@ -144,6 +147,55 @@ function learningAdoptionGapLines(input: RestaurantMemoryInput): string[] {
     });
 }
 
+function extractClosedStandardTitle(summary: string): string | null {
+  const patterns = [
+    /задач[аи]\s+стандарта\s+после\s+сдачи:\s*(.+?)(?:\.|$)/iu,
+    /задач[аи]\s+обучения\s+после\s+сдачи\s+модуля:\s*(.+?)(?:\.|$)/iu,
+  ];
+
+  for (const pattern of patterns) {
+    const title = summary.match(pattern)?.[1]?.trim();
+    if (title) return title;
+  }
+
+  return null;
+}
+
+function taskAudienceMemberName(
+  task: TeamTask | undefined,
+  staff: StaffMember[],
+): string | null {
+  if (!task || task.audience.type !== "member") return null;
+  const memberId = task.audience.memberId;
+  return (
+    staff.find((member) => member.id === memberId)?.name ?? null
+  );
+}
+
+function closedStandardFollowUpLines(input: RestaurantMemoryInput): string[] {
+  const tasksById = new Map(input.tasks.map((task) => [task.id, task]));
+
+  return (input.auditEvents ?? [])
+    .filter(
+      (event) =>
+        event.type === "task_status_updated" && event.targetType === "task",
+    )
+    .map((event) => {
+      const title = extractClosedStandardTitle(event.summary);
+      if (!title) return null;
+
+      const memberName = taskAudienceMemberName(
+        event.targetId ? tasksById.get(event.targetId) : undefined,
+        input.staff,
+      );
+      const owner = memberName ? `${memberName}: ` : "";
+
+      return `${owner}${title} закрыт; после смены нужен факт: где применили стандарт, что изменилось и что проверить утром`;
+    })
+    .filter((line): line is string => Boolean(line))
+    .slice(0, 3);
+}
+
 function memberMemoryLines(input: RestaurantMemoryInput): string[] {
   const learningByMemberId = new Map(
     buildTeamLearningSummaries(
@@ -236,6 +288,7 @@ export function buildRestaurantAdvisorMemory(
     openTasks: openTaskLines(input.tasks),
     learningGaps: learningGapLines(input),
     learningAdoptionGaps: learningAdoptionGapLines(input),
+    closedStandardFollowUps: closedStandardFollowUpLines(input),
     memoryGraph,
     memoryGraphMarkdown:
       memoryGraphModel.edges.length > 0 ? memoryGraphModel.markdownSnapshot : undefined,
@@ -298,6 +351,12 @@ export function formatRestaurantAdvisorMemoryForPrompt(
     );
   }
 
+  if (memory.closedStandardFollowUps?.length) {
+    lines.push(
+      `Закрытые стандарты ждут факта смены: ${memory.closedStandardFollowUps.join("; ")}`,
+    );
+  }
+
   if (memory.memoryGraph.length > 0) {
     lines.push(`Связи памяти: ${memory.memoryGraph.join("; ")}`);
   }
@@ -352,6 +411,9 @@ export function formatRestaurantAdvisorMemoryForAnswer(
       : null,
     memory.learningAdoptionGaps[0]
       ? `• Стандарт нужно проверить в смене: ${memory.learningAdoptionGaps[0]}.`
+      : null,
+    memory.closedStandardFollowUps?.[0]
+      ? `• Закрытый стандарт ждет факт смены: ${memory.closedStandardFollowUps[0]}.`
       : null,
     memory.learningGaps[0]
       ? `• Первый учебный пробел: ${memory.learningGaps[0]}.`

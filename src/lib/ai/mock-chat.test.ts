@@ -20,6 +20,9 @@ const RESTAURANT_MEMORY: RestaurantAdvisorMemory = {
   learningAdoptionGaps: [
     "Алина: Как рекомендовать блюдо без давления сдан, нужен факт смены после практики",
   ],
+  closedStandardFollowUps: [
+    "Алина: Как рекомендовать блюдо без давления закрыт; после смены нужен факт",
+  ],
   memoryGraph: ["Маша -> оставил(а) итог смены -> Поле: ливень"],
   memoryGraphTrace: [
     "Люди: Маша — Управляющий.",
@@ -97,6 +100,7 @@ describe("runMockChatTurn — routing", () => {
     expect(text?.text).toContain("Добор памяти смены");
     expect(text?.text).toContain("Обучить в первую очередь");
     expect(text?.text).toContain("Проверить внедрение стандарта");
+    expect(text?.text).toContain("Закрытый стандарт ждет факт смены");
     expect(text?.text).toContain("Почему так думаю");
     expect(text?.text).toContain("итога смены");
     expect(text?.text).toContain("короткий факт с поля");
