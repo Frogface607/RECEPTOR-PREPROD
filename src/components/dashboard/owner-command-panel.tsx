@@ -363,6 +363,39 @@ export function OwnerCommandPanel({
     hash: "#learning-progress",
     periodParams: teamPeriodParams,
   });
+  const memoryPrimary = brainReadiness
+    ? brainReadiness.nextSource.status === "ready"
+      ? {
+          label: "Карта связей",
+          value: brainReadiness.memoryGraph.summary,
+          detail: brainReadiness.memoryGraph.detail,
+          actionLabel: brainReadiness.memoryGraph.actionLabel,
+          href: brainMemoryGraphHref(
+            brainReadiness.memoryGraph,
+            venueId,
+            teamPeriodParams,
+          ),
+          className: TONE_CLASS[brainReadiness.memoryGraph.tone],
+        }
+      : {
+          label: "Следующий сбор",
+          value: `${brainReadiness.nextSource.label}: ${brainReadiness.nextSource.value}`,
+          detail: brainReadiness.nextSource.detail,
+          actionLabel: brainReadiness.nextSource.actionLabel,
+          href: brainSourceHref(
+            brainReadiness.nextSource,
+            venueId,
+            teamPeriodParams,
+          ),
+          className: BRAIN_STATUS_CLASS[brainReadiness.nextSource.status],
+        }
+    : null;
+  const showFieldMemory =
+    Boolean(brainReadiness) &&
+    (brainReadiness?.fieldMemory.status !== "ready" ||
+      Boolean(brainReadiness?.fieldMemory.answerSource) ||
+      Boolean(brainReadiness?.fieldMemory.followUpTask) ||
+      Boolean(brainReadiness?.fieldMemory.nextQuestion));
 
   return (
     <section className="rounded-xl border border-brand/30 bg-card/70 p-5 shadow-[0_18px_80px_rgba(0,0,0,0.22)] sm:p-6">
@@ -558,42 +591,110 @@ export function OwnerCommandPanel({
                 {brainReadiness.summary}
               </p>
 
-              <Link
-                href={brainMemoryGraphHref(
-                  brainReadiness.memoryGraph,
-                  venueId,
-                  teamPeriodParams,
-                )}
-                className="mt-3 grid gap-2 rounded-lg border border-border/50 bg-background/35 p-3 transition-colors hover:border-brand/45 hover:bg-brand/10 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
-              >
-                <span className="min-w-0">
-                  <span className="block text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                    Карта связей
-                  </span>
-                  <span className="mt-1 block text-sm font-medium text-foreground">
-                    {brainReadiness.memoryGraph.summary}
-                  </span>
-                  <span className="mt-1 line-clamp-2 block text-[12px] leading-relaxed text-muted-foreground">
-                    {brainReadiness.memoryGraph.detail}
-                  </span>
-                </span>
-                <span
-                  className={
-                    "inline-flex w-fit items-center gap-2 rounded-md border px-2 py-1 text-[11px] font-medium " +
-                    TONE_CLASS[brainReadiness.memoryGraph.tone]
-                  }
+              {memoryPrimary ? (
+                <Link
+                  href={memoryPrimary.href}
+                  className="mt-3 grid gap-2 rounded-lg border border-border/50 bg-background/35 p-3 transition-colors hover:border-brand/45 hover:bg-brand/10 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
                 >
-                  {brainReadiness.memoryGraph.actionLabel}
-                  <ArrowRight className="size-3.5" />
-                </span>
-              </Link>
+                  <span className="min-w-0">
+                    <span className="block text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                      {memoryPrimary.label}
+                    </span>
+                    <span className="mt-1 block text-sm font-medium text-foreground">
+                      {memoryPrimary.value}
+                    </span>
+                    <span className="mt-1 line-clamp-2 block text-[12px] leading-relaxed text-muted-foreground">
+                      {memoryPrimary.detail}
+                    </span>
+                  </span>
+                  <span
+                    className={
+                      "inline-flex w-fit items-center gap-2 rounded-md border px-2 py-1 text-[11px] font-medium " +
+                      memoryPrimary.className
+                    }
+                  >
+                    {memoryPrimary.actionLabel}
+                    <ArrowRight className="size-3.5" />
+                  </span>
+                </Link>
+              ) : null}
 
-              {brainReadiness.memoryGraph.trace.length > 0 ? (
-                <div className="mt-3 border-t border-border/45 pt-3">
-                  <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                    Почему советник так думает
-                  </p>
-                  <div className="mt-2 grid gap-1.5">
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {brainReadiness.sources.map((source) => (
+                  <Link
+                    key={source.id}
+                    href={brainSourceHref(source, venueId, teamPeriodParams)}
+                    className={
+                      "min-w-0 rounded-md border px-2 py-1.5 text-[11px] transition-colors hover:bg-background/55 " +
+                      BRAIN_STATUS_CLASS[source.status]
+                    }
+                    title={`${source.label}: ${source.detail}`}
+                  >
+                    <span className="font-medium">{source.label}</span>
+                    <span className="opacity-75"> · {source.value}</span>
+                  </Link>
+                ))}
+              </div>
+
+              {showFieldMemory ? (
+                <Link
+                  href={brainSourceIdHref("field", venueId, teamPeriodParams)}
+                  className="mt-3 grid gap-3 rounded-lg border border-brand/25 bg-background/35 p-3 transition-colors hover:border-brand/55 hover:bg-brand/10 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center"
+                >
+                  <span
+                    className={
+                      "inline-flex size-9 items-center justify-center rounded-lg border " +
+                      BRAIN_STATUS_CLASS[brainReadiness.fieldMemory.status]
+                    }
+                  >
+                    <MessageSquareText className="size-4" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[10px] uppercase tracking-[0.16em] text-brand">
+                      Живой факт смены
+                    </span>
+                    <span className="mt-1 block text-sm font-medium text-foreground">
+                      {brainReadiness.fieldMemory.title} ·{" "}
+                      {brainReadiness.fieldMemory.value}
+                    </span>
+                    <span className="mt-1 line-clamp-2 block text-[12px] leading-relaxed text-muted-foreground">
+                      {brainReadiness.fieldMemory.detail}
+                    </span>
+                    {brainReadiness.fieldMemory.answerSource ? (
+                      <span className="mt-2 block text-[12px] leading-relaxed text-brand">
+                        Получено из задачи:{" "}
+                        {brainReadiness.fieldMemory.answerSource.title}
+                      </span>
+                    ) : brainReadiness.fieldMemory.followUpTask ? (
+                      <span className="mt-2 block text-[12px] leading-relaxed text-brand">
+                        Уже в работе:{" "}
+                        {brainReadiness.fieldMemory.followUpTask.title}
+                      </span>
+                    ) : brainReadiness.fieldMemory.nextQuestion ? (
+                      <span className="mt-2 block text-[12px] leading-relaxed text-amber-100">
+                        Вопрос для брифа:{" "}
+                        {brainReadiness.fieldMemory.nextQuestion}
+                      </span>
+                    ) : null}
+                  </span>
+                  <span
+                    className={
+                      "inline-flex w-fit items-center gap-2 rounded-md border px-2 py-1 text-[11px] font-medium " +
+                      BRAIN_STATUS_CLASS[brainReadiness.fieldMemory.status]
+                    }
+                  >
+                    {brainReadiness.fieldMemory.actionLabel}
+                    <ArrowRight className="size-3.5" />
+                  </span>
+                </Link>
+              ) : null}
+
+              <details className="mt-3 rounded-lg border border-border/45 bg-background/25 px-3 py-2">
+                <summary className="cursor-pointer select-none text-[10px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground">
+                  Почему советник так думает
+                </summary>
+                {brainReadiness.memoryGraph.trace.length > 0 ? (
+                  <div className="mt-3 grid gap-1.5">
                     {brainReadiness.memoryGraph.trace.map((item) => (
                       <Link
                         key={item.detail}
@@ -612,144 +713,42 @@ export function OwnerCommandPanel({
                       </Link>
                     ))}
                   </div>
-                </div>
-              ) : null}
-
-              <div className="mt-3 grid gap-2">
-                {brainReadiness.snapshot.map((item) => (
-                  <Link
-                    key={item.id}
-                    href={brainSnapshotHref(
-                      item,
-                      brainReadiness.nextSource,
-                      venueId,
-                      teamPeriodParams,
-                    )}
-                    className="grid gap-2 rounded-lg border border-border/50 bg-background/35 p-3 transition-colors hover:border-brand/45 hover:bg-brand/10 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
-                  >
-                    <span className="min-w-0">
-                      <span className="block text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                        {item.label}
-                      </span>
-                      <span className="mt-1 block text-sm font-medium text-foreground">
-                        {item.value}
-                      </span>
-                      <span className="mt-1 line-clamp-2 block text-[12px] leading-relaxed text-muted-foreground">
-                        {item.detail}
-                      </span>
-                    </span>
-                    <span
-                      className={
-                        "inline-flex w-fit items-center gap-2 rounded-md border px-2 py-1 text-[11px] font-medium " +
-                        TONE_CLASS[item.tone]
-                      }
-                    >
-                      {item.id === "next" ? brainReadiness.nextSource.actionLabel : "открыть"}
-                      <ArrowRight className="size-3.5" />
-                    </span>
-                  </Link>
-                ))}
-              </div>
-
-              <Link
-                href={brainSourceIdHref("field", venueId, teamPeriodParams)}
-                className="mt-3 grid gap-3 rounded-lg border border-brand/25 bg-background/35 p-3 transition-colors hover:border-brand/55 hover:bg-brand/10 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center"
-              >
-                <span
-                  className={
-                    "inline-flex size-9 items-center justify-center rounded-lg border " +
-                    BRAIN_STATUS_CLASS[brainReadiness.fieldMemory.status]
-                  }
-                >
-                  <MessageSquareText className="size-4" />
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-[10px] uppercase tracking-[0.16em] text-brand">
-                    Живой факт смены
-                  </span>
-                  <span className="mt-1 block text-sm font-medium text-foreground">
-                    {brainReadiness.fieldMemory.title} ·{" "}
-                    {brainReadiness.fieldMemory.value}
-                  </span>
-                  <span className="mt-1 line-clamp-2 block text-[12px] leading-relaxed text-muted-foreground">
-                    {brainReadiness.fieldMemory.detail}
-                  </span>
-                  {brainReadiness.fieldMemory.answerSource ? (
-                    <span className="mt-2 block rounded-md border border-brand/25 bg-brand/10 px-2 py-1.5 text-[12px] leading-relaxed text-brand">
-                      <span className="block text-[10px] uppercase tracking-[0.14em] text-brand/80">
-                        Получено из задачи
-                      </span>
-                      <span className="mt-1 block text-foreground">
-                        {brainReadiness.fieldMemory.answerSource.title}
-                      </span>
-                      <span className="mt-1 block text-muted-foreground">
-                        {brainReadiness.fieldMemory.answerSource.statusLabel} ·{" "}
-                        {brainReadiness.fieldMemory.answerSource.dueLabel}
-                      </span>
-                    </span>
-                  ) : brainReadiness.fieldMemory.followUpTask ? (
-                    <span className="mt-2 block rounded-md border border-brand/25 bg-brand/10 px-2 py-1.5 text-[12px] leading-relaxed text-brand">
-                      <span className="block text-[10px] uppercase tracking-[0.14em] text-brand/80">
-                        Уже в работе
-                      </span>
-                      <span className="mt-1 block text-foreground">
-                        {brainReadiness.fieldMemory.followUpTask.title}
-                      </span>
-                      <span className="mt-1 block text-muted-foreground">
-                        {brainReadiness.fieldMemory.followUpTask.statusLabel} ·{" "}
-                        {brainReadiness.fieldMemory.followUpTask.dueLabel}
-                      </span>
-                    </span>
-                  ) : brainReadiness.fieldMemory.nextQuestion ? (
-                    <span className="mt-2 block rounded-md border border-amber-400/20 bg-amber-400/8 px-2 py-1.5 text-[12px] leading-relaxed text-amber-100">
-                      <span className="block text-[10px] uppercase tracking-[0.14em] text-amber-200/80">
-                        Вопрос для брифа
-                      </span>
-                      <span className="mt-1 block text-foreground">
-                        {brainReadiness.fieldMemory.nextQuestion}
-                      </span>
-                      {brainReadiness.fieldMemory.followUpQuestions[1] ? (
-                        <span className="mt-1 block text-muted-foreground">
-                          Еще уточнить:{" "}
-                          {brainReadiness.fieldMemory.followUpQuestions
-                            .slice(1, 3)
-                            .join(" · ")}
-                        </span>
-                      ) : null}
-                    </span>
-                  ) : null}
-                </span>
-                <span
-                  className={
-                    "inline-flex w-fit items-center gap-2 rounded-md border px-2 py-1 text-[11px] font-medium " +
-                    BRAIN_STATUS_CLASS[brainReadiness.fieldMemory.status]
-                  }
-                >
-                  {brainReadiness.fieldMemory.actionLabel}
-                  <ArrowRight className="size-3.5" />
-                </span>
-              </Link>
-
-              <details className="mt-3 rounded-lg border border-border/45 bg-background/25 px-3 py-2">
-                <summary className="cursor-pointer select-none text-[10px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground">
-                  Все источники памяти · {brainReadiness.sources.length}
-                </summary>
-                <div className="mt-3 grid grid-cols-2 gap-1.5 sm:grid-cols-5">
-                  {brainReadiness.sources.map((source) => (
+                ) : (
+                  <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
+                    Пока нет связей между людьми, сменой и задачами. Начните с
+                    профиля ресторана, команды и короткого итога смены.
+                  </p>
+                )}
+                <div className="mt-3 grid gap-1.5">
+                  {brainReadiness.snapshot.map((item) => (
                     <Link
-                      key={source.id}
-                      href={brainSourceHref(source, venueId, teamPeriodParams)}
-                      className={
-                        "min-w-0 rounded-md border px-2 py-2 text-center transition-colors hover:bg-background/55 " +
-                        BRAIN_STATUS_CLASS[source.status]
-                      }
-                      title={`${source.label}: ${source.detail}`}
+                      key={item.id}
+                      href={brainSnapshotHref(
+                        item,
+                        brainReadiness.nextSource,
+                        venueId,
+                        teamPeriodParams,
+                      )}
+                      className="grid gap-2 rounded-md border border-border/45 bg-background/35 px-2.5 py-2 transition-colors hover:border-brand/45 hover:bg-brand/10 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
                     >
-                      <span className="block truncate text-[10px] font-medium">
-                        {source.label}
+                      <span className="min-w-0">
+                        <span className="block text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                          {item.label}
+                        </span>
+                        <span className="mt-1 block truncate text-[12px] text-foreground">
+                          {item.value}
+                        </span>
                       </span>
-                      <span className="mt-1 block truncate text-[11px] opacity-80">
-                        {source.value}
+                      <span
+                        className={
+                          "inline-flex w-fit items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-medium " +
+                          TONE_CLASS[item.tone]
+                        }
+                      >
+                        {item.id === "next"
+                          ? brainReadiness.nextSource.actionLabel
+                          : "открыть"}
+                        <ArrowRight className="size-3" />
                       </span>
                     </Link>
                   ))}
