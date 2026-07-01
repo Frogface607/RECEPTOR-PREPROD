@@ -1398,10 +1398,10 @@ export function TeamActionsPanel({
             <table className="w-full min-w-[1080px] text-left text-sm">
               <thead>
                 <tr className="border-b border-border/50 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                  <th className="px-3 py-3 font-normal">Сотрудник</th>
+                  <th className="px-3 py-3 font-normal">Человек</th>
                   <th className="px-3 py-3 font-normal">Роль</th>
-                  <th className="px-3 py-3 font-normal">ФОТ</th>
-                  <th className="px-3 py-3 font-normal">Логин</th>
+                  <th className="px-3 py-3 font-normal">Оплата смены</th>
+                  <th className="px-3 py-3 font-normal">Доступ</th>
                   <th className="px-3 py-3 font-normal">Статус</th>
                   <th className="px-3 py-3 font-normal">Пароль</th>
                   <th className="px-3 py-3 font-normal">Действия</th>
@@ -1435,7 +1435,7 @@ export function TeamActionsPanel({
                         </p>
                         {isFocused ? (
                           <p className="mt-2 text-[11px] text-brand">
-                            Фокус из BI: заполнить ставку
+                            Фокус из BI: настроить оплату
                           </p>
                         ) : null}
                         <p
@@ -1447,8 +1447,8 @@ export function TeamActionsPanel({
                           }
                         >
                           {memberHasLaborRate
-                            ? "ставка заведена"
-                            : "ставка не заведена"}
+                            ? "оплата настроена"
+                            : "нет оплаты"}
                         </p>
                       </td>
                       <td className="px-3 py-4 text-muted-foreground">
@@ -1468,7 +1468,7 @@ export function TeamActionsPanel({
                             className={`${FIELD_CLASS} px-2 py-1.5 text-xs`}
                             inputMode="decimal"
                             placeholder="₽/час"
-                            aria-label="Почасовая ставка"
+                            aria-label="Оплата за час"
                           />
                           <input
                             value={draft.shiftPay}
@@ -1482,7 +1482,7 @@ export function TeamActionsPanel({
                             className={`${FIELD_CLASS} px-2 py-1.5 text-xs`}
                             inputMode="decimal"
                             placeholder="₽/смена"
-                            aria-label="Фикс за смену"
+                            aria-label="Оплата за смену"
                           />
                           <input
                             value={draft.revenueBonusPct}
@@ -1496,7 +1496,7 @@ export function TeamActionsPanel({
                             className={`${FIELD_CLASS} px-2 py-1.5 text-xs`}
                             inputMode="decimal"
                             placeholder="%"
-                            aria-label="Процент от продаж"
+                            aria-label="Бонус с продаж"
                           />
                           <button
                             type="button"
@@ -1513,7 +1513,7 @@ export function TeamActionsPanel({
                               )
                             }
                             className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-background/60 text-foreground transition-colors hover:border-brand/40 disabled:opacity-50"
-                            title="Сохранить ставки"
+                            title="Сохранить оплату"
                           >
                             <Save className="size-4 text-brand" />
                           </button>
