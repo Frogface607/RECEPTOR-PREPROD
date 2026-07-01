@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import Link from "next/link";
 import {
   ArrowRight,
   BookOpenCheck,
@@ -450,13 +449,13 @@ export function LearningWorkspace({
                       {shiftCard.fieldNoteTemplate}
                     </p>
                   </div>
-                  <Link
+                  <a
                     href={shiftSummaryHref}
                     className="inline-flex h-9 w-fit items-center gap-2 rounded-lg border border-brand/35 bg-brand/10 px-3 text-xs font-medium text-brand transition-colors hover:bg-brand/15"
                   >
                     Оставить итог
                     <ArrowRight className="size-3.5" />
-                  </Link>
+                  </a>
                 </div>
               </div>
             </div>
@@ -596,33 +595,61 @@ export function LearningWorkspace({
 
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             {submittedScore ? (
-              <div className="flex items-center gap-3 rounded-lg border border-border/60 bg-background/35 p-3">
-                {submittedScore.passed ? (
-                  <Trophy className="size-5 text-brand" />
-                ) : (
-                  <RotateCcw className="size-5 text-amber-200" />
-                )}
-                <div>
-                  <p className="text-sm font-medium">
-                    {submittedScore.percentage}% · {submittedScore.correct} из{" "}
-                    {submittedScore.total}
-                  </p>
-                  <p className="mt-1 text-[12px] text-muted-foreground">
-                    {submittedScore.passed
-                      ? "Стандарт подтвержден. Примените его на смене и оставьте итог в память ресторана."
-                      : "Нужно повторить материал и пересдать."}
-                    {activeProgress?.completedAt
-                      ? ` Последняя попытка: ${formatProgressDate(
-                          activeProgress.completedAt,
-                        )}.`
-                      : ""}
-                  </p>
-                  {saveMessage ? (
-                    <p className="mt-1 text-[12px] text-muted-foreground">
-                      {saveMessage}
+              <div className="flex-1 rounded-lg border border-border/60 bg-background/35 p-3">
+                <div className="flex items-start gap-3">
+                  {submittedScore.passed ? (
+                    <Trophy className="mt-0.5 size-5 shrink-0 text-brand" />
+                  ) : (
+                    <RotateCcw className="mt-0.5 size-5 shrink-0 text-amber-200" />
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium">
+                      {submittedScore.percentage}% · {submittedScore.correct} из{" "}
+                      {submittedScore.total}
                     </p>
-                  ) : null}
+                    <p className="mt-1 text-[12px] text-muted-foreground">
+                      {submittedScore.passed
+                        ? "Стандарт подтвержден. Теперь примените его в смене и верните один живой факт в память ресторана."
+                        : "Нужно повторить материал и пересдать."}
+                      {activeProgress?.completedAt
+                        ? ` Последняя попытка: ${formatProgressDate(
+                            activeProgress.completedAt,
+                          )}.`
+                        : ""}
+                    </p>
+                    {saveMessage ? (
+                      <p className="mt-1 text-[12px] text-muted-foreground">
+                        {saveMessage}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
+                {submittedScore.passed && shiftCard ? (
+                  <div className="mt-3 grid gap-3 border-t border-border/45 pt-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+                    <div className="min-w-0 space-y-1 text-[12px] leading-relaxed">
+                      <p className="text-[10px] uppercase tracking-[0.14em] text-brand">
+                        Следующий шаг
+                      </p>
+                      <p className="text-foreground/85">
+                        <span className="text-muted-foreground">На смене:</span>{" "}
+                        {shiftCard.action}
+                      </p>
+                      <p className="text-foreground/85">
+                        <span className="text-muted-foreground">
+                          В итог смены:
+                        </span>{" "}
+                        {shiftCard.fieldNote}
+                      </p>
+                    </div>
+                    <a
+                      href={shiftSummaryHref}
+                      className="inline-flex h-9 w-fit items-center gap-2 rounded-lg border border-brand/35 bg-brand/10 px-3 text-xs font-medium text-brand transition-colors hover:bg-brand/15"
+                    >
+                      Оставить итог
+                      <ArrowRight className="size-3.5" />
+                    </a>
+                  </div>
+                ) : null}
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
