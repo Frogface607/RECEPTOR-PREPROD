@@ -26,46 +26,46 @@ export const TEAM_AUDIT_JOURNAL_CATEGORIES: TeamAuditJournalCategory[] = [
   {
     id: "all",
     label: "Все",
-    description: "Вся операционная лента",
+    description: "Все изменения по команде и сменам",
   },
   {
     id: "labor",
-    label: "ФОТ",
-    description: "Ставки и экономика команды",
+    label: "Оплата",
+    description: "Оплата смен и стоимость команды",
   },
   {
     id: "learning",
-    label: "Обучение",
-    description: "Допуск и стандарты ролей",
+    label: "Правила",
+    description: "Правила ролей и допуск к смене",
   },
   {
     id: "plan",
-    label: "План",
-    description: "График, план/факт и смены",
+    label: "Смены",
+    description: "План смен и фактическая работа",
   },
   {
     id: "tasks",
-    label: "Задачи",
-    description: "Постановка, статусы и комментарии",
+    label: "Поручения",
+    description: "Что поручили, начали или закрыли",
   },
   {
     id: "access",
-    label: "Доступ",
-    description: "Логины, роли и статусы сотрудников",
+    label: "Кабинет",
+    description: "Люди, роли, вход и статус в команде",
   },
 ];
 
 export function auditEventTypeLabel(type: TeamAuditEventType): string {
-  if (type === "member_invited") return "доступ";
-  if (type === "member_status_updated") return "статус";
-  if (type === "member_password_reset") return "пароль";
-  if (type === "member_labor_rate_updated") return "ФОТ";
-  if (type === "task_created") return "задача";
-  if (type === "task_status_updated") return "статус задачи";
-  if (type === "comment_added") return "комментарий";
-  if (type === "shift_plan_updated") return "график";
-  if (type === "learning_standard_updated") return "обучение";
-  return "объявление";
+  if (type === "member_invited") return "человек добавлен";
+  if (type === "member_status_updated") return "статус человека";
+  if (type === "member_password_reset") return "первый вход";
+  if (type === "member_labor_rate_updated") return "оплата";
+  if (type === "task_created") return "поручение";
+  if (type === "task_status_updated") return "движение";
+  if (type === "comment_added") return "ответ";
+  if (type === "shift_plan_updated") return "смена";
+  if (type === "learning_standard_updated") return "правило";
+  return "сообщение";
 }
 
 export function auditEventJournalCategory(
@@ -105,11 +105,11 @@ export function auditEventContextHref(event: TeamAuditEvent): string {
 }
 
 export function auditEventContextLabel(event: TeamAuditEvent): string {
-  if (event.targetType === "member") return "К сотруднику";
-  if (event.targetType === "task") return "К задаче";
-  if (event.targetType === "shift_plan") return "К плану";
-  if (event.targetType === "learning_standard") return "К обучению";
-  if (event.targetType === "announcement") return "К объявлению";
+  if (event.targetType === "member") return "К человеку";
+  if (event.targetType === "task") return "К поручению";
+  if (event.targetType === "shift_plan") return "К сменам";
+  if (event.targetType === "learning_standard") return "К правилам";
+  if (event.targetType === "announcement") return "К сообщению";
   return "Открыть";
 }
 

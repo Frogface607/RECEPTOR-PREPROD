@@ -1662,12 +1662,13 @@ export function TeamActionsPanel({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-                Журнал
+                Что изменилось
               </p>
-              <h3 className="mt-2 text-xl font-medium">Последние действия</h3>
+              <h3 className="mt-2 text-xl font-medium">Изменения за день</h3>
               <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                Фильтруйте события по контуру, чтобы быстро понять, что
-                изменилось в оплате, обучении, плане смен и поручениях.
+                Короткая лента: кто добавлен, что поручили, что закрыли и что
+                поменялось в сменах. Нужна, чтобы утром быстро восстановить
+                контекст.
               </p>
             </div>
             <History className="size-5 text-brand" />
@@ -1735,8 +1736,8 @@ export function TeamActionsPanel({
             ) : (
               <p className="rounded-lg border border-border/45 bg-background/35 p-4 text-sm text-muted-foreground">
                 {auditEvents.length > 0
-                  ? "В этом фильтре пока нет событий."
-                  : "Журнал появится после первого изменения доступа, задачи или объявления."}
+                  ? "В этом фильтре пока нет изменений."
+                  : "Здесь появится первое изменение по команде, смене, поручению или сообщению."}
               </p>
             )}
           </div>
