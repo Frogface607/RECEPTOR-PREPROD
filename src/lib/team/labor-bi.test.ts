@@ -258,7 +258,7 @@ describe("buildLaborBi", () => {
       title: "Не все ставки заведены",
       action: "Добавьте этого сотрудника в команду или выровняйте имя с iiko.",
     });
-    expect(setupInsight.detail).toContain("ФОТ доказан на 0%");
+    expect(setupInsight.detail).toContain("Оплата смен подтверждена на 0%");
     expect(setupInsight.detail).toMatch(/120\s000 ₽/);
 
     const nextAction = buildLaborNextAction(labor);
@@ -270,7 +270,7 @@ describe("buildLaborBi", () => {
         reason: "missing-member",
       }),
     });
-    expect(nextAction.detail).toContain("ФОТ доказан на 0%");
+    expect(nextAction.detail).toContain("Оплата смен подтверждена на 0%");
     expect(nextAction.detail).toMatch(/120\s000 ₽/);
   });
 
@@ -302,7 +302,7 @@ describe("buildLaborBi", () => {
     });
 
     expect(insights.map((item) => item.title)).toContain(
-      "ФОТ выше целевой нормы",
+      "Команда стоит выше целевой нормы",
     );
     expect(insights[0].detail).toMatch(/5\s500 ₽/);
     expect(
@@ -311,9 +311,7 @@ describe("buildLaborBi", () => {
     expect(
       insights.find((item) => item.title.startsWith("Дорогая смена"))?.detail,
     ).toMatch(/5\s500 ₽/);
-    expect(insights.some((item) => item.title.includes("человеко-час"))).toBe(
-      true,
-    );
+    expect(insights.some((item) => item.title.includes("час команды"))).toBe(true);
     expect(buildLaborNextAction(labor)).toMatchObject({
       kind: "expensive-labor",
       title: "Разобрать дорогую смену",
@@ -423,7 +421,7 @@ describe("buildLaborBi", () => {
     ]);
     expect(diagnostics[0]).toMatchObject({
       name: "Петр",
-      title: "Сотрудник без ставки ФОТ",
+      title: "У сотрудника нет ставки",
       tone: "setup",
     });
     expect(diagnostics[1]).toMatchObject({
@@ -482,13 +480,13 @@ describe("buildLaborBi", () => {
     const nextAction = buildLaborNextAction(labor);
     expect(nextAction).toMatchObject({
       kind: "missing-rate",
-      title: "Заполнить ставку ФОТ",
+      title: "Заполнить ставку сотрудника",
       blocker: expect.objectContaining({
         memberId: "waiter",
         name: "Илья",
       }),
     });
-    expect(nextAction.detail).toContain("ФОТ доказан на 0%");
+    expect(nextAction.detail).toContain("Оплата смен подтверждена на 0%");
     expect(nextAction.detail).toMatch(/60\s000 ₽/);
   });
 
@@ -624,8 +622,8 @@ describe("buildLaborBi", () => {
 
     expect(buildLaborNextAction(labor)).toMatchObject({
       kind: "ready",
-      title: "ФОТ можно анализировать",
-      detail: expect.stringContaining("на человеко-час"),
+      title: "Оплату смен можно анализировать",
+      detail: expect.stringContaining("на час команды"),
       action: expect.stringContaining("Следующий контроль"),
     });
   });

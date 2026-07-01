@@ -614,8 +614,8 @@ export default async function TeamPage({
                     Какая смена требует разбора
                   </h2>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    Сначала проверяем, можно ли верить ФОТ, потом ищем дорогие и
-                    слабые смены.
+                    Сначала понимаем, можно ли доверять оплате смены. Потом
+                    смотрим, где команда стоила дорого или работала слабо.
                   </p>
                 </div>
                 <SearchCheck className="size-6 shrink-0 text-brand" />
@@ -629,7 +629,7 @@ export default async function TeamPage({
                 />
                 <ShiftMetric
                   icon={<Banknote className="size-4" />}
-                  label="ФОТ"
+                  label="Оплата"
                   value={formatRubles(laborLoad.laborBi?.laborCost ?? 0)}
                 />
                 <ShiftMetric
@@ -652,11 +652,11 @@ export default async function TeamPage({
                     Очередь разбора
                   </p>
                   <h2 className="mt-2 text-xl font-medium">
-                    ФОТ, выручка и человеко-часы
+                    Что проверить с управляющим
                   </h2>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  точность ФОТ:{" "}
+                  доверяем оплате:{" "}
                   {formatPct(laborLoad.laborBi?.revenueCoveragePct ?? null)}
                 </p>
               </div>
@@ -2156,7 +2156,7 @@ function MemberOperationPlanCard({
           <div>
             <h3 className="text-lg font-medium">Что сделать сейчас</h3>
             <p className="mt-1 text-xs text-muted-foreground">
-              План собран из смен, ФОТ, обучения и задач.
+              План собран из смен, оплаты, обучения и задач.
             </p>
           </div>
         </div>
@@ -2239,7 +2239,7 @@ function MemberLaborProfileCard({ profile }: { profile: MemberLaborProfile }) {
           detail={`${formatInteger(profile.shifts)} смен`}
         />
         <PersonalMetric
-          label="ФОТ"
+          label="Оплата"
           value={formatRubles(profile.laborCost)}
           detail={formatPct(profile.laborCostPct)}
         />
@@ -2254,7 +2254,7 @@ function MemberLaborProfileCard({ profile }: { profile: MemberLaborProfile }) {
       {profile.status !== "ready" ? (
         <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
           {profile.status === "missing_rate"
-            ? "Ставка не закрыта: ФОТ и прибыль по этому сотруднику пока нельзя считать точными."
+            ? "Ставка не закрыта: оплату смен и результат по этому сотруднику пока нельзя считать точными."
             : "В выбранном периоде нет смен этого сотрудника из iiko."}
         </p>
       ) : null}
@@ -2632,7 +2632,7 @@ function ShiftDiagnosticRow({ shift }: { shift: LaborShiftDiagnostic }) {
 
       <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground sm:grid-cols-4 xl:min-w-[420px]">
         <ShiftValue label="выручка" value={formatRubles(shift.revenue)} />
-        <ShiftValue label="ФОТ" value={formatPct(shift.laborCostPct)} />
+        <ShiftValue label="оплата" value={formatPct(shift.laborCostPct)} />
         <ShiftValue label="часы" value={formatHours(shift.hours)} />
         <ShiftValue
           label="без ставок"
@@ -2663,7 +2663,9 @@ function EmployeeLaborDiagnostics({
           <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
             Сотрудники
           </p>
-          <h3 className="mt-2 text-lg font-medium">Кого разобрать по ФОТ</h3>
+          <h3 className="mt-2 text-lg font-medium">
+            Кого обсудить с управляющим
+          </h3>
         </div>
         <p className="text-xs text-muted-foreground">
           {formatInteger(employeeCount)} в сменах
@@ -2687,8 +2689,8 @@ function EmployeeLaborDiagnostics({
               Явных рисков по сотрудникам не видно
             </p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              Ставки и выручка на час выглядят управляемо. Дальше разбирайте
-              смены, маржу и план/факт.
+              Ставки и выручка на час выглядят управляемо. Дальше смотрите
+              смены, причины результата и план против факта.
             </p>
           </div>
         )}
@@ -2745,7 +2747,7 @@ function EmployeeLaborDiagnosticRow({
 
       <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground sm:grid-cols-4 xl:min-w-[420px]">
         <ShiftValue label="выручка" value={formatRubles(employee.sales)} />
-        <ShiftValue label="ФОТ" value={formatPct(employee.laborCostPct)} />
+        <ShiftValue label="оплата" value={formatPct(employee.laborCostPct)} />
         <ShiftValue
           label="₽ / час"
           value={

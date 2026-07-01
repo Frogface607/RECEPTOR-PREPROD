@@ -271,7 +271,7 @@ export function buildLaborInsights(
         tone: "setup",
         title: "Смены пока не найдены",
         detail: "iiko не вернула смены за выбранный период.",
-        action: "Проверьте период и права на OLAP смены.",
+        action: "Проверьте период и права iiko на смены.",
       },
     ];
   }
@@ -283,7 +283,7 @@ export function buildLaborInsights(
       title: "Не все ставки заведены",
       detail: blocker
         ? `${labor.missingRates} ${plural(labor.missingRates, "сотрудник", "сотрудника", "сотрудников")} без ставки. Первым закрыть: ${blocker.name}, ${formatMoney(blocker.sales)} выручки в сменах. ${formatLaborCoverageGap(labor)}`
-        : `${labor.missingRates} ${plural(labor.missingRates, "сотрудник", "сотрудника", "сотрудников")} без ставки мешают точно считать ФОТ. ${formatLaborCoverageGap(labor)}`,
+        : `${labor.missingRates} ${plural(labor.missingRates, "сотрудник", "сотрудника", "сотрудников")} без ставки мешают точно считать оплату смен. ${formatLaborCoverageGap(labor)}`,
       action:
         blocker?.reason === "missing-member"
           ? "Добавьте этого сотрудника в команду или выровняйте имя с iiko."
@@ -294,7 +294,7 @@ export function buildLaborInsights(
   if (labor.laborCost === 0 && labor.staffShifts > 0) {
     insights.push({
       tone: "setup",
-      title: "ФОТ сейчас считается как 0 ₽",
+      title: "Оплата смен пока считается как 0 ₽",
       detail:
         "Смены есть, но по ним нет ни почасовой ставки, ни фикса за смену, ни процента от продаж.",
       action: "Задайте хотя бы один тип ставки для сотрудников на смене.",
@@ -309,7 +309,7 @@ export function buildLaborInsights(
     );
     insights.push({
       tone: "risk",
-      title: "ФОТ выше целевой нормы",
+      title: "Команда стоит выше целевой нормы",
       detail: `Сейчас ${formatPct(labor.laborCostPct)} от выручки при ориентире ${formatPct(targetLaborCostPct)}. Управляемый перерасход к цели: ${formatMoney(overTarget)}.`,
       action: "Проверьте состав смены, часы и фактическую загрузку зала.",
     });
@@ -330,7 +330,7 @@ export function buildLaborInsights(
     insights.push({
       tone: "watch",
       title: `Дорогая смена: ${formatShiftDate(expensiveShift.openTime)}`,
-      detail: `ФОТ смены ${formatPct(expensiveShift.laborCostPct)} при выручке ${formatMoney(expensiveShift.revenue)}. Перерасход к цели: ${formatMoney(overTarget)}.`,
+      detail: `Оплата смены ${formatPct(expensiveShift.laborCostPct)} от выручки ${formatMoney(expensiveShift.revenue)}. Перерасход к цели: ${formatMoney(overTarget)}.`,
       action: "Сравните расписание, посадку и роли на этой смене.",
     });
   }
@@ -341,7 +341,7 @@ export function buildLaborInsights(
   ) {
     insights.push({
       tone: "watch",
-      title: "Выручка на человеко-час ниже цели",
+      title: "Выручка на час команды ниже цели",
       detail: `${formatMoney(labor.revenuePerLaborHour)} на час при ориентире ${formatMoney(minimumRevenuePerLaborHour)}.`,
       action:
         "Проверьте слабые часы, лишние руки на смене и продажи официантов.",
@@ -351,8 +351,8 @@ export function buildLaborInsights(
   if (insights.length === 0) {
     insights.push({
       tone: "good",
-      title: "ФОТ выглядит управляемо",
-      detail: `ФОТ ${formatPct(labor.laborCostPct)} от выручки, ${formatMoney(labor.revenuePerLaborHour)} на человеко-час.`,
+      title: "Оплата смен выглядит управляемо",
+      detail: `Оплата ${formatPct(labor.laborCostPct)} от выручки, ${formatMoney(labor.revenuePerLaborHour)} на час команды.`,
       action:
         "Сравните с маржинальностью блюд и держите этот уровень как базу.",
     });
@@ -373,7 +373,7 @@ export function buildLaborNextAction(
       kind: "missing-shifts",
       title: "Смены не найдены",
       detail: "iiko не вернула сотрудников за выбранный период.",
-      action: "Проверьте период и права на OLAP смены.",
+      action: "Проверьте период и права iiko на смены.",
       blocker: null,
       shift: null,
     };
@@ -386,7 +386,7 @@ export function buildLaborNextAction(
       title: "Добавить сотрудника из iiko",
       detail: `${blocker.name}: ${formatMoney(blocker.sales)} выручки в сменах без карточки сотрудника. ${formatLaborCoverageGap(labor)}`,
       action:
-        "Откройте команду, добавьте сотрудника с таким же именем и задайте ставку ФОТ.",
+        "Откройте команду, добавьте сотрудника с таким же именем и задайте ставку.",
       blocker,
       shift: null,
     };
@@ -395,7 +395,7 @@ export function buildLaborNextAction(
   if (blocker?.reason === "missing-rate") {
     return {
       kind: "missing-rate",
-      title: "Заполнить ставку ФОТ",
+      title: "Заполнить ставку сотрудника",
       detail: `${blocker.name}: ${formatMoney(blocker.sales)} выручки в сменах без точной стоимости. ${formatLaborCoverageGap(labor)}`,
       action:
         "Откройте карточку сотрудника и заполните почасовую ставку, фикс за смену или процент.",
@@ -420,7 +420,7 @@ export function buildLaborNextAction(
     return {
       kind: "expensive-labor",
       title: "Разобрать дорогую смену",
-      detail: `${formatShiftDate(expensiveShift.openTime)}: ФОТ ${formatPct(expensiveShift.laborCostPct)} при выручке ${formatMoney(expensiveShift.revenue)}; перерасход к цели ${formatMoney(overTarget)}.`,
+      detail: `${formatShiftDate(expensiveShift.openTime)}: оплата ${formatPct(expensiveShift.laborCostPct)} от выручки ${formatMoney(expensiveShift.revenue)}; перерасход к цели ${formatMoney(overTarget)}.`,
       action: "Сверьте расписание, роли, часы и загрузку зала на этой смене.",
       blocker: null,
       shift: expensiveShift,
@@ -446,7 +446,7 @@ export function buildLaborNextAction(
     return {
       kind: "low-productivity",
       title: "Разобрать слабую смену",
-      detail: `${formatShiftDate(lowProductivityShift.openTime)}: ${formatMoney(lowProductivityShift.revenuePerHour)} на человеко-час при ориентире ${formatMoney(minimumRevenuePerLaborHour)}.`,
+      detail: `${formatShiftDate(lowProductivityShift.openTime)}: ${formatMoney(lowProductivityShift.revenuePerHour)} на час команды при ориентире ${formatMoney(minimumRevenuePerLaborHour)}.`,
       action:
         "Сверьте состав смены, слабые часы, посадку и задачи на средний чек.",
       blocker: null,
@@ -456,10 +456,10 @@ export function buildLaborNextAction(
 
   return {
     kind: "ready",
-    title: "ФОТ можно анализировать",
-    detail: `Ставки закрыты: ФОТ ${formatPct(labor.laborCostPct)} от выручки, ${formatMoney(labor.revenuePerLaborHour)} на человеко-час, ${labor.averageStaffPerShift.toLocaleString("ru-RU")} человека на смену.`,
+    title: "Оплату смен можно анализировать",
+    detail: `Ставки закрыты: оплата ${formatPct(labor.laborCostPct)} от выручки, ${formatMoney(labor.revenuePerLaborHour)} на час команды, ${labor.averageStaffPerShift.toLocaleString("ru-RU")} человека на смену.`,
     action:
-      "Следующий контроль: сравнить ФОТ с маржей топ-блюд и разобрать смены, где команда стоит дорого к выручке.",
+      "Следующий контроль: сравнить оплату команды с маржей топ-блюд и разобрать смены, где команда стоит дорого к выручке.",
     blocker: null,
     shift: null,
   };
@@ -748,9 +748,9 @@ function decorateShiftDiagnostic(
       ...shift,
       kind: "missing-rates",
       tone: "setup",
-      title: "ФОТ смены не доказан",
+      title: "Оплата смены не сходится",
       detail: `${shift.missingRates} ${plural(shift.missingRates, "сотрудник", "сотрудника", "сотрудников")} без ставки или карточки сотрудника.`,
-      action: "Сначала закройте ставку, потом сравнивайте смену по прибыли.",
+      action: "Сначала закройте ставку, потом сравнивайте смену по деньгам.",
       laborOverTarget: null,
     };
   }
@@ -763,8 +763,8 @@ function decorateShiftDiagnostic(
       ...shift,
       kind: "expensive-labor",
       tone: "risk",
-      title: "Смена дорогая по ФОТ",
-      detail: `ФОТ ${formatPct(shift.laborCostPct)} при выручке ${formatMoney(shift.revenue)}. Перерасход к цели: ${formatMoney(laborOverTarget)}.`,
+      title: "Смена дорогая для выручки",
+      detail: `Оплата ${formatPct(shift.laborCostPct)} от выручки ${formatMoney(shift.revenue)}. Перерасход к цели: ${formatMoney(laborOverTarget)}.`,
       action: "Разберите расписание, роли и загрузку зала в этой смене.",
       laborOverTarget,
     };
@@ -778,7 +778,7 @@ function decorateShiftDiagnostic(
       ...shift,
       kind: "low-productivity",
       tone: "watch",
-      title: "Низкая выручка на человеко-час",
+      title: "Мало выручки на час команды",
       detail: `${formatMoney(shift.revenuePerHour)} на час при ориентире ${formatMoney(options.minimumRevenuePerLaborHour)}.`,
       action: "Проверьте лишние руки, слабые часы и задачи на продажи.",
       laborOverTarget,
@@ -790,7 +790,7 @@ function decorateShiftDiagnostic(
     kind: "healthy",
     tone: "good",
     title: "Смена выглядит управляемо",
-    detail: `ФОТ ${formatPct(shift.laborCostPct)}, ${formatMoney(shift.revenuePerHour)} на человеко-час.`,
+    detail: `Оплата ${formatPct(shift.laborCostPct)}, ${formatMoney(shift.revenuePerHour)} на час команды.`,
     action: "Сравните с маржой блюд и закрепите этот состав как ориентир.",
     laborOverTarget,
   };
@@ -811,11 +811,11 @@ function decorateEmployeeDiagnostic(
       ...employee,
       kind: "missing-rate",
       tone: "setup",
-      title: "Сотрудник без ставки ФОТ",
+      title: "У сотрудника нет ставки",
       detail: `${employee.name}: ${formatMoney(employee.sales)} выручки и ${employee.shifts} ${plural(employee.shifts, "смена", "смены", "смен")} без точной стоимости.`,
       action: employee.memberId
-        ? "Заполните ставку в карточке сотрудника, чтобы ФОТ и прибыль считались точно."
-        : "Создайте карточку сотрудника из iiko и задайте ставку ФОТ.",
+        ? "Заполните ставку в карточке сотрудника, чтобы оплата и результат считались точно."
+        : "Создайте карточку сотрудника из iiko и задайте ставку.",
       laborOverTarget: null,
     };
   }
@@ -829,7 +829,7 @@ function decorateEmployeeDiagnostic(
       kind: "expensive-employee",
       tone: "risk",
       title: "Сотрудник дорогой к выручке",
-      detail: `${employee.name}: ФОТ ${formatPct(employee.laborCostPct)} при выручке ${formatMoney(employee.sales)}. Перерасход к цели: ${formatMoney(laborOverTarget)}.`,
+      detail: `${employee.name}: оплата ${formatPct(employee.laborCostPct)} от выручки ${formatMoney(employee.sales)}. Перерасход к цели: ${formatMoney(laborOverTarget)}.`,
       action:
         "Проверьте часы, ставку, роль на смене и нагрузку: высокая выручка не всегда означает прибыль.",
       laborOverTarget,
@@ -857,7 +857,7 @@ function decorateEmployeeDiagnostic(
     kind: "healthy",
     tone: "good",
     title: "Сотрудник выглядит управляемо",
-    detail: `${employee.name}: ФОТ ${formatPct(employee.laborCostPct)}, ${formatMoney(employee.revenuePerHour)} на час.`,
+    detail: `${employee.name}: оплата ${formatPct(employee.laborCostPct)}, ${formatMoney(employee.revenuePerHour)} на час.`,
     action:
       "Держите как рабочий ориентир и сравнивайте с маржинальностью продаж.",
     laborOverTarget,
@@ -999,14 +999,14 @@ function expensiveShiftDelta(
 
 function formatLaborCoverageGap(labor: LaborBiSummary): string {
   if (labor.revenueCoveragePct === null) {
-    return "Покрытие ФОТ по выручке пока не считается.";
+    return "Пока не понятно, на какой части выручки оплата смен считается точно.";
   }
 
   if (labor.unpricedRevenue <= 0) {
-    return `ФОТ доказан на ${formatPct(labor.revenueCoveragePct)} выручки периода.`;
+    return `Оплата смен подтверждена на ${formatPct(labor.revenueCoveragePct)} выручки периода.`;
   }
 
-  return `ФОТ доказан на ${formatPct(labor.revenueCoveragePct)} выручки периода; ${formatMoney(labor.unpricedRevenue)} остаются без точной стоимости смен.`;
+  return `Оплата смен подтверждена на ${formatPct(labor.revenueCoveragePct)} выручки периода; ${formatMoney(labor.unpricedRevenue)} остаются без точной стоимости смен.`;
 }
 
 function formatShiftDate(value: string): string {
