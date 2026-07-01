@@ -17,6 +17,9 @@ const RESTAURANT_MEMORY: RestaurantAdvisorMemory = {
   memberSignals: ["Маша (Управляющий): итоги смены: 1/1"],
   openTasks: ["Проверить стоп-лист — до 17:00"],
   learningGaps: ["Алина: Как рекомендовать блюдо без давления"],
+  learningAdoptionGaps: [
+    "Алина: Как рекомендовать блюдо без давления сдан, нужен факт смены после практики",
+  ],
   memoryGraph: ["Маша -> оставил(а) итог смены -> Поле: ливень"],
   memoryGraphTrace: [
     "Люди: Маша — Управляющий.",
@@ -93,6 +96,7 @@ describe("runMockChatTurn — routing", () => {
     expect(text?.text).toContain("Память смены:");
     expect(text?.text).toContain("Добор памяти смены");
     expect(text?.text).toContain("Обучить в первую очередь");
+    expect(text?.text).toContain("Проверить внедрение стандарта");
     expect(text?.text).toContain("Почему так думаю");
     expect(text?.text).toContain("итога смены");
     expect(text?.text).toContain("короткий факт с поля");
@@ -120,6 +124,7 @@ describe("runMockChatTurn — routing", () => {
         "Почему это повлияло на гостей, продажи или команду?",
       ],
       learningGaps: [],
+      learningAdoptionGaps: [],
     };
 
     const ev = await collect("Что делать сегодня?", memoryWithoutTask);

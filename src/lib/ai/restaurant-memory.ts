@@ -8,6 +8,7 @@ import {
   type RestaurantMemoryGraphBrief,
 } from "@/lib/ai/restaurant-memory-graph";
 import { buildTeamLearningSummaries } from "@/lib/team/team-learning-progress";
+import { buildTeamLearningAdoptionSignal } from "@/lib/team/team-learning-adoption";
 import {
   getTeamRole,
   type StaffMember,
@@ -28,6 +29,7 @@ export type RestaurantAdvisorMemory = {
   memberSignals: string[];
   openTasks: string[];
   learningGaps: string[];
+  learningAdoptionGaps: string[];
   memoryGraph: string[];
   memoryGraphMarkdown?: string;
   memoryGraphTrace?: string[];
@@ -117,6 +119,28 @@ function learningGapLines(input: RestaurantMemoryInput): string[] {
     .map((summary) => {
       const next = summary.nextItem?.title ?? "базовый допуск";
       return `${summary.member.name}: ${next}`;
+    });
+}
+
+function learningAdoptionGapLines(input: RestaurantMemoryInput): string[] {
+  return buildTeamLearningSummaries(
+    input.staff,
+    input.learningProgress,
+    input.learningStandards,
+  )
+    .map((summary) => ({
+      summary,
+      signal: buildTeamLearningAdoptionSignal({
+        summary,
+        progress: input.learningProgress,
+        comments: input.comments,
+      }),
+    }))
+    .filter(({ signal }) => signal.status === "needs_memory")
+    .slice(0, 4)
+    .map(({ summary, signal }) => {
+      const title = signal.moduleTitle ?? "стандарт";
+      return `${summary.member.name}: ${title} сдан, нужен факт смены после практики`;
     });
 }
 
@@ -211,6 +235,7 @@ export function buildRestaurantAdvisorMemory(
     memberSignals: memberMemoryLines(input),
     openTasks: openTaskLines(input.tasks),
     learningGaps: learningGapLines(input),
+    learningAdoptionGaps: learningAdoptionGapLines(input),
     memoryGraph,
     memoryGraphMarkdown:
       memoryGraphModel.edges.length > 0 ? memoryGraphModel.markdownSnapshot : undefined,
@@ -267,6 +292,12 @@ export function formatRestaurantAdvisorMemoryForPrompt(
     lines.push(`Учебные пробелы: ${memory.learningGaps.join("; ")}`);
   }
 
+  if (memory.learningAdoptionGaps.length > 0) {
+    lines.push(
+      `Стандарты без факта смены: ${memory.learningAdoptionGaps.join("; ")}`,
+    );
+  }
+
   if (memory.memoryGraph.length > 0) {
     lines.push(`Связи памяти: ${memory.memoryGraph.join("; ")}`);
   }
@@ -318,6 +349,9 @@ export function formatRestaurantAdvisorMemoryForAnswer(
       : null,
     !memory.fieldMemoryTaskStatus && memory.fieldMemoryFollowUpQuestions[0]
       ? `• Следующий вопрос для брифа: ${memory.fieldMemoryFollowUpQuestions[0]}`
+      : null,
+    memory.learningAdoptionGaps[0]
+      ? `• Стандарт нужно проверить в смене: ${memory.learningAdoptionGaps[0]}.`
       : null,
     memory.learningGaps[0]
       ? `• Первый учебный пробел: ${memory.learningGaps[0]}.`

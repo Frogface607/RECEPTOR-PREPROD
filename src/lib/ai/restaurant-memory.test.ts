@@ -100,6 +100,7 @@ describe("restaurant advisor memory", () => {
     expect(memory.fieldSignals.join("\n")).toContain("Погода");
     expect(memory.openTasks[0]).toContain("Проверить стоп-лист");
     expect(memory.learningGaps[0]).toContain("Маша");
+    expect(memory.learningAdoptionGaps).toEqual([]);
     expect(memory.memoryGraph.join("\n")).toContain("Маша -> роль");
     expect(memory.memoryGraph.join("\n")).toContain("оставил(а) итог смены");
     expect(memory.memoryGraphMarkdown).toContain("# Карта памяти ресторана");
@@ -139,6 +140,35 @@ describe("restaurant advisor memory", () => {
     ]);
   });
 
+  test("tracks passed standards that have not returned a shift-memory fact", () => {
+    const memory = buildRestaurantAdvisorMemory({
+      staff,
+      tasks,
+      comments,
+      learningProgress: [
+        {
+          venueId: "venue",
+          membershipId: "service",
+          userId: "user-service",
+          moduleId: "service-recommendation",
+          bestPercentage: 100,
+          lastPercentage: 100,
+          correct: 3,
+          total: 3,
+          passed: true,
+          answers: [1, 0, 2],
+          completedAt: "2026-06-26T10:00:00.000Z",
+          updatedAt: "2026-06-26T10:00:00.000Z",
+        },
+      ],
+      learningStandards: [],
+    });
+
+    expect(memory.learningAdoptionGaps).toEqual([
+      "Алина: Как рекомендовать блюдо без давления сдан, нужен факт смены после практики",
+    ]);
+  });
+
   test("formats memory for advisor prompt", () => {
     const text = formatRestaurantAdvisorMemoryForPrompt({
       teamSummary: "2 активных сотрудников",
@@ -151,6 +181,9 @@ describe("restaurant advisor memory", () => {
       memberSignals: ["Маша (Управляющий): итоги смены: 1/1"],
       openTasks: ["Проверить стоп-лист — до 17:00"],
       learningGaps: ["Алина: Как рекомендовать блюдо без давления"],
+      learningAdoptionGaps: [
+        "Алина: Как рекомендовать блюдо без давления сдан, нужен факт смены после практики",
+      ],
       memoryGraph: [
         "Маша -> оставил(а) итог смены -> Поле: ливень и стоп-лист",
       ],
@@ -174,6 +207,7 @@ describe("restaurant advisor memory", () => {
     expect(text).toContain("Добор памяти смены уже поставлен");
     expect(text).toContain("Люди и допуск");
     expect(text).toContain("Учебные пробелы");
+    expect(text).toContain("Стандарты без факта смены");
     expect(text).toContain("Связи памяти");
     expect(text).toContain("Карта памяти");
     expect(text).toContain("Почему так думаю");
@@ -193,6 +227,7 @@ describe("restaurant advisor memory", () => {
       memberSignals: [],
       openTasks: [],
       learningGaps: [],
+      learningAdoptionGaps: [],
       memoryGraph: [],
     });
 
@@ -212,6 +247,9 @@ describe("restaurant advisor memory", () => {
       memberSignals: ["Маша (Управляющий): итог неполный"],
       openTasks: ["Проверить стоп-лист — до 17:00"],
       learningGaps: ["Алина: Как рекомендовать блюдо без давления"],
+      learningAdoptionGaps: [
+        "Алина: Как рекомендовать блюдо без давления сдан, нужен факт смены после практики",
+      ],
       memoryGraph: ["Маша -> оставил(а) итог смены -> Поле: ливень"],
       memoryGraphTrace: [
         "Люди: Маша — Управляющий.",
@@ -233,6 +271,7 @@ describe("restaurant advisor memory", () => {
     expect(text).toContain("Добор памяти уже в работе");
     expect(text).toContain("Карта памяти");
     expect(text).toContain("Почему так думаю");
+    expect(text).toContain("Стандарт нужно проверить в смене");
     expect(text).toContain("Первый учебный пробел");
     expect(text).not.toContain("Сигналы с поля");
     expect(text).not.toContain("Открытые действия:");
@@ -252,6 +291,7 @@ describe("restaurant advisor memory", () => {
       memberSignals: [],
       openTasks: [],
       learningGaps: [],
+      learningAdoptionGaps: [],
       memoryGraph: [],
     });
 
