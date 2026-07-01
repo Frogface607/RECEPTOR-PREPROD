@@ -79,9 +79,11 @@ import {
   type TeamLearningMemberSummary,
 } from "@/lib/team/team-learning-progress";
 import {
+  buildTeamLearningAdoptionNextMove,
   buildTeamLearningAdoptionSignal,
   buildTeamLearningAdoptionTaskDraft,
   findOpenLearningAdoptionTask,
+  type TeamLearningAdoptionNextMove,
   type TeamLearningAdoptionSignal,
   type TeamLearningAdoptionStatus,
   type TeamLearningAdoptionTaskDraft,
@@ -3248,14 +3250,16 @@ function learningAdmissionClass(
   return "border-destructive/30 bg-destructive/10 text-destructive";
 }
 
-function learningAdoptionClass(status: TeamLearningAdoptionStatus): string {
-  if (status === "returned_memory") {
-    return "border-brand/30 bg-brand/10 text-brand";
-  }
-  if (status === "needs_memory") {
-    return "border-amber-400/30 bg-amber-400/10 text-amber-100";
-  }
-  return "border-border/55 bg-muted/25 text-muted-foreground";
+function learningAdoptionMarkerClass(status: TeamLearningAdoptionStatus): string {
+  if (status === "returned_memory") return "bg-brand";
+  if (status === "needs_memory") return "bg-amber-300";
+  return "bg-muted-foreground";
+}
+
+function learningAdoptionTextClass(status: TeamLearningAdoptionStatus): string {
+  if (status === "returned_memory") return "text-brand";
+  if (status === "needs_memory") return "text-amber-100";
+  return "text-muted-foreground";
 }
 
 function formatLearningDate(value: string): string {
@@ -3285,6 +3289,10 @@ function LearningSummaryRow({
   adoptionTaskExists?: boolean;
 }) {
   const role = getTeamRole(summary.member.roleId);
+  const adoptionMove = buildTeamLearningAdoptionNextMove({
+    signal: adoption,
+    taskExists: adoptionTaskExists,
+  });
 
   return (
     <div className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-3 lg:grid-cols-[1.05fr_0.95fr_auto] lg:items-center">
@@ -3311,52 +3319,27 @@ function LearningSummaryRow({
         </p>
       </div>
       <div className="min-w-0">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <ListChecks className="size-3.5 text-brand" />
-          <span className="truncate">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          <span className="inline-flex min-w-0 items-center gap-1.5">
+            <ListChecks className="size-3.5 shrink-0 text-brand" />
+            <span className="truncate">
             {summary.nextItem
               ? `Дальше: ${summary.nextItem.title}`
               : "Все стандарты роли закрыты"}
+            </span>
           </span>
-        </div>
-        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-          <Trophy className="size-3.5 text-brand" />
-          <span>
+          <span className="inline-flex items-center gap-1.5">
+            <Trophy className="size-3.5 shrink-0 text-brand" />
             Последняя попытка: {formatLearningDate(summary.lastCompletedAt)}
           </span>
         </div>
-        {adoption ? (
-          <div
-            className={`mt-2 flex items-start gap-2 rounded-md border px-2.5 py-2 text-xs ${learningAdoptionClass(
-              adoption.status,
-            )}`}
-          >
-            <SearchCheck className="mt-0.5 size-3.5 shrink-0" />
-            <div className="min-w-0">
-              <p className="font-medium">{adoption.label}</p>
-              <p className="mt-0.5 leading-relaxed text-muted-foreground">
-                {adoption.detail}
-              </p>
-              {adoption.evidenceHref && adoption.evidenceLabel ? (
-                <Link
-                  href={adoption.evidenceHref}
-                  className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-brand transition-colors hover:text-brand-hover"
-                >
-                  {adoption.evidenceLabel}
-                  <ArrowRight className="size-3" />
-                </Link>
-              ) : null}
-              {adoptionTaskDraft ? (
-                <div className="mt-2">
-                  <LearningAdoptionTaskButton
-                    venueId={venueId}
-                    draft={adoptionTaskDraft}
-                    existingTask={Boolean(adoptionTaskExists)}
-                  />
-                </div>
-              ) : null}
-            </div>
-          </div>
+        {adoption && adoptionMove ? (
+          <LearningAdoptionNextMoveLine
+            venueId={venueId}
+            signal={adoption}
+            move={adoptionMove}
+            draft={adoptionTaskDraft}
+          />
         ) : null}
       </div>
       <div className="rounded-lg border border-border/50 bg-card/45 px-3 py-2 text-left lg:text-right">
@@ -3366,6 +3349,64 @@ function LearningSummaryRow({
         <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
           средний
         </p>
+      </div>
+    </div>
+  );
+}
+
+function LearningAdoptionNextMoveLine({
+  venueId,
+  signal,
+  move,
+  draft,
+}: {
+  venueId: string;
+  signal: TeamLearningAdoptionSignal;
+  move: TeamLearningAdoptionNextMove;
+  draft?: TeamLearningAdoptionTaskDraft | null;
+}) {
+  return (
+    <div className="mt-2 border-t border-border/45 pt-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-start gap-2 text-xs">
+          <span
+            className={`mt-1.5 size-2 shrink-0 rounded-full ${learningAdoptionMarkerClass(
+              signal.status,
+            )}`}
+          />
+          <div className="min-w-0">
+            <p
+              className={`font-medium ${learningAdoptionTextClass(
+                signal.status,
+              )}`}
+            >
+              {move.label}
+            </p>
+            <p className="mt-0.5 line-clamp-2 leading-relaxed text-muted-foreground">
+              {move.detail}
+            </p>
+          </div>
+        </div>
+
+        {move.action === "assign_fact" && draft ? (
+          <div className="shrink-0">
+            <LearningAdoptionTaskButton
+              venueId={venueId}
+              draft={draft}
+              existingTask={false}
+            />
+          </div>
+        ) : null}
+
+        {move.action === "open_evidence" && signal.evidenceHref ? (
+          <Link
+            href={signal.evidenceHref}
+            className="inline-flex h-8 w-fit shrink-0 items-center gap-1.5 rounded-lg border border-brand/30 bg-brand/10 px-2.5 text-[11px] font-medium text-brand transition-colors hover:bg-brand/15"
+          >
+            {move.actionLabel ?? signal.evidenceLabel ?? "Открыть факт"}
+            <ArrowRight className="size-3" />
+          </Link>
+        ) : null}
       </div>
     </div>
   );

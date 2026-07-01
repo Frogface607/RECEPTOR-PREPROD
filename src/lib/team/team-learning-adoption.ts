@@ -37,6 +37,18 @@ export type TeamLearningAdoptionTaskDraft = {
   dueLabel: string;
 };
 
+export type TeamLearningAdoptionNextMoveAction =
+  | "assign_fact"
+  | "open_evidence"
+  | "none";
+
+export type TeamLearningAdoptionNextMove = {
+  label: string;
+  detail: string;
+  action: TeamLearningAdoptionNextMoveAction;
+  actionLabel: string | null;
+};
+
 const OPEN_TASK_STATUSES = new Set<TeamTask["status"]>([
   "new",
   "accepted",
@@ -139,6 +151,50 @@ export function buildTeamLearningAdoptionSignal(input: {
     memoryCommentId: null,
     evidenceLabel: null,
     evidenceHref: null,
+  };
+}
+
+export function buildTeamLearningAdoptionNextMove(input: {
+  signal?: TeamLearningAdoptionSignal | null;
+  taskExists?: boolean;
+}): TeamLearningAdoptionNextMove | null {
+  const signal = input.signal ?? null;
+  if (!signal) return null;
+
+  const title = signal.moduleTitle ?? "стандарт";
+
+  if (signal.status === "returned_memory") {
+    return {
+      label: "Доказан сменой",
+      detail: `${title}: есть факт из смены, можно открыть доказательство.`,
+      action: signal.evidenceHref ? "open_evidence" : "none",
+      actionLabel: signal.evidenceHref ? "Открыть факт" : null,
+    };
+  }
+
+  if (signal.status === "needs_memory") {
+    if (input.taskExists) {
+      return {
+        label: "Факт назначен",
+        detail: `${title}: ждем итог смены от сотрудника.`,
+        action: "none",
+        actionLabel: null,
+      };
+    }
+
+    return {
+      label: "Нужен факт",
+      detail: `${title}: назначьте один итог смены после практики.`,
+      action: "assign_fact",
+      actionLabel: "Назначить факт",
+    };
+  }
+
+  return {
+    label: "Сначала стандарт",
+    detail: `${title}: после проверки попросите факт смены.`,
+    action: "none",
+    actionLabel: null,
   };
 }
 

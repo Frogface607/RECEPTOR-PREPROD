@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import type { StaffMember, TeamTask, TeamTaskComment } from "./team-os";
 import {
+  buildTeamLearningAdoptionNextMove,
   buildTeamLearningAdoptionSignal,
   buildTeamLearningAdoptionTaskDraft,
   findOpenLearningAdoptionTask,
@@ -130,6 +131,44 @@ describe("team learning adoption", () => {
     });
     expect(draft?.contextNote).toContain("нет факта применения");
     expect(draft?.contextNote).toContain("В память:");
+  });
+
+  test("turns adoption signals into one manager next move", () => {
+    const [summary] = buildTeamLearningSummaries(staff, [serviceProgress]);
+    const needsMemory = buildTeamLearningAdoptionSignal({
+      summary,
+      progress: [serviceProgress],
+      comments: [],
+    });
+    const returnedMemory = buildTeamLearningAdoptionSignal({
+      summary,
+      progress: [serviceProgress],
+      comments: [matchingComment],
+    });
+
+    expect(
+      buildTeamLearningAdoptionNextMove({ signal: needsMemory }),
+    ).toMatchObject({
+      label: "Нужен факт",
+      action: "assign_fact",
+      actionLabel: "Назначить факт",
+    });
+    expect(
+      buildTeamLearningAdoptionNextMove({
+        signal: needsMemory,
+        taskExists: true,
+      }),
+    ).toMatchObject({
+      label: "Факт назначен",
+      action: "none",
+    });
+    expect(
+      buildTeamLearningAdoptionNextMove({ signal: returnedMemory }),
+    ).toMatchObject({
+      label: "Доказан сменой",
+      action: "open_evidence",
+      actionLabel: "Открыть факт",
+    });
   });
 
   test("finds an existing open adoption task for the same member and standard", () => {
