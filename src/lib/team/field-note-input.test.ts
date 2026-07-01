@@ -28,7 +28,7 @@ describe("field note input", () => {
     expect(FIELD_NOTE_SAVED_MEMORY_COPY.detail).toContain("задачах");
     expect(FIELD_NOTE_SAVED_MEMORY_COPY.detail).toContain("обучении");
     expect(FIELD_NOTE_SAVED_MEMORY_COPY.detail).toContain("цифрах");
-    expect(FIELD_NOTE_CLOSED_LOOP_COPY.title).toContain("Задача менеджера");
+    expect(FIELD_NOTE_CLOSED_LOOP_COPY.title).toContain("Стандарт");
     expect(FIELD_NOTE_CLOSED_LOOP_COPY.detail).toContain("стандарт");
     expect(FIELD_NOTE_CLOSED_LOOP_COPY.detail).toContain("память ресторана");
   });

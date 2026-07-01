@@ -65,13 +65,13 @@ describe("team learning adoption", () => {
 
     expect(signal).toMatchObject({
       status: "returned_memory",
-      label: "Стандарт подтвержден сменой",
+      label: "Стандарт доказан сменой",
       moduleId: "service-recommendation",
       memoryCommentId: "comment-1",
       evidenceLabel: "Открыть память смены",
       evidenceHref: "#shift-summary",
     });
-    expect(signal.detail).toContain("закрывает внедрение");
+    expect(signal.detail).toContain("где стандарт сработал");
   });
 
   test("asks for a shift fact when the latest passed standard has no memory", () => {
@@ -85,10 +85,12 @@ describe("team learning adoption", () => {
 
     expect(signal).toMatchObject({
       status: "needs_memory",
+      label: "Стандарт сдан — нужен факт",
       moduleId: "service-recommendation",
       memoryCommentId: null,
     });
-    expect(signal.detail).toContain("не подтвержден итогом смены");
+    expect(signal.detail).toContain("считал стандарт внедренным");
+    expect(signal.detail).toContain("где применили");
   });
 
   test("waits for learning before asking for operational adoption", () => {

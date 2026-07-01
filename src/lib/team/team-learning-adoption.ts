@@ -120,8 +120,8 @@ export function buildTeamLearningAdoptionSignal(input: {
   if (memoryComment) {
     return {
       status: "returned_memory",
-      label: "Стандарт подтвержден сменой",
-      detail: `"${moduleTitle}" вернулся фактом из смены. Это закрывает внедрение, а не только тест.`,
+      label: "Стандарт доказан сменой",
+      detail: `"${moduleTitle}" вернулся фактом из смены. Теперь видно, где стандарт сработал в реальной работе, а не только в тесте.`,
       moduleId: latestPassed.moduleId,
       moduleTitle,
       memoryCommentId: memoryComment.id,
@@ -132,8 +132,8 @@ export function buildTeamLearningAdoptionSignal(input: {
 
   return {
     status: "needs_memory",
-    label: "Нужен факт смены",
-    detail: `"${moduleTitle}" сдан, но еще не подтвержден итогом смены.`,
+    label: "Стандарт сдан — нужен факт",
+    detail: `"${moduleTitle}" сдан. Чтобы Receptor считал стандарт внедренным, нужен итог смены: где применили, что изменилось и что проверить утром.`,
     moduleId: latestPassed.moduleId,
     moduleTitle,
     memoryCommentId: null,

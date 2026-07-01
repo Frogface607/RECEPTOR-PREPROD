@@ -369,7 +369,7 @@ export function FieldNoteForm() {
             <div>
               {closedLearningLoop ? (
                 <p className="mb-1 text-[10px] uppercase tracking-[0.16em] text-brand">
-                  Петля закрыта
+                  Внедрение закрыто
                 </p>
               ) : null}
               <p className="text-sm font-medium text-foreground">
