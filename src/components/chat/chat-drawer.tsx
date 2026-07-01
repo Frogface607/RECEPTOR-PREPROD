@@ -256,23 +256,23 @@ export function ChatDrawer({
 const COPILOT_MODES = [
   {
     icon: BarChart3,
-    title: "Цифры iiko",
-    text: "Выручка, средний чек, меню, смены и просадки по периодам.",
+    title: "Что видно в цифрах",
+    text: "Выручка, средний чек, блюда и смены без длинного отчета.",
   },
   {
     icon: MessageSquareText,
-    title: "Память смены",
-    text: "Что произошло с гостями, стоп-листом, погодой и сервисом.",
+    title: "Что сказала смена",
+    text: "Погода, гости, стоп-лист, конфликт или причина просадки.",
   },
   {
     icon: UsersRound,
-    title: "Команда",
-    text: "Открытые задачи, роли, обучение и пробелы перед сменой.",
+    title: "Кому дать фокус",
+    text: "Управляющий, зал или кухня получают один понятный шаг.",
   },
   {
     icon: Target,
-    title: "Действия",
-    text: "Один управленческий шаг на сегодня вместо списка отчетов.",
+    title: "Что делать сегодня",
+    text: "Один управленческий шаг вместо списка отчетов.",
   },
 ];
 
@@ -287,15 +287,14 @@ function EmptyState({ onPick }: { onPick: (text: string) => void }) {
             </div>
             <div>
               <p className="text-[11px] uppercase tracking-[0.18em] text-brand">
-                Советник с памятью ресторана
+                Спросите как владельцу
               </p>
               <h3 className="mt-2 max-w-2xl text-[28px] font-medium leading-[1.06] tracking-[-0.025em] text-foreground sm:text-[36px]">
-                Спросите человека, который помнит смену.
+                Receptor объяснит цифры и даст один следующий шаг.
               </h3>
               <p className="mt-4 max-w-2xl text-[14px] leading-relaxed text-muted-foreground">
-                Receptor соединяет цифры iiko, анкету заведения, память смены,
-                командные задачи и обучение. Ответ должен привести к одному
-                понятному действию, а не к еще одному отчету.
+                Спросите простым языком: что произошло, кого спросить, что
+                проверить перед сменой и какое действие дать команде сегодня.
               </p>
             </div>
           </div>
@@ -322,7 +321,7 @@ function EmptyState({ onPick }: { onPick: (text: string) => void }) {
       <div>
         <div className="mb-3 flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
           <Sparkles className="size-3.5 text-brand" />
-          Вопросы владельца
+          Готовые вопросы
         </div>
         <div className="grid gap-2 sm:grid-cols-2">
           {SUGGESTED_PROMPTS.map((p) => (
