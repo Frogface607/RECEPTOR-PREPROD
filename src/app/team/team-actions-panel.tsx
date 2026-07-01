@@ -31,6 +31,7 @@ import {
   getLearningItemByTitle,
   learningModuleHref,
 } from "@/lib/team/team-learning";
+import { buildTeamLearningShiftCard } from "@/lib/team/team-learning-shift-card";
 import {
   buildTeamAuditJournal,
   type TeamAuditJournalCategoryId,
@@ -880,6 +881,12 @@ export function TeamActionsPanel({
                     task.learningModuleTitle ??
                     learningItem?.title ??
                     contextLearningHint;
+                  const learningShiftCard = learningItem
+                    ? buildTeamLearningShiftCard(
+                        learningItem,
+                        checklistHint ?? undefined,
+                      )
+                    : null;
                   const contextBody = taskContextWithoutLearningHint(
                     context?.body,
                   );
@@ -987,6 +994,22 @@ export function TeamActionsPanel({
                                 <p className="mt-1 text-sky-100">
                                   Чеклист: {checklistHint}
                                 </p>
+                              ) : null}
+                              {learningShiftCard ? (
+                                <div className="mt-2 space-y-1 text-sky-100/85">
+                                  <p>
+                                    <span className="text-sky-100">
+                                      В смене:
+                                    </span>{" "}
+                                    {learningShiftCard.action}
+                                  </p>
+                                  <p>
+                                    <span className="text-sky-100">
+                                      После:
+                                    </span>{" "}
+                                    {learningShiftCard.fieldNote}
+                                  </p>
+                                </div>
                               ) : null}
                             </div>
                           </div>
