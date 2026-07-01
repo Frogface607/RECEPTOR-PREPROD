@@ -331,10 +331,10 @@ export function buildMemberDailyRoute(input: {
     {
       id: "briefing",
       step: "01",
-      title: "Прочитать бриф",
+      title: "Понять фокус",
       detail: unreadAnnouncement
         ? unreadAnnouncement.title
-        : "Важных объявлений для роли сейчас нет.",
+        : "Важных объявлений сейчас нет: работайте по обычному стандарту роли.",
       href: unreadAnnouncement
         ? `#team-announcement-${encodeURIComponent(unreadAnnouncement.id)}`
         : "#team-announcements",
@@ -346,15 +346,15 @@ export function buildMemberDailyRoute(input: {
     {
       id: "learning",
       step: "02",
-      title: "Закрыть допуск",
+      title: "Пройти стандарт",
       detail: learningReady
-        ? "Обязательные стандарты не блокируют смену."
+        ? "Основные стандарты роли не блокируют смену."
         : nextLearning
           ? `${nextLearning.title} · ${nextLearning.timeLabel}`
-          : "Нужно пройти обязательные материалы роли.",
+          : "Нужно пройти короткий стандарт перед сменой.",
       href: "#learning-progress",
-      status: learningReady ? "допущен" : "нужен допуск",
-      action: learningReady ? "Открыть обучение" : "Пройти",
+      status: learningReady ? "ок" : "нужно",
+      action: learningReady ? "Открыть" : "Пройти",
       ready: learningReady,
       tone: learningReady
         ? "ready"
@@ -382,10 +382,10 @@ export function buildMemberDailyRoute(input: {
     {
       id: "shift_memory",
       step: "04",
-      title: "Оставить итог смены",
+      title: "Написать итог",
       detail: latestNote
         ? trimProfileDetail(latestNote.body)
-        : "После смены зафиксируйте гостей, стоп-лист, конфликт, погоду и что проверить утром.",
+        : "После смены напишите 3 строки: что было, почему важно, что проверить утром.",
       href: "#shift-summary",
       status: latestNote ? "есть итог" : "нет итога",
       action: latestNote ? "Дополнить" : "Записать",
@@ -402,8 +402,8 @@ export function buildMemberDailyRoute(input: {
     totalCount: items.length,
     headline:
       readyCount === items.length
-        ? "Смена закрыта в памяти ресторана."
-        : "Сделайте минимум, чтобы смена попала в память ресторана.",
+        ? "Смена закрыта: есть задача, стандарт и итог."
+        : "Минимум на смену: задача, стандарт и короткий итог.",
     focus,
     items,
   };
@@ -450,10 +450,10 @@ export function buildMemberSecondBrainProfile(input: {
     facts[0];
 
   return {
-    title: `${input.member.name}: рабочий контекст`,
+    title: `${input.member.name}: что известно`,
     summary: primary
       ? `${primary.label}: ${primary.detail}`
-      : "Профиль сотрудника собирается из роли, обучения, смен, задач и заметок после смены.",
+      : "Receptor собирает роль, стандарты, задачи и короткие итоги смены.",
     tags: [
       role.shortTitle,
       input.member.status === "active" ? "активен" : input.member.status,
@@ -588,7 +588,7 @@ function fieldFact(
       label: "Поле",
       value: "нет итога",
       detail:
-        "Сотрудник еще не оставлял факты смены. Советнику не хватает живого контекста.",
+        "Сотрудник еще не писал короткий итог смены. У руководителя есть цифры, но нет причины.",
       tone: "setup",
     };
   }
@@ -597,7 +597,7 @@ function fieldFact(
     return {
       label: "Поле",
       value: `${readiness.complete}/${readiness.total}`,
-      detail: `Итог есть, но советнику не хватает: ${readiness.bestMissing.join(", ")}.`,
+      detail: `Итог есть, но для точного разбора не хватает: ${readiness.bestMissing.join(", ")}.`,
       tone: "setup",
     };
   }
@@ -657,7 +657,7 @@ function memberMemoryLink(input: {
         ? `Закрывает пробел в памяти роли: ${input.nextLearning.title}.`
         : "Закрывает пробел допуска в памяти сотрудника.",
       reason:
-        "Без допуска советник видит человека в команде, но не может считать его готовым к смене.",
+        "Без стандарта руководитель не понимает, готов ли человек спокойно выйти в смену.",
       href: "#learning-progress",
       action: "Открыть обучение",
       tone: "risk",
@@ -680,9 +680,9 @@ function memberMemoryLink(input: {
     return {
       label: "Собрать итог",
       detail:
-        "После смены этот итог свяжет человека, событие и утренний разбор.",
+        "После смены этот итог объяснит цифры простыми словами.",
       reason:
-        "Без итога смены у владельца есть цифры, но нет причины, почему день прошел именно так.",
+        "Без итога смены владелец видит цифры, но не понимает, почему день прошел именно так.",
       href: "#shift-summary",
       action: "Записать итог",
       tone: "setup",
@@ -692,9 +692,9 @@ function memberMemoryLink(input: {
   if (input.fieldMemory.complete === 0) {
     return {
       label: "Дополнить итог",
-      detail: `Чтобы память стала полезной, добавьте: ${input.fieldMemory.bestMissing.join(", ")}.`,
+      detail: `Чтобы итог стал полезным, добавьте: ${input.fieldMemory.bestMissing.join(", ")}.`,
       reason:
-        "Советнику нужен факт, контекст, масштаб и следующий шаг, иначе он будет давать общие советы.",
+        "Нужны факт, причина, масштаб и следующий шаг, иначе советы будут слишком общими.",
       href: "#shift-summary",
       action: "Дополнить",
       tone: "setup",
@@ -704,7 +704,7 @@ function memberMemoryLink(input: {
   if (input.openTasks[0]) {
     return {
       label: "Связать задачу",
-      detail: `Следующий шаг по задаче попадет в рабочий контекст: ${input.openTasks[0].title}.`,
+      detail: `Следующий шаг по задаче попадет в разбор смены: ${input.openTasks[0].title}.`,
       reason:
         "Закрытый следующий шаг покажет, что изменилось после смены, а не просто сохранит задачу.",
       href: "#team-actions",
@@ -714,9 +714,9 @@ function memberMemoryLink(input: {
   }
 
   return {
-    label: "Память связана",
+    label: "Все связано",
     detail:
-      "Роль, обучение, задачи и итог смены уже дают советнику рабочий контекст.",
+      "Роль, стандарты, задачи и итог смены уже дают руководителю живой контекст.",
     reason:
       "Теперь любое новое наблюдение усилит картину смены, людей и утренних решений.",
     href: "#shift-summary",

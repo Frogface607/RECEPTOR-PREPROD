@@ -331,16 +331,6 @@ export default async function MyCabinetPage({
         (announcement) => announcement.id === nextAction.announcementId,
       ) ?? null)
     : null;
-  const unreadImportantAnnouncements = workspace.announcements.filter(
-    (announcement) =>
-      announcement.priority === "important" &&
-      !hasAnnouncementRead(
-        announcement.id,
-        workspace.member.id,
-        workspace.announcementReads,
-      ),
-  ).length;
-  const urgentTasks = openTasks.filter((task) => task.priority === "high");
   const teamParams = new URLSearchParams({
     role: role.id,
     venueId: workspace.venueId,
@@ -386,11 +376,12 @@ export default async function MyCabinetPage({
                 Мой кабинет
               </Badge>
               <h1 className="mt-5 max-w-3xl text-balance text-[clamp(2rem,4.2vw,3.4rem)] font-medium leading-[1.03]">
-                Сегодня: {role.title.toLowerCase()}
+                Сегодня: что сделать, что пройти, что написать.
               </h1>
               <p className="mt-5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                {workspace.member.name} · {workspace.venueName}. {shiftLabel}.{" "}
-                {roleFocus.summary}
+                {workspace.member.name} · {role.title.toLowerCase()} ·{" "}
+                {workspace.venueName}. {shiftLabel}. Один экран на смену:
+                задача, стандарт и короткий итог после работы.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
@@ -415,7 +406,7 @@ export default async function MyCabinetPage({
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                    Следующее действие
+                    Что сделать сейчас
                   </p>
                   {nextAction ? (
                     <>
@@ -533,13 +524,6 @@ export default async function MyCabinetPage({
 
           <div className="mx-auto max-w-7xl px-6 pb-8">
             <MemberDailyRoutePanel route={dailyRoute} />
-          </div>
-
-          <div className="mx-auto grid max-w-7xl gap-3 px-6 pb-8 sm:grid-cols-2 lg:grid-cols-4">
-            <Metric label="активные" value={openTasks.length} />
-            <Metric label="срочные" value={urgentTasks.length} />
-            <Metric label="смены" value={memberSchedule.length} />
-            <Metric label="важная связь" value={unreadImportantAnnouncements} />
           </div>
         </section>
 
@@ -768,21 +752,23 @@ function MemberDailyRoutePanel({ route }: { route: MemberDailyRoute }) {
 
   return (
     <div className="rounded-lg border border-border/60 bg-card/45 p-4">
-      <div className="grid gap-4 lg:grid-cols-[0.72fr_1.28fr]">
+      <div className="grid gap-4 lg:grid-cols-[0.78fr_1.22fr]">
         <div className="rounded-lg border border-brand/25 bg-brand/[0.05] p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-[11px] uppercase tracking-[0.18em] text-brand">
-                Ритм смены
+                Маршрут смены
               </p>
-              <h2 className="mt-2 text-base font-medium">{route.headline}</h2>
+              <h2 className="mt-2 text-base font-medium">
+                {focus.title}: {focus.action.toLowerCase()}.
+              </h2>
             </div>
             <span className="rounded-md border border-border/50 bg-background/60 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
               {route.readyCount}/{route.totalCount}
             </span>
           </div>
           <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
-            Следующий шаг: {focus.title.toLowerCase()}. {focus.detail}
+            {focus.detail}
           </p>
           <Link
             href={focus.href}
@@ -792,7 +778,7 @@ function MemberDailyRoutePanel({ route }: { route: MemberDailyRoute }) {
           </Link>
         </div>
 
-        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-2">
           {route.items.map((item) => {
             const Icon = dailyRouteIcon(item);
 
@@ -801,24 +787,16 @@ function MemberDailyRoutePanel({ route }: { route: MemberDailyRoute }) {
                 key={item.id}
                 href={item.href}
                 className={
-                  "group flex min-h-32 flex-col justify-between rounded-lg border p-3 transition-colors hover:border-brand/35 hover:bg-background/55 " +
+                  "group grid gap-3 rounded-lg border p-3 transition-colors hover:border-brand/35 hover:bg-background/55 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center " +
                   (item.id === focus.id
                     ? "border-brand/35 bg-brand/[0.04]"
                     : "border-border/45 bg-background/35")
                 }
               >
-                <div className="flex items-start justify-between gap-2">
-                  <span className="flex size-8 items-center justify-center rounded-lg border border-border/45 bg-card/45 text-foreground">
-                    <Icon className="size-4" />
-                  </span>
-                  <Badge
-                    variant="outline"
-                    className={operationToneClass(item.tone)}
-                  >
-                    {item.status}
-                  </Badge>
-                </div>
-                <div>
+                <span className="flex size-8 items-center justify-center rounded-lg border border-border/45 bg-card/45 text-foreground">
+                  <Icon className="size-4" />
+                </span>
+                <div className="min-w-0">
                   <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
                     {item.step}
                   </p>
@@ -828,10 +806,18 @@ function MemberDailyRoutePanel({ route }: { route: MemberDailyRoute }) {
                   <p className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-muted-foreground">
                     {item.detail}
                   </p>
-                  <p className="mt-2 inline-flex items-center gap-1.5 text-[12px] text-muted-foreground transition-colors group-hover:text-foreground">
+                </div>
+                <div className="flex items-center gap-2 sm:justify-end">
+                  <Badge
+                    variant="outline"
+                    className={operationToneClass(item.tone)}
+                  >
+                    {item.status}
+                  </Badge>
+                  <span className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground transition-colors group-hover:text-foreground">
                     {item.action}
                     <ArrowRight className="size-3.5" />
-                  </p>
+                  </span>
                 </div>
               </Link>
             );
@@ -853,7 +839,7 @@ function MemberSecondBrainCard({
         <Lightbulb className="mt-1 size-5 shrink-0 text-brand" />
         <div className="min-w-0 flex-1">
           <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-            Профиль для советника
+            Что Receptor уже знает
           </p>
           <h2 className="mt-3 text-xl font-medium">{profile.title}</h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
@@ -878,7 +864,7 @@ function MemberSecondBrainCard({
       </div>
       <div className="mt-4 rounded-lg border border-brand/25 bg-brand/10 p-3">
         <p className="text-[10px] uppercase tracking-[0.16em] text-brand">
-          Вопрос на онбординг / бриф
+          Что спросить на брифе
         </p>
         <p className="mt-1 text-sm leading-relaxed text-foreground">
           {profile.nextQuestion}
@@ -893,7 +879,7 @@ function MemberSecondBrainCard({
       >
         <span className="min-w-0">
           <span className="block text-[10px] uppercase tracking-[0.16em] opacity-75">
-            Что связываем в памяти
+            Что добавить дальше
           </span>
           <span className="mt-1 block text-sm font-medium">
             {profile.memoryLink.label}
@@ -902,7 +888,7 @@ function MemberSecondBrainCard({
             {profile.memoryLink.detail}
           </span>
           <span className="mt-2 block text-xs leading-relaxed opacity-90">
-            <span className="font-medium">Почему это важно:</span>{" "}
+            <span className="font-medium">Зачем:</span>{" "}
             {profile.memoryLink.reason}
           </span>
         </span>
@@ -934,17 +920,6 @@ function MemberSecondBrainFactRow({
       </span>
       <p className="text-[12px] leading-relaxed text-muted-foreground">
         {fact.detail}
-      </p>
-    </div>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-lg border border-border/50 bg-background/35 p-3">
-      <p className="numeric text-2xl font-medium text-foreground">{value}</p>
-      <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-        {label}
       </p>
     </div>
   );

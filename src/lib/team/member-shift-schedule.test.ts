@@ -360,7 +360,7 @@ describe("buildMemberShiftSchedule", () => {
     expect(route.totalCount).toBe(4);
     expect(route.focus).toMatchObject({
       id: "briefing",
-      title: "Прочитать бриф",
+      title: "Понять фокус",
       action: "Подтвердить",
       href: "#team-announcement-announcement-service",
     });
@@ -387,7 +387,7 @@ describe("buildMemberShiftSchedule", () => {
       status: "нет итога",
       href: "#shift-summary",
     });
-    expect(route.headline).toContain("память ресторана");
+    expect(route.headline).toContain("короткий итог");
   });
 
   test("marks the route complete when the employee left a shift note", () => {
@@ -470,12 +470,12 @@ describe("buildMemberShiftSchedule", () => {
     });
 
     expect(profile).toMatchObject({
-      title: "Маша: рабочий контекст",
+      title: "Маша: что известно",
       tags: expect.arrayContaining(["Service", "активен", "нужен допуск", "итог полный"]),
       nextQuestion: "Что мешает пройти стандарт «Как рекомендовать блюдо» до смены?",
       memoryLink: {
         label: "Связать обучение",
-        reason: expect.stringContaining("Без допуска"),
+        reason: expect.stringContaining("Без стандарта"),
         href: "#learning-progress",
         action: "Открыть обучение",
         tone: "risk",
@@ -519,7 +519,7 @@ describe("buildMemberShiftSchedule", () => {
     expect(profile.nextQuestion).toContain("Что произошло на последней смене");
     expect(profile.memoryLink).toMatchObject({
       label: "Собрать итог",
-      reason: expect.stringContaining("есть цифры, но нет причины"),
+      reason: expect.stringContaining("видит цифры, но не понимает"),
       href: "#shift-summary",
       action: "Записать итог",
       tone: "setup",
@@ -559,7 +559,7 @@ describe("buildMemberShiftSchedule", () => {
     expect(profile.nextQuestion).toContain("В итоге смены не хватает");
     expect(profile.memoryLink).toMatchObject({
       label: "Дополнить итог",
-      reason: expect.stringContaining("факт, контекст, масштаб"),
+      reason: expect.stringContaining("факт, причина, масштаб"),
       href: "#shift-summary",
       action: "Дополнить",
       tone: "setup",
