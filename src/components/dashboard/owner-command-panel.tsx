@@ -24,11 +24,8 @@ import type {
   OwnerReview,
   OwnerReviewAction,
   OwnerReviewActionTarget,
-  OwnerReviewConfidence,
-  OwnerReviewRole,
   OwnerReviewTone,
 } from "@/lib/owner-review";
-import { buildOwnerMorningReviewRows } from "@/lib/owner-morning-review";
 import { buildTeamHref, type TeamPeriodParams } from "@/lib/team/team-links";
 import type { TeamTask } from "@/lib/team/team-os";
 import type { TeamTaskQueueSummary } from "@/lib/team/team-task-queue";
@@ -38,27 +35,6 @@ const TONE_CLASS: Record<OwnerReviewTone, string> = {
   risk: "border-destructive/35 bg-destructive/8 text-destructive",
   watch: "border-amber-500/35 bg-amber-500/10 text-amber-300",
   good: "border-brand/35 bg-brand/10 text-brand",
-};
-
-const ROLE_LABEL: Record<OwnerReviewRole, string> = {
-  owner: "владелец",
-  manager: "управляющий",
-  chef: "кухня",
-  service: "зал",
-};
-
-const CONFIDENCE_LABEL: Record<OwnerReviewConfidence, string> = {
-  high: "уверенно",
-  medium: "нужно проверить",
-  low: "данных мало",
-};
-
-const TASK_STATUS_LABEL: Record<TeamTask["status"], string> = {
-  new: "новая",
-  accepted: "принята",
-  in_progress: "в работе",
-  done: "сделана",
-  verified: "проверена",
 };
 
 const BRAIN_STATUS_CLASS: Record<OwnerBrainSourceStatus, string> = {
@@ -327,6 +303,118 @@ function primaryAction(review: OwnerReview): OwnerReviewAction | null {
   return review.actions[0] ?? null;
 }
 
+type OwnerMorningFocusRow = {
+  label: string;
+  title: string;
+  detail: string;
+  tone: OwnerReviewTone;
+  icon: "question" | "field" | "decision";
+};
+
+function cleanQuestion(value: string | null | undefined): string | null {
+  const trimmed = value?.replace(/^Вопрос:\s*/i, "").trim();
+  if (!trimmed) return null;
+  return /[?!.]$/.test(trimmed) ? trimmed : `${trimmed}?`;
+}
+
+function buildOwnerMorningFocusRows({
+  review,
+  mainAction,
+  brainReadiness,
+  nextTeamTask,
+}: {
+  review: OwnerReview;
+  mainAction: OwnerReviewAction | null;
+  brainReadiness?: OwnerBrainReadiness;
+  nextTeamTask?: TeamTask;
+}): OwnerMorningFocusRow[] {
+  const fieldEvidence = review.evidence.find((item) => item.label === "Поле");
+  const question =
+    cleanQuestion(mainAction?.briefingQuestion) ??
+    cleanQuestion(brainReadiness?.fieldMemory.nextQuestion) ??
+    cleanQuestion(review.questions[0]?.text) ??
+    "Что сегодня мешает гостю купить больше, а команде работать спокойнее?";
+
+  const teamFact: OwnerMorningFocusRow = fieldEvidence
+    ? {
+        label: "Факт команды",
+        title: fieldEvidence.value,
+        detail: fieldEvidence.detail,
+        tone: fieldEvidence.tone,
+        icon: "field",
+      }
+    : brainReadiness?.fieldMemory.answerSource
+      ? {
+          label: "Факт команды",
+          title: brainReadiness.fieldMemory.answerSource.title,
+          detail: `Итог смены принят: ${brainReadiness.fieldMemory.answerSource.statusLabel}.`,
+          tone: "good",
+          icon: "field",
+        }
+      : nextTeamTask
+        ? {
+            label: "Факт команды",
+            title: nextTeamTask.title,
+            detail: `${nextTeamTask.dueLabel}. Это ближайшая открытая задача команды.`,
+            tone: nextTeamTask.priority === "high" ? "risk" : "watch",
+            icon: "field",
+          }
+        : {
+            label: "Факт команды",
+            title: "памяти смены пока мало",
+            detail:
+              "Попросите старшего смены оставить короткий итог: гости, конфликт, стоп-лист, погода, что продавали и что проверить утром.",
+            tone: "watch",
+            icon: "field",
+          };
+
+  const decision: OwnerMorningFocusRow = mainAction
+    ? {
+        label: "Решение",
+        title: mainAction.title,
+        detail: mainAction.detail,
+        tone: mainAction.tone,
+        icon: "decision",
+      }
+    : review.readiness.action
+      ? {
+          label: "Решение",
+          title: review.readiness.action.label,
+          detail: review.readiness.detail,
+          tone: review.readiness.tone,
+          icon: "decision",
+        }
+      : {
+          label: "Решение",
+          title: "срочного решения нет",
+          detail:
+            "Можно спокойно смотреть цифры ниже или открыть команду и собрать итог смены.",
+          tone: "good",
+          icon: "decision",
+        };
+
+  return [
+    {
+      label: "Вопрос утра",
+      title: question,
+      detail:
+        "Задайте его управляющему или старшему смены. Ответ попадет в память ресторана и сделает следующий совет точнее.",
+      tone:
+        mainAction?.tone ??
+        (brainReadiness?.fieldMemory.status === "missing" ? "watch" : "good"),
+      icon: "question",
+    },
+    teamFact,
+    decision,
+  ];
+}
+
+function MorningFocusIcon({ icon }: { icon: OwnerMorningFocusRow["icon"] }) {
+  if (icon === "question") return <HelpCircle className="size-4" />;
+  if (icon === "field") return <MessageSquareText className="size-4" />;
+  return <ClipboardList className="size-4" />;
+}
+
 export function OwnerCommandPanel({
   venueId,
   review,
@@ -342,8 +430,13 @@ export function OwnerCommandPanel({
 }) {
   const mainAction = primaryAction(review);
   const proof = review.evidence.slice(0, 4);
-  const morningReview = buildOwnerMorningReviewRows({ review, mainAction });
   const nextTeamTask = teamTaskQueue?.openTasks[0]?.task;
+  const morningFocus = buildOwnerMorningFocusRows({
+    review,
+    mainAction,
+    brainReadiness,
+    nextTeamTask,
+  });
   const secondaryActions = review.actions.slice(
     mainAction ? 1 : 0,
     mainAction ? 3 : 2,
@@ -406,49 +499,41 @@ export function OwnerCommandPanel({
               <GaugeCircle className="size-3.5" />
               Утро владельца
             </span>
-            <span
-              className={
-                "rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.14em] " +
-                TONE_CLASS[review.readiness.tone]
-              }
-            >
-              {review.readiness.score}% · {review.readiness.title}
-            </span>
             <span className="rounded-full border border-border/55 bg-background/45 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-              {CONFIDENCE_LABEL[review.confidence]}
+              один вопрос · один факт · одно решение
             </span>
           </div>
 
           <h2 className="mt-5 max-w-4xl text-balance text-3xl font-medium leading-[1.05] tracking-[-0.02em] text-foreground sm:text-4xl">
-            {review.verdict}
+            {mainAction?.title ?? review.verdict}
           </h2>
           <p className="mt-4 max-w-3xl text-[15px] leading-relaxed text-muted-foreground">
-            {review.summary}
+            {mainAction?.detail ?? review.summary}
           </p>
 
-          <div className="mt-5 divide-y divide-border/45 border-y border-border/45">
-            {morningReview.map((row) => (
+          <div className="mt-6 grid gap-3 lg:grid-cols-3">
+            {morningFocus.map((row) => (
               <div
                 key={row.label}
-                className="grid gap-2 py-3 sm:grid-cols-[120px_minmax(0,0.8fr)_minmax(0,1.2fr)] sm:items-start"
+                className="rounded-lg border border-border/55 bg-background/30 p-4"
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                    {row.label}
+                  </p>
                   <span
                     className={
                       "inline-flex size-6 items-center justify-center rounded-md border " +
                       TONE_CLASS[row.tone]
                     }
                   >
-                    <ToneIcon tone={row.tone} />
+                    <MorningFocusIcon icon={row.icon} />
                   </span>
-                  <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                    {row.label}
-                  </p>
                 </div>
-                <p className="min-w-0 text-sm font-medium leading-relaxed text-foreground">
-                  {row.value}
+                <p className="mt-3 text-base font-medium leading-snug text-foreground">
+                  {row.title}
                 </p>
-                <p className="min-w-0 text-[13px] leading-relaxed text-muted-foreground">
+                <p className="mt-2 line-clamp-4 text-[13px] leading-relaxed text-muted-foreground">
                   {row.detail}
                 </p>
               </div>
@@ -490,44 +575,49 @@ export function OwnerCommandPanel({
             ) : null}
           </div>
 
-          <div className="mt-5 grid gap-2 md:grid-cols-3">
-            <Link
-              href={teamActionsHref}
-              className="group rounded-lg border border-border/50 bg-background/30 p-3 transition-colors hover:border-brand/45 hover:bg-brand/10"
-            >
-              <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                <ClipboardList className="size-3.5 text-brand" />
-                До смены
-              </span>
-              <span className="mt-2 block text-sm font-medium text-foreground">
-                Фокус, задачи и бриф
-              </span>
-            </Link>
-            <Link
-              href={shiftMemoryHref}
-              className="group rounded-lg border border-brand/30 bg-brand/10 p-3 transition-colors hover:border-brand/55 hover:bg-brand/15"
-            >
-              <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.16em] text-brand">
-                <MessageSquareText className="size-3.5" />
-                После смены
-              </span>
-              <span className="mt-2 block text-sm font-medium text-foreground">
-                Итог с поля в память
-              </span>
-            </Link>
-            <Link
-              href={teamLearningHref}
-              className="group rounded-lg border border-border/50 bg-background/30 p-3 transition-colors hover:border-brand/45 hover:bg-brand/10"
-            >
-              <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                <BookOpenCheck className="size-3.5 text-brand" />
-                Обучение
-              </span>
-              <span className="mt-2 block text-sm font-medium text-foreground">
-                Закрыть пробел команды
-              </span>
-            </Link>
-          </div>
+          <details className="mt-4 rounded-lg border border-border/45 bg-background/25 px-3 py-2">
+            <summary className="cursor-pointer select-none text-[11px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground">
+              Рабочие разделы
+            </summary>
+            <div className="mt-3 grid gap-2 md:grid-cols-3">
+              <Link
+                href={teamActionsHref}
+                className="group rounded-lg border border-border/50 bg-background/30 p-3 transition-colors hover:border-brand/45 hover:bg-brand/10"
+              >
+                <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                  <ClipboardList className="size-3.5 text-brand" />
+                  До смены
+                </span>
+                <span className="mt-2 block text-sm font-medium text-foreground">
+                  Фокус, задачи и бриф
+                </span>
+              </Link>
+              <Link
+                href={shiftMemoryHref}
+                className="group rounded-lg border border-brand/30 bg-brand/10 p-3 transition-colors hover:border-brand/55 hover:bg-brand/15"
+              >
+                <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.16em] text-brand">
+                  <MessageSquareText className="size-3.5" />
+                  После смены
+                </span>
+                <span className="mt-2 block text-sm font-medium text-foreground">
+                  Итог с поля в память
+                </span>
+              </Link>
+              <Link
+                href={teamLearningHref}
+                className="group rounded-lg border border-border/50 bg-background/30 p-3 transition-colors hover:border-brand/45 hover:bg-brand/10"
+              >
+                <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                  <BookOpenCheck className="size-3.5 text-brand" />
+                  Обучение
+                </span>
+                <span className="mt-2 block text-sm font-medium text-foreground">
+                  Закрыть пробел команды
+                </span>
+              </Link>
+            </div>
+          </details>
 
           {proof.length > 0 ? (
             <details className="mt-4 rounded-lg border border-border/45 bg-background/25 px-3 py-2">
@@ -572,10 +662,10 @@ export function OwnerCommandPanel({
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                    Что Receptor уже знает
+                    Память ресторана
                   </p>
                   <h3 className="mt-2 text-lg font-medium text-foreground">
-                    {brainReadiness.score}% · {brainReadiness.title}
+                    {brainReadiness.title}
                   </h3>
                 </div>
                 <span
@@ -619,22 +709,27 @@ export function OwnerCommandPanel({
                 </Link>
               ) : null}
 
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {brainReadiness.sources.map((source) => (
-                  <Link
-                    key={source.id}
-                    href={brainSourceHref(source, venueId, teamPeriodParams)}
-                    className={
-                      "min-w-0 rounded-md border px-2 py-1.5 text-[11px] transition-colors hover:bg-background/55 " +
-                      BRAIN_STATUS_CLASS[source.status]
-                    }
-                    title={`${source.label}: ${source.detail}`}
-                  >
-                    <span className="font-medium">{source.label}</span>
-                    <span className="opacity-75"> · {source.value}</span>
-                  </Link>
-                ))}
-              </div>
+              <details className="mt-3 rounded-lg border border-border/45 bg-background/25 px-3 py-2">
+                <summary className="cursor-pointer select-none text-[10px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground">
+                  Источники памяти
+                </summary>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {brainReadiness.sources.map((source) => (
+                    <Link
+                      key={source.id}
+                      href={brainSourceHref(source, venueId, teamPeriodParams)}
+                      className={
+                        "min-w-0 rounded-md border px-2 py-1.5 text-[11px] transition-colors hover:bg-background/55 " +
+                        BRAIN_STATUS_CLASS[source.status]
+                      }
+                      title={`${source.label}: ${source.detail}`}
+                    >
+                      <span className="font-medium">{source.label}</span>
+                      <span className="opacity-75"> · {source.value}</span>
+                    </Link>
+                  ))}
+                </div>
+              </details>
 
               {showFieldMemory ? (
                 <Link
@@ -757,130 +852,8 @@ export function OwnerCommandPanel({
             </div>
           ) : null}
 
-          <div className="mb-4 flex items-start justify-between gap-3">
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                Что сделать сейчас
-              </p>
-              <h3 className="mt-2 text-lg font-medium text-foreground">
-                {mainAction
-                  ? "Один следующий шаг"
-                  : nextTeamTask
-                    ? "Задача команды"
-                    : "Контур спокойный"}
-              </h3>
-            </div>
-            <ClipboardList className="size-5 text-brand" />
-          </div>
-
-          {mainAction ? (
-            <div className="rounded-lg border border-brand/30 bg-brand/10 p-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <span
-                  className={
-                    "inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] uppercase tracking-[0.12em] " +
-                    TONE_CLASS[mainAction.tone]
-                  }
-                >
-                  <ToneIcon tone={mainAction.tone} />
-                  {ROLE_LABEL[mainAction.role]}
-                </span>
-                {mainAction.sourceLabel ? (
-                  <span className="rounded-md border border-brand/30 bg-background/35 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-brand">
-                    {actionContour(mainAction)}
-                  </span>
-                ) : null}
-                {mainAction.impactLabel ? (
-                  <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-amber-200">
-                    {mainAction.impactLabel}
-                  </span>
-                ) : null}
-                {mainAction.learningModuleTitle ? (
-                  <span className="rounded-md border border-sky-400/30 bg-sky-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-sky-200">
-                    стандарт
-                  </span>
-                ) : null}
-                {mainAction.existingTaskId ? (
-                  <span className="rounded-md border border-border/45 bg-background/50 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                    Команда
-                    {mainAction.existingTaskStatus
-                      ? `: ${TASK_STATUS_LABEL[mainAction.existingTaskStatus]}`
-                      : ""}
-                  </span>
-                ) : null}
-              </div>
-              <h4 className="mt-3 text-base font-medium leading-snug text-foreground">
-                {mainAction.title}
-              </h4>
-              <p className="mt-2 line-clamp-3 text-[13px] leading-relaxed text-muted-foreground">
-                {mainAction.detail}
-              </p>
-              {mainAction.briefingQuestion ? (
-                <p className="mt-2 flex items-start gap-2 text-[12px] leading-relaxed text-foreground/85">
-                  <HelpCircle className="mt-0.5 size-3.5 shrink-0 text-brand" />
-                  <span>{mainAction.briefingQuestion}</span>
-                </p>
-              ) : null}
-              {mainAction.learningModuleTitle ? (
-                <p className="mt-2 line-clamp-1 text-[12px] leading-relaxed text-sky-100/85">
-                  Стандарт команды: {mainAction.learningModuleTitle}
-                  {mainAction.learningChecklistTitle
-                    ? `. Чеклист: ${mainAction.learningChecklistTitle}`
-                    : ""}
-                </p>
-              ) : null}
-              <LinkButton
-                href={actionHref(mainAction, venueId, teamPeriodParams)}
-                className="mt-4 h-9 px-3 text-[13px]"
-              >
-                {actionCta(mainAction)}
-                <ArrowRight className="size-3.5" />
-              </LinkButton>
-            </div>
-          ) : nextTeamTask ? (
-            <div className="rounded-lg border border-brand/30 bg-brand/10 p-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-md border border-brand/25 bg-background/35 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-brand">
-                  следующая задача
-                </span>
-                {nextTeamTask.sourceLabel ? (
-                  <span className="rounded-md border border-border/45 bg-card/50 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                    {nextTeamTask.sourceLabel}
-                  </span>
-                ) : null}
-                {nextTeamTask.impactLabel ? (
-                  <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-amber-200">
-                    {nextTeamTask.impactLabel}
-                  </span>
-                ) : null}
-                <span className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-                  {nextTeamTask.dueLabel}
-                </span>
-              </div>
-              <h4 className="mt-3 text-base font-medium leading-snug text-foreground">
-                {nextTeamTask.title}
-              </h4>
-              <LinkButton
-                href={teamTaskQueueHref(
-                  venueId,
-                  nextTeamTask.id,
-                  teamPeriodParams,
-                )}
-                className="mt-4 h-9 px-3 text-[13px]"
-              >
-                Открыть задачу
-                <ArrowRight className="size-3.5" />
-              </LinkButton>
-            </div>
-          ) : (
-            <div className="rounded-lg border border-brand/25 bg-brand/10 p-3 text-[13px] leading-relaxed text-foreground/85">
-              Критичных действий нет. Дальше можно смотреть детали по марже, ФОТ
-              и сменам ниже.
-            </div>
-          )}
-
           {teamTaskQueue ? (
-            <div className="mt-4 rounded-lg border border-border/45 bg-card/35 p-3">
+            <div className="rounded-lg border border-border/45 bg-card/35 p-3">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -928,57 +901,59 @@ export function OwnerCommandPanel({
           ) : null}
 
           {secondaryActions.length > 0 ? (
-            <div className="mt-4 space-y-2">
-              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                Следом
-              </p>
-              {secondaryActions.map((action) => (
-                <div
-                  key={`${action.target}-${action.title}`}
-                  className="grid gap-3 rounded-lg border border-border/45 bg-card/35 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
-                >
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      {action.sourceLabel ? (
-                        <span className="rounded-md border border-brand/30 bg-brand/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-brand">
-                          {actionContour(action)}
-                        </span>
-                      ) : null}
-                      {action.impactLabel ? (
-                        <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-amber-200">
-                          {action.impactLabel}
-                        </span>
-                      ) : null}
-                      {action.learningModuleTitle ? (
-                        <span className="rounded-md border border-sky-400/30 bg-sky-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-sky-200">
-                          стандарт
-                        </span>
-                      ) : null}
-                      <p className="text-[13px] font-medium text-foreground">
-                        {action.title}
-                      </p>
-                    </div>
-                    <p className="mt-1 line-clamp-1 text-[12px] leading-relaxed text-muted-foreground">
-                      {action.detail}
-                    </p>
-                    {action.briefingQuestion ? (
-                      <p className="mt-1 flex items-start gap-2 text-[12px] leading-relaxed text-foreground/85">
-                        <HelpCircle className="mt-0.5 size-3.5 shrink-0 text-brand" />
-                        <span>{action.briefingQuestion}</span>
-                      </p>
-                    ) : null}
-                  </div>
-                  <LinkButton
-                    href={actionHref(action, venueId, teamPeriodParams)}
-                    variant="outline"
-                    className="h-8 shrink-0 px-3 text-[12px]"
+            <details className="mt-4 rounded-lg border border-border/45 bg-background/25 px-3 py-2">
+              <summary className="cursor-pointer select-none text-[11px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground">
+                Ещё можно разобрать · {secondaryActions.length}
+              </summary>
+              <div className="mt-3 space-y-2">
+                {secondaryActions.map((action) => (
+                  <div
+                    key={`${action.target}-${action.title}`}
+                    className="grid gap-3 rounded-lg border border-border/45 bg-card/35 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
                   >
-                    {actionCta(action)}
-                    <ArrowRight className="size-3.5" />
-                  </LinkButton>
-                </div>
-              ))}
-            </div>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {action.sourceLabel ? (
+                          <span className="rounded-md border border-brand/30 bg-brand/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-brand">
+                            {actionContour(action)}
+                          </span>
+                        ) : null}
+                        {action.impactLabel ? (
+                          <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-amber-200">
+                            {action.impactLabel}
+                          </span>
+                        ) : null}
+                        {action.learningModuleTitle ? (
+                          <span className="rounded-md border border-sky-400/30 bg-sky-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-sky-200">
+                            стандарт
+                          </span>
+                        ) : null}
+                        <p className="text-[13px] font-medium text-foreground">
+                          {action.title}
+                        </p>
+                      </div>
+                      <p className="mt-1 line-clamp-1 text-[12px] leading-relaxed text-muted-foreground">
+                        {action.detail}
+                      </p>
+                      {action.briefingQuestion ? (
+                        <p className="mt-1 flex items-start gap-2 text-[12px] leading-relaxed text-foreground/85">
+                          <HelpCircle className="mt-0.5 size-3.5 shrink-0 text-brand" />
+                          <span>{action.briefingQuestion}</span>
+                        </p>
+                      ) : null}
+                    </div>
+                    <LinkButton
+                      href={actionHref(action, venueId, teamPeriodParams)}
+                      variant="outline"
+                      className="h-8 shrink-0 px-3 text-[12px]"
+                    >
+                      {actionCta(action)}
+                      <ArrowRight className="size-3.5" />
+                    </LinkButton>
+                  </div>
+                ))}
+              </div>
+            </details>
           ) : null}
         </div>
       </div>
