@@ -122,14 +122,12 @@ function formatHours(value: number): string {
 
 function iikoBlockerActionLabel(blocker: TeamLaborIikoBlocker): string {
   return blocker.action === "add-member"
-    ? "Создать карточку"
-    : "Открыть ставку";
+    ? "Добавить человека"
+    : "Заполнить оплату";
 }
 
 function iikoBlockerReasonLabel(blocker: TeamLaborIikoBlocker): string {
-  return blocker.action === "add-member"
-    ? "нет карточки сотрудника"
-    : "нет ставки";
+  return blocker.action === "add-member" ? "нет в команде" : "нет оплаты";
 }
 
 function laborSourceCopy(source: LaborSource): {
@@ -155,7 +153,7 @@ function laborSourceCopy(source: LaborSource): {
     label: "iiko недоступна",
     detail:
       source.error ??
-      `Смены за период ${source.periodLabel} не загрузились. Показываем ставки из карточек сотрудников.`,
+      `Смены за период ${source.periodLabel} не загрузились. Показываем оплату из команды.`,
     className: "border-amber-400/35 bg-amber-400/10 text-amber-200",
   };
 }
@@ -196,24 +194,24 @@ function laborReadinessCopy(status: TeamLaborReadinessStatus): {
 } {
   if (status === "ready") {
     return {
-      title: "ФОТ готов к расчету",
+      title: "Оплата смен готова",
       detail:
-        "У активной команды заведены ставки. Панель владельца может считать ФОТ точнее.",
+        "У активной команды заполнена оплата. Владелец увидит стоимость смен точнее.",
       className: "border-brand/35 bg-brand/10 text-brand",
     };
   }
   if (status === "partial") {
     return {
-      title: "ФОТ считается частично",
+      title: "Оплата смен неполная",
       detail:
-        "Часть активной команды без ставки. Их смены будут занижать ФОТ в BI.",
+        "У части команды нет оплаты. Стоимость смен будет считаться ниже реальности.",
       className: "border-amber-400/35 bg-amber-400/10 text-amber-200",
     };
   }
   return {
-    title: "ФОТ заблокирован",
+    title: "Оплата смен не готова",
     detail:
-      "Нет активных ставок. Смены видны, но стоимость команды пока не считается.",
+      "Нет активной оплаты. Смены видны, но стоимость команды пока не считается.",
     className: "border-destructive/35 bg-destructive/10 text-destructive",
   };
 }
@@ -342,7 +340,7 @@ export function TeamActionsPanel({
     .map((member) => member.name)
     .join(", ");
   const laborCoverageLabel =
-    laborReadiness.source === "iiko" ? "точность ФОТ" : "ставок";
+    laborReadiness.source === "iiko" ? "точность оплаты" : "оплаты";
   const laborCoverageDetail =
     laborReadiness.source === "iiko"
       ? laborReadiness.iikoUnpricedStaffShifts > 0
@@ -350,7 +348,7 @@ export function TeamActionsPanel({
         : "вся сменная выручка покрыта"
       : missingRateNames
         ? missingRateNames
-        : "ставки заведены";
+        : "оплата заполнена";
 
   function runAction(action: () => Promise<TeamActionResult>) {
     setMessage(null);
@@ -558,13 +556,13 @@ export function TeamActionsPanel({
             </div>
             {prefillMemberName ? (
               <p className="mt-3 rounded-lg border border-brand/25 bg-brand/10 px-3 py-2 text-[12px] leading-relaxed text-brand">
-                Из BI: добавьте «{prefillMemberName}», чтобы смены считались с
-                точным ФОТ.
+                Из смен: добавьте «{prefillMemberName}», чтобы стоимость команды
+                считалась точнее.
               </p>
             ) : null}
             <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
-              Для старта достаточно имени и роли. Логин, пароль и оплату можно
-              заполнить сразу или вернуться к ним в настройке команды ниже.
+              Для старта достаточно имени и роли. Доступ к кабинету и оплату
+              можно заполнить сразу или вернуться к ним ниже.
             </p>
             <div className="mt-5 space-y-3">
               <FieldLabel label="Имя">
@@ -576,7 +574,7 @@ export function TeamActionsPanel({
                   required
                 />
               </FieldLabel>
-              <FieldLabel label="Email для доступа">
+              <FieldLabel label="Email для кабинета">
                 <input
                   value={memberEmail}
                   onChange={(event) => setMemberEmail(event.target.value)}
@@ -586,7 +584,7 @@ export function TeamActionsPanel({
                 />
               </FieldLabel>
               <div className="grid gap-3 sm:grid-cols-2">
-                <FieldLabel label="Вход в кабинет">
+                <FieldLabel label="Логин сотрудника">
                   <input
                     value={memberLogin}
                     onChange={(event) => setMemberLogin(event.target.value)}
@@ -595,7 +593,7 @@ export function TeamActionsPanel({
                     autoComplete="off"
                   />
                 </FieldLabel>
-                <FieldLabel label="Временный пароль">
+                <FieldLabel label="Пароль на первый вход">
                   <div className="flex gap-2">
                     <input
                       value={memberPassword}
@@ -676,13 +674,18 @@ export function TeamActionsPanel({
                 </FieldLabel>
               </div>
             </div>
-            <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
-              Если указан только логин без email, Receptor сделает формат
-              login@staff.receptorai.pro.
-            </p>
+            <details className="mt-3 border-t border-border/35 pt-3">
+              <summary className="cursor-pointer list-none text-[12px] text-muted-foreground transition-colors hover:text-foreground">
+                Как работает доступ
+              </summary>
+              <p className="mt-2 text-[12px] leading-relaxed text-muted-foreground">
+                Если указан только логин без email, Receptor сделает служебный
+                адрес вида login@staff.receptorai.pro.
+              </p>
+            </details>
             <Button type="submit" className="mt-5 w-full" disabled={pending}>
               <Plus className="size-4" />
-              Добавить в команду
+              Добавить к сменам
             </Button>
           </form>
 
@@ -1163,13 +1166,13 @@ export function TeamActionsPanel({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-                Настройка команды
+                Подготовка смен
               </p>
-              <h3 className="mt-2 text-xl font-medium">Люди, роли и оплата</h3>
+              <h3 className="mt-2 text-xl font-medium">Люди, роли и деньги</h3>
             </div>
             <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
-              Сначала закрываем реальных людей и ставки, чтобы смены, ФОТ и
-              поручения считались без ручной расшифровки.
+              Сначала закрываем людей, роли и оплату. Тогда смены, поручения и
+              утренний разбор считаются без ручной сверки.
             </p>
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -1187,7 +1190,7 @@ export function TeamActionsPanel({
           </div>
           {focusedMember ? (
             <p className="mt-3 rounded-lg border border-brand/25 bg-brand/10 px-3 py-2 text-[12px] leading-relaxed text-brand">
-              Фокус из BI: заполните ставку для «{focusedMember.name}».
+              Фокус из смен: заполните оплату для «{focusedMember.name}».
             </p>
           ) : null}
 
@@ -1222,15 +1225,15 @@ export function TeamActionsPanel({
                   detail={`всего: ${laborReadiness.totalStaff}`}
                 />
                 <TeamMetric
-                  label="Со ставкой"
+                  label="С оплатой"
                   value={`${laborReadiness.readyStaff}`}
-                  detail="участвуют в ФОТ"
+                  detail="считаются в сменах"
                 />
                 <TeamMetric
                   label={
                     laborReadiness.source === "iiko"
-                      ? "В iiko без ФОТ"
-                      : "Без ставки"
+                      ? "В iiko без оплаты"
+                      : "Без оплаты"
                   }
                   value={`${
                     laborReadiness.source === "iiko"
@@ -1248,15 +1251,15 @@ export function TeamActionsPanel({
               <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                 <div className="min-w-0">
                   <p className="text-[10px] uppercase tracking-[0.18em] text-amber-200">
-                    быстро закрыть ФОТ
+                    быстро закрыть оплату
                   </p>
                   <h4 className="mt-1 text-base font-medium text-foreground">
-                    Применить ставку к {bulkRateTargets.length} без ФОТ
+                    Применить оплату к {bulkRateTargets.length} без оплаты
                   </h4>
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    Только сотрудники без ставки. Заполненные ставки не
+                    Только сотрудники без оплаты. Заполненные значения не
                     перезаписываем. Если есть смены iiko, первыми идут те, кто
-                    сильнее искажает ФОТ.
+                    сильнее искажает стоимость команды.
                   </p>
                 </div>
                 <div className="grid w-full gap-2 sm:grid-cols-[1fr_1fr_0.8fr_auto] lg:max-w-2xl">
@@ -1266,7 +1269,7 @@ export function TeamActionsPanel({
                     className={`${FIELD_CLASS} px-2 py-1.5 text-xs`}
                     inputMode="decimal"
                     placeholder="руб/час"
-                    aria-label="Массовая почасовая ставка"
+                    aria-label="Массовая почасовая оплата"
                   />
                   <input
                     value={bulkShiftPay}
@@ -1298,7 +1301,7 @@ export function TeamActionsPanel({
                 </div>
               </div>
               <p className="mt-2 truncate text-[11px] text-muted-foreground">
-                В очереди по влиянию на ФОТ:{" "}
+                Сначала влияют на стоимость команды:{" "}
                 {bulkRateTargets
                   .slice(0, 4)
                   .map((target) => target.name)
@@ -1318,7 +1321,7 @@ export function TeamActionsPanel({
                     Из смен iiko
                   </p>
                   <h4 className="mt-1 text-base font-medium text-foreground">
-                    Закрыть реальных сотрудников в ФОТ
+                    Закрыть людей из реальных смен
                   </h4>
                 </div>
                 <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
@@ -1335,7 +1338,7 @@ export function TeamActionsPanel({
                     className="self-start sm:self-auto"
                   >
                     <UserPlus className="size-3.5" />
-                    Импортировать {iikoImportCandidates.length}
+                    Добавить из iiko {iikoImportCandidates.length}
                   </Button>
                 ) : null}
               </div>
@@ -1367,7 +1370,7 @@ export function TeamActionsPanel({
                           {formatRubles(blocker.sales)}
                         </p>
                         <p className="mt-1 text-[11px] text-muted-foreground">
-                          выручки без точного ФОТ
+                          выручки без точной оплаты смен
                         </p>
                       </div>
 
@@ -1401,9 +1404,9 @@ export function TeamActionsPanel({
                   <th className="px-3 py-3 font-normal">Человек</th>
                   <th className="px-3 py-3 font-normal">Роль</th>
                   <th className="px-3 py-3 font-normal">Оплата смены</th>
-                  <th className="px-3 py-3 font-normal">Доступ</th>
+                  <th className="px-3 py-3 font-normal">Кабинет</th>
                   <th className="px-3 py-3 font-normal">Статус</th>
-                  <th className="px-3 py-3 font-normal">Пароль</th>
+                  <th className="px-3 py-3 font-normal">Первый вход</th>
                   <th className="px-3 py-3 font-normal">Действия</th>
                 </tr>
               </thead>
@@ -1435,7 +1438,7 @@ export function TeamActionsPanel({
                         </p>
                         {isFocused ? (
                           <p className="mt-2 text-[11px] text-brand">
-                            Фокус из BI: настроить оплату
+                            Фокус из смен: настроить оплату
                           </p>
                         ) : null}
                         <p
@@ -1533,7 +1536,7 @@ export function TeamActionsPanel({
                           </button>
                         ) : (
                           <span className="text-xs text-muted-foreground">
-                            нет логина
+                            нет доступа
                           </span>
                         )}
                       </td>
@@ -1664,7 +1667,7 @@ export function TeamActionsPanel({
               <h3 className="mt-2 text-xl font-medium">Последние действия</h3>
               <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
                 Фильтруйте события по контуру, чтобы быстро понять, что
-                изменилось в ФОТ, обучении, плане смен и задачах.
+                изменилось в оплате, обучении, плане смен и поручениях.
               </p>
             </div>
             <History className="size-5 text-brand" />
