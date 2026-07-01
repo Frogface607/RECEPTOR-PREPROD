@@ -377,12 +377,12 @@ export function formatRestaurantAdvisorMemoryForPrompt(
 
   if (memory.memoryGraphBrief) {
     lines.push(
-      `Карта памяти: ${memory.memoryGraphBrief.summary}. Следующее: ${memory.memoryGraphBrief.nextAction}.`,
+      `Почему совет будет точнее: ${memory.memoryGraphBrief.summary}. Дальше: ${memory.memoryGraphBrief.nextAction}.`,
     );
   }
 
   if (memory.memoryGraphTrace && memory.memoryGraphTrace.length > 0) {
-    lines.push(`Почему так думаю: ${memory.memoryGraphTrace.join(" ")}`);
+    lines.push(`Из чего делаю вывод: ${memory.memoryGraphTrace.join(" ")}`);
   }
 
   return lines.join("\n");
@@ -415,19 +415,19 @@ export function formatRestaurantAdvisorMemoryForAnswer(
       ? `• Добор памяти уже в работе: ${memory.fieldMemoryTaskStatus}.`
       : null,
     memory.memoryGraphBrief
-      ? `• Карта памяти: ${memory.memoryGraphBrief.summary}. Следующее: ${memory.memoryGraphBrief.nextAction}.`
+      ? `• Почему совет будет точнее: ${memory.memoryGraphBrief.summary}. Дальше: ${memory.memoryGraphBrief.nextAction}.`
       : null,
     memory.memoryGraphTrace?.[0]
-      ? `• Почему так думаю: ${memory.memoryGraphTrace.slice(0, 3).join(" ")}`
+      ? `• Из чего делаю вывод: ${memory.memoryGraphTrace.slice(0, 3).join(" ")}`
       : null,
     !memory.fieldMemoryTaskStatus && memory.fieldMemoryFollowUpQuestions[0]
       ? `• Следующий вопрос для брифа: ${memory.fieldMemoryFollowUpQuestions[0]}`
       : null,
     memory.learningAdoptionGaps[0]
-      ? `• Стандарт нужно проверить в смене: ${memory.learningAdoptionGaps[0]}.`
+      ? `• Попросить итог по стандарту: ${memory.learningAdoptionGaps[0]}.`
       : null,
     memory.closedStandardFollowUps?.[0]
-      ? `• Закрытый стандарт ждет факт смены: ${memory.closedStandardFollowUps[0]}.`
+      ? `• Стандарт сдан, но нужен итог смены: ${memory.closedStandardFollowUps[0]}.`
       : null,
     memory.learningGaps[0]
       ? `• Первый учебный пробел: ${memory.learningGaps[0]}.`

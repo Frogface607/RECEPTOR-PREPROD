@@ -93,17 +93,17 @@ describe("runMockChatTurn — routing", () => {
     const toolEvent = ev.find((e) => e.type === "tool");
     expect(toolEvent?.tool).toBe("get_owner_brief");
     const text = ev.find((e) => e.type === "text");
-    expect(text?.text).toContain("Диагностика:");
+    expect(text?.text).toContain("Короткий разбор:");
     expect(text?.text).toContain("Контекст ресторана:");
     expect(text?.text).toContain("Обучение:");
     expect(text?.text).toContain("Память смены:");
     expect(text?.text).toContain("Добор памяти смены");
     expect(text?.text).toContain("Обучить в первую очередь");
-    expect(text?.text).toContain("Проверить внедрение стандарта");
-    expect(text?.text).toContain("Закрытый стандарт ждет факт смены");
-    expect(text?.text).toContain("Почему так думаю");
+    expect(text?.text).toContain("Попросить итог по стандарту");
+    expect(text?.text).toContain("Стандарт сдан, но нужен итог смены");
+    expect(text?.text).toContain("Из чего делаю вывод");
     expect(text?.text).toContain("итога смены");
-    expect(text?.text).toContain("короткий факт с поля");
+    expect(text?.text).toContain("короткий итог");
   });
 
   test("greeting / off-topic → suggests prompts without tool calls", async () => {
@@ -115,7 +115,7 @@ describe("runMockChatTurn — routing", () => {
     expect(text?.text).toContain("Что уже знаю");
     expect(text?.text).toContain("Итог смены: ливень");
     expect(text?.text).toContain("Добор памяти уже в работе");
-    expect(text?.text).toContain("Почему так думаю");
+    expect(text?.text).toContain("Из чего делаю вывод");
     expect(text?.text).toContain("Рабочий ритм Receptor");
   });
 

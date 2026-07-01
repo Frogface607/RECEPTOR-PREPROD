@@ -271,8 +271,8 @@ describe("restaurant advisor memory", () => {
     expect(text).toContain("Стандарты без факта смены");
     expect(text).toContain("Закрытые стандарты ждут факта смены");
     expect(text).toContain("Связи памяти");
-    expect(text).toContain("Карта памяти");
-    expect(text).toContain("Почему так думаю");
+    expect(text).toContain("Почему совет будет точнее");
+    expect(text).toContain("Из чего делаю вывод");
     expect(text).toContain("Маша -> оставил(а) итог смены");
   });
 
@@ -335,10 +335,10 @@ describe("restaurant advisor memory", () => {
     expect(text).toContain("Последняя память смены");
     expect(text).toContain("Память смены неполная");
     expect(text).toContain("Добор памяти уже в работе");
-    expect(text).toContain("Карта памяти");
-    expect(text).toContain("Почему так думаю");
-    expect(text).toContain("Стандарт нужно проверить в смене");
-    expect(text).toContain("Закрытый стандарт ждет факт смены");
+    expect(text).toContain("Почему совет будет точнее");
+    expect(text).toContain("Из чего делаю вывод");
+    expect(text).toContain("Попросить итог по стандарту");
+    expect(text).toContain("Стандарт сдан, но нужен итог смены");
     expect(text).toContain("Первый учебный пробел");
     expect(text).not.toContain("Сигналы с поля");
     expect(text).not.toContain("Открытые действия:");

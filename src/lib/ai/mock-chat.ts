@@ -280,7 +280,7 @@ function formatSuggestAnswer(
     "",
     `Фокус сейчас: ${profile.recommendedFocus.slice(0, 3).join("; ")}.`,
     formatRestaurantAdvisorMemoryForAnswer(memory),
-    "Рабочий ритм Receptor: перед сменой закрываем блокер, на смене даем учебный фокус, после смены собираем короткий факт, утром принимаем одно решение.",
+    "Рабочий ритм Receptor: перед сменой закрываем блокер, на смене даем простой фокус, после смены собираем короткий итог, утром принимаем одно решение.",
     "",
     "Спроси меня:",
     "• что произошло с выручкой за прошлую неделю?",
@@ -308,7 +308,7 @@ function contextBriefLines(context: VenueContextAnswers | undefined): string[] {
     pain ? `Контекст ресторана: сейчас болит — ${pain}.` : null,
     gap ? `Обучение: первый пробел команды — ${gap}.` : null,
     shiftRules
-      ? "Поле: утром сверяй цифры с итогом смены, а не только с отчетом iiko."
+      ? "Поле: утром сверяй цифры с коротким итогом смены, а не только с отчетом iiko."
       : "Поле: попроси управляющего оставить короткий итог смены, чтобы понять причину цифр.",
   ].filter((line): line is string => Boolean(line));
 }
@@ -333,14 +333,14 @@ function memoryBriefLines(memory: RestaurantAdvisorMemory | undefined): string[]
       ? `Обучить в первую очередь: ${memory.learningGaps[0]}.`
       : null,
     memory.learningAdoptionGaps[0]
-      ? `Проверить внедрение стандарта: ${memory.learningAdoptionGaps[0]}.`
+      ? `Попросить итог по стандарту: ${memory.learningAdoptionGaps[0]}.`
       : null,
     memory.closedStandardFollowUps?.[0]
-      ? `Закрытый стандарт ждет факт смены: ${memory.closedStandardFollowUps[0]}.`
+      ? `Стандарт сдан, но нужен итог смены: ${memory.closedStandardFollowUps[0]}.`
       : null,
     memory.openTasks[0] ? `Открытое действие: ${memory.openTasks[0]}.` : null,
     memory.memoryGraphTrace?.[0]
-      ? `Почему так думаю: ${memory.memoryGraphTrace.slice(0, 3).join(" ")}`
+      ? `Из чего делаю вывод: ${memory.memoryGraphTrace.slice(0, 3).join(" ")}`
       : null,
   ].filter((line): line is string => Boolean(line));
 }
@@ -362,7 +362,7 @@ function formatOwnerBriefAnswer(
 
   return [
     ...prefix,
-    "Управленческий разбор:",
+    "Короткий разбор:",
     ...contextBriefLines(context),
     ...memoryBriefLines(memory),
     "",
@@ -377,7 +377,7 @@ function formatOwnerBriefAnswer(
       ? `Смена к разбору: ${out.shifts.weakest.openTime.slice(0, 10)} · ${out.shifts.weakest.employee} — ${formatRubles(out.shifts.weakest.revenue)}.`
       : "Смены: нет слабой смены для сравнения.",
     "",
-    "Диагностика:",
+    "Что это значит:",
     ...out.signals.map((signal) =>
       `• ${signal.title}${signal.metric ? ` (${signal.metric})` : ""}: ${signal.detail}`,
     ),
@@ -386,11 +386,11 @@ function formatOwnerBriefAnswer(
     ...out.risks.map((risk) => `• ${risk}`),
     `• ${profile.operatingRisks[0]}`,
     "",
-    "Что сделать сегодня:",
+    "Что сделать:",
     ...out.actions.map((action, index) => `${index + 1}. ${action}`),
     `${out.actions.length + 1}. ${profile.recommendedFocus[3]}`,
     `${out.actions.length + 2}. На брифе спросить: что из итога смены объясняет цифры и чему надо быстро доучить команду?`,
-    `${out.actions.length + 3}. После смены собрать короткий факт с поля: гости, стоп-лист, конфликт, погода, что продавали и что проверить утром.`,
+    `${out.actions.length + 3}. После смены попросить короткий итог: гости, стоп-лист, конфликт, погода, что продавали и что проверить утром.`,
   ].join("\n");
 }
 

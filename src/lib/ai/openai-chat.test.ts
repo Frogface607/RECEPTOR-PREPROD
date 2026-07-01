@@ -119,7 +119,7 @@ describe("runOpenAIChatTurn", () => {
     expect(firstBody.instructions).toContain("Связи памяти");
     expect(firstBody.instructions).toContain("Маша -> оставил(а) итог смены");
     expect(firstBody.instructions).toContain("операционный ритм Receptor");
-    expect(firstBody.instructions).toContain("не считай его внедренным");
+    expect(firstBody.instructions).toContain("не делай вид");
     expect(firstBody.instructions).toContain("короткий итог смены");
     expect(tool?.tool).toBe("get_revenue");
     expect(text?.text).toContain("Выручка");
