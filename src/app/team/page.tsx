@@ -3337,6 +3337,15 @@ function LearningSummaryRow({
               <p className="mt-0.5 leading-relaxed text-muted-foreground">
                 {adoption.detail}
               </p>
+              {adoption.evidenceHref && adoption.evidenceLabel ? (
+                <Link
+                  href={adoption.evidenceHref}
+                  className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-brand transition-colors hover:text-brand-hover"
+                >
+                  {adoption.evidenceLabel}
+                  <ArrowRight className="size-3" />
+                </Link>
+              ) : null}
               {adoptionTaskDraft ? (
                 <div className="mt-2">
                   <LearningAdoptionTaskButton

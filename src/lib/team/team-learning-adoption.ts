@@ -18,6 +18,8 @@ export type TeamLearningAdoptionSignal = {
   moduleId: string | null;
   moduleTitle: string | null;
   memoryCommentId: string | null;
+  evidenceLabel: string | null;
+  evidenceHref: string | null;
 };
 
 export type TeamLearningAdoptionTaskDraft = {
@@ -97,6 +99,8 @@ export function buildTeamLearningAdoptionSignal(input: {
       moduleId: input.summary.nextItem?.id ?? null,
       moduleTitle: input.summary.nextItem?.title ?? null,
       memoryCommentId: null,
+      evidenceLabel: null,
+      evidenceHref: null,
     };
   }
 
@@ -116,11 +120,13 @@ export function buildTeamLearningAdoptionSignal(input: {
   if (memoryComment) {
     return {
       status: "returned_memory",
-      label: "Внедрение видно",
-      detail: `"${moduleTitle}" вернулся в память смены.`,
+      label: "Стандарт подтвержден сменой",
+      detail: `"${moduleTitle}" вернулся фактом из смены. Это закрывает внедрение, а не только тест.`,
       moduleId: latestPassed.moduleId,
       moduleTitle,
       memoryCommentId: memoryComment.id,
+      evidenceLabel: "Открыть память смены",
+      evidenceHref: "#shift-summary",
     };
   }
 
@@ -131,6 +137,8 @@ export function buildTeamLearningAdoptionSignal(input: {
     moduleId: latestPassed.moduleId,
     moduleTitle,
     memoryCommentId: null,
+    evidenceLabel: null,
+    evidenceHref: null,
   };
 }
 
