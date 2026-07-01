@@ -1,4 +1,5 @@
 import type { TeamLearningItem } from "./team-learning";
+import { buildTeamLearningShiftCard } from "./team-learning-shift-card";
 import type {
   TeamFieldContextDigest,
   TeamFieldSignal,
@@ -59,6 +60,8 @@ export type TeamLearningFocusItem = {
   reason: string;
   roleTitle: string;
   moduleTitle: string;
+  practiceAction: string;
+  memoryPrompt: string;
   href: string;
   tone: TeamLearningFocusTone;
 };
@@ -118,6 +121,10 @@ export function buildTeamLearningFocusPlan(input: {
   for (const plan of blocked) {
     const item = plan.nextItem ?? plan.items[0] ?? null;
     if (!item) continue;
+    const practice = learningFocusPractice(
+      item,
+      "Если сотрудник не прошел обязательное обучение",
+    );
     items.push({
       id: `admission-${plan.roleId}-${item.id}`,
       title: `${plan.roleTitle}: закрыть допуск`,
@@ -128,6 +135,8 @@ export function buildTeamLearningFocusPlan(input: {
       reason: "Обязательный стандарт блокирует уверенную работу в смене.",
       roleTitle: plan.roleTitle,
       moduleTitle: item.title,
+      practiceAction: practice.practiceAction,
+      memoryPrompt: practice.memoryPrompt,
       href: "#learning-progress",
       tone: "risk",
     });
@@ -137,6 +146,7 @@ export function buildTeamLearningFocusPlan(input: {
     const readyPlan = input.plans.find((plan) => plan.nextItem) ?? input.plans[0];
     const item = readyPlan?.nextItem ?? readyPlan?.items[0] ?? null;
     if (readyPlan && item) {
+      const practice = learningFocusPractice(item);
       items.push({
         id: `ready-${readyPlan.roleId}-${item.id}`,
         title: `${readyPlan.roleTitle}: развитие команды`,
@@ -144,6 +154,8 @@ export function buildTeamLearningFocusPlan(input: {
         reason: "План обучения готов к развитию без срочного блокера.",
         roleTitle: readyPlan.roleTitle,
         moduleTitle: item.title,
+        practiceAction: practice.practiceAction,
+        memoryPrompt: practice.memoryPrompt,
         href: "#learning-progress",
         tone: "ready",
       });
@@ -281,6 +293,7 @@ function focusFromFieldSignal(
     plan.items[0] ??
     null;
   if (!item) return null;
+  const practice = learningFocusPractice(item, target.checklistTitle);
 
   return {
     id: `field-${signal.kind}-${plan.roleId}-${item.id}`,
@@ -289,6 +302,8 @@ function focusFromFieldSignal(
     reason: target.reason,
     roleTitle: plan.roleTitle,
     moduleTitle: item.title,
+    practiceAction: practice.practiceAction,
+    memoryPrompt: practice.memoryPrompt,
     href: "#learning-progress",
     tone: signal.kind === "training" ? "setup" : "field",
   };
@@ -299,6 +314,7 @@ function fieldSignalLearningTarget(kind: TeamFieldSignalKind): {
   reason: string;
   roleIds: TeamRoleId[];
   moduleIds: string[];
+  checklistTitle?: string;
 } {
   if (kind === "conflict") {
     return {
@@ -306,6 +322,7 @@ function fieldSignalLearningTarget(kind: TeamFieldSignalKind): {
       reason: "Полевой факт говорит, что команде нужен единый сценарий общения с гостем.",
       roleIds: ["service", "venue_manager"],
       moduleIds: ["guest-conflict-service", "shift-brief"],
+      checklistTitle: "Если полевая заметка про конфликт",
     };
   }
   if (kind === "stock") {
@@ -314,6 +331,7 @@ function fieldSignalLearningTarget(kind: TeamFieldSignalKind): {
       reason: "Кухня и зал должны одинаково понимать замену, заготовки и стоп до посадки.",
       roleIds: ["chef", "line_cook", "venue_manager"],
       moduleIds: ["kitchen-stop-list", "shift-open-close"],
+      checklistTitle: "Если полевая заметка про стоп-лист",
     };
   }
   if (kind === "guest" || kind === "service") {
@@ -326,6 +344,7 @@ function fieldSignalLearningTarget(kind: TeamFieldSignalKind): {
         "sales-eight-upsell",
         "guest-feedback",
       ],
+      checklistTitle: "Если гости спрашивают и команда не знает, что предложить",
     };
   }
   if (kind === "money") {
@@ -334,6 +353,7 @@ function fieldSignalLearningTarget(kind: TeamFieldSignalKind): {
       reason: "Команда должна понимать, как выручка, ФОТ и маржа связаны с действиями смены.",
       roleIds: ["owner", "operations_manager", "venue_manager"],
       moduleIds: ["restaurant-numbers-basics", "iiko-cash-discipline"],
+      checklistTitle: "Если смена не понимает цифры",
     };
   }
   if (kind === "training" || kind === "team") {
@@ -342,6 +362,7 @@ function fieldSignalLearningTarget(kind: TeamFieldSignalKind): {
       reason: "В заметках есть сигнал, что люди не понимают правило или работают по-разному.",
       roleIds: ["venue_manager", "operations_manager", "service"],
       moduleIds: ["shift-brief", "shift-open-close"],
+      checklistTitle: "Если команда работает по-разному",
     };
   }
 
@@ -350,6 +371,19 @@ function fieldSignalLearningTarget(kind: TeamFieldSignalKind): {
     reason: "Событие, погода или итог смены должны стать коротким фокусом для команды.",
     roleIds: ["venue_manager", "operations_manager", "owner"],
     moduleIds: ["shift-brief", "shift-open-close"],
+    checklistTitle: "Если событие повлияло на смену",
+  };
+}
+
+function learningFocusPractice(
+  item: TeamLearningItem,
+  checklistTitle?: string,
+): Pick<TeamLearningFocusItem, "practiceAction" | "memoryPrompt"> {
+  const card = buildTeamLearningShiftCard(item, checklistTitle);
+
+  return {
+    practiceAction: card.action,
+    memoryPrompt: card.fieldNote,
   };
 }
 

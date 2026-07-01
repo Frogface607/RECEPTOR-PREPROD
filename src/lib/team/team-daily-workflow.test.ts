@@ -51,6 +51,10 @@ describe("buildTeamDailyWorkflow", () => {
           reason: "Команда должна знать, что рекомендовать.",
           roleTitle: "Официант",
           moduleTitle: "Как рекомендовать блюдо без давления",
+          practiceAction:
+            "На смене предложить подходящую пару к заказу гостя.",
+          memoryPrompt:
+            "После смены зафиксировать, что спрашивали гости и что сработало.",
           href: "#learning-progress",
           tone: "field",
         },

@@ -2901,6 +2901,18 @@ function LearningFocusCard({ item }: { item: TeamLearningFocusItem }) {
           {item.detail}
         </p>
       </div>
+
+      <div className="rounded-lg border border-brand/20 bg-brand/[0.06] p-3">
+        <p className="text-[10px] uppercase tracking-[0.16em] text-brand">
+          Проверка в смене
+        </p>
+        <p className="mt-1 text-xs leading-relaxed text-foreground/90">
+          {item.practiceAction}
+        </p>
+        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+          В память: {item.memoryPrompt}
+        </p>
+      </div>
     </Link>
   );
 }

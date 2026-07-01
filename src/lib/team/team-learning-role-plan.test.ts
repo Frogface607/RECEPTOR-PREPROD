@@ -199,6 +199,8 @@ describe("buildTeamLearningRolePlans", () => {
       title: "Усилить сервис и продажи: Официант",
       roleTitle: "Официант",
       moduleTitle: "Как рекомендовать блюдо без давления",
+      practiceAction: expect.stringContaining("предложи"),
+      memoryPrompt: expect.stringContaining("что спрашивали гости"),
       tone: "field",
     });
   });
@@ -211,6 +213,8 @@ describe("buildTeamLearningRolePlans", () => {
     expect(focus[0]).toMatchObject({
       title: "Официант: закрыть допуск",
       moduleTitle: "Как рекомендовать блюдо без давления",
+      practiceAction: expect.stringContaining("предложи"),
+      memoryPrompt: expect.stringContaining("После смены"),
       tone: "risk",
     });
   });
