@@ -140,4 +140,52 @@ describe("restaurant memory graph", () => {
     expect(brief.summary).toContain("связей");
     expect(brief.summary).not.toContain("->");
   });
+
+  test("adds standards waiting for shift evidence as graph relations", () => {
+    const relations = buildRestaurantMemoryGraph({
+      staff,
+      tasks,
+      comments,
+      learningAdoptionGaps: [
+        {
+          memberName: "Маша",
+          standardTitle: "Восьмерка продаж и апселл",
+          detail: "сдан, нужен факт смены после практики",
+        },
+      ],
+    });
+    const lines = formatRestaurantMemoryGraph(relations);
+    const model = buildRestaurantMemoryGraphModel({
+      staff,
+      tasks,
+      comments,
+      learningAdoptionGaps: [
+        {
+          memberName: "Маша",
+          standardTitle: "Восьмерка продаж и апселл",
+        },
+      ],
+    });
+    const brief = summarizeRestaurantMemoryGraph(relations);
+
+    expect(lines.join("\n")).toContain(
+      "Маша -> стандарт ждет факт смены -> Восьмерка продаж и апселл",
+    );
+    expect(model.nodes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "standard",
+          label: expect.stringContaining("Восьмерка продаж"),
+        }),
+      ]),
+    );
+    expect(model.markdownSnapshot).toContain("standard:");
+    expect(brief).toMatchObject({
+      status: "work",
+      sourceLabels: ["люди", "смена", "стандарты", "задачи"],
+      missingLabels: [],
+      nextAction: "добрать факт стандарта из смены",
+    });
+    expect(brief.traceLines?.join("\n")).toContain("Стандарты: Маша");
+  });
 });

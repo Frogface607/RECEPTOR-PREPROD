@@ -254,6 +254,15 @@ export default async function DashboardPage({
   const teamLearningAdoptionFocus = pickTeamLearningAdoptionFocus(
     teamLearningAdoptionRows,
   );
+  const ownerBrainLearningAdoptionGaps = teamLearningAdoptionRows
+    .filter((row) => row.signal.status === "needs_memory")
+    .map((row) => ({
+      memberName: row.summary.member.name,
+      standardTitle: row.signal.moduleTitle ?? "стандарт",
+      detail: row.existingTask
+        ? "факт смены уже назначен задачей"
+        : "сдан, нужен факт смены после практики",
+    }));
   const laborReadiness = buildTeamLaborReadiness(teamWorkspace.staff, laborBi);
   const laborSetupProgress = buildTeamLaborSetupProgress(
     teamWorkspace.staff,
@@ -298,6 +307,7 @@ export default async function DashboardPage({
     tasks: teamWorkspace.tasks,
     comments: teamWorkspace.comments,
     learningSummaries: teamLearningSummaries,
+    learningAdoptionGaps: ownerBrainLearningAdoptionGaps,
     dataMode,
   });
   const teamTaskQueue = buildTeamTaskQueue(teamWorkspace.tasks);

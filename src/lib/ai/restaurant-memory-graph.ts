@@ -6,7 +6,11 @@ import {
   type TeamTaskComment,
 } from "@/lib/team/team-os";
 
-export type RestaurantMemoryRelationSource = "team" | "field" | "task";
+export type RestaurantMemoryRelationSource =
+  | "team"
+  | "field"
+  | "learning"
+  | "task";
 
 export type RestaurantMemoryRelation = {
   subject: string;
@@ -15,10 +19,17 @@ export type RestaurantMemoryRelation = {
   source: RestaurantMemoryRelationSource;
 };
 
+export type RestaurantMemoryStandardAdoptionGap = {
+  memberName: string;
+  standardTitle: string;
+  detail?: string;
+};
+
 export type RestaurantMemoryNodeKind =
   | "person"
   | "role"
   | "shift_note"
+  | "standard"
   | "task"
   | "signal";
 
@@ -59,12 +70,18 @@ type RestaurantMemoryGraphInput = {
   staff: StaffMember[];
   tasks: TeamTask[];
   comments: TeamTaskComment[];
+  learningAdoptionGaps?: RestaurantMemoryStandardAdoptionGap[];
 };
 
-const SOURCE_ORDER: RestaurantMemoryRelationSource[] = ["team", "field", "task"];
+const BASE_SOURCE_ORDER: RestaurantMemoryRelationSource[] = [
+  "team",
+  "field",
+  "task",
+];
 const SOURCE_LABELS: Record<RestaurantMemoryRelationSource, string> = {
   team: "люди",
   field: "смена",
+  learning: "стандарты",
   task: "задачи",
 };
 const OPEN_TASK_STATUSES = new Set<TeamTask["status"]>([
@@ -147,6 +164,7 @@ function objectNodeKind(
   relation: RestaurantMemoryRelation,
 ): RestaurantMemoryNodeKind {
   if (relation.predicate === "роль") return "role";
+  if (relation.source === "learning") return "standard";
   if (relation.source === "task") return "task";
   if (relation.source === "field" && relation.predicate === "связано с") {
     return "signal";
@@ -217,6 +235,17 @@ export function buildRestaurantMemoryGraph(
     });
   }
 
+  for (const gap of input.learningAdoptionGaps ?? []) {
+    relations.push({
+      subject: gap.memberName,
+      predicate: "стандарт ждет факт смены",
+      object: `${gap.standardTitle}: ${compact(
+        gap.detail ?? "нужен факт смены после практики",
+      )}`,
+      source: "learning",
+    });
+  }
+
   for (const task of input.tasks.filter((item) =>
     OPEN_TASK_STATUSES.has(item.status),
   )) {
@@ -241,7 +270,7 @@ export function buildRestaurantMemoryGraph(
     });
   }
 
-  return relations.slice(0, 12);
+  return relations.slice(0, 16);
 }
 
 export function formatRestaurantMemoryGraph(
@@ -265,11 +294,15 @@ export function explainRestaurantMemoryGraph(
       (relation) =>
         relation.source === "task" && relation.subject === "Память смены",
     ) ?? relations.find((relation) => relation.source === "task");
+  const learning = relations.find((relation) => relation.source === "learning");
 
   return [
     team ? `Люди: ${team.subject} — ${team.object}.` : null,
     field
       ? `Смена: ${field.subject} дал(а) контекст — ${objectEvidence(field.object)}.`
+      : null,
+    learning
+      ? `Стандарты: ${learning.subject} — ${objectEvidence(learning.object)}.`
       : null,
     task ? `Задачи: ${task.subject} — ${objectEvidence(task.object)}.` : null,
   ].filter((line): line is string => Boolean(line));
@@ -346,16 +379,20 @@ export function summarizeRestaurantMemoryGraph(
   relations: RestaurantMemoryRelation[],
 ): RestaurantMemoryGraphBrief {
   const sources = new Set(relations.map((relation) => relation.source));
-  const sourceLabels = SOURCE_ORDER.filter((source) => sources.has(source)).map(
+  const sourceOrder = sources.has("learning")
+    ? (["team", "field", "learning", "task"] as const)
+    : BASE_SOURCE_ORDER;
+  const sourceLabels = sourceOrder.filter((source) => sources.has(source)).map(
     (source) => SOURCE_LABELS[source],
   );
-  const missingLabels = SOURCE_ORDER.filter((source) => !sources.has(source)).map(
-    (source) => SOURCE_LABELS[source],
-  );
+  const missingLabels = BASE_SOURCE_ORDER.filter(
+    (source) => !sources.has(source),
+  ).map((source) => SOURCE_LABELS[source]);
+  const hasLearningGap = sources.has("learning");
   const status =
     relations.length === 0
       ? "missing"
-      : missingLabels.length === 0
+      : missingLabels.length === 0 && !hasLearningGap
         ? "ready"
         : "work";
   const summary =
@@ -368,7 +405,9 @@ export function summarizeRestaurantMemoryGraph(
       ? "собрать итог смены"
       : missingLabels.includes("задачи")
         ? "связать память с задачей"
-        : "можно спрашивать советника о причинах и действиях";
+        : hasLearningGap
+          ? "добрать факт стандарта из смены"
+          : "можно спрашивать советника о причинах и действиях";
 
   return {
     relationCount: relations.length,

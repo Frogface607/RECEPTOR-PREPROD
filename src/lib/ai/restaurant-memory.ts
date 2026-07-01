@@ -6,6 +6,7 @@ import {
   formatRestaurantMemoryGraph,
   summarizeRestaurantMemoryGraph,
   type RestaurantMemoryGraphBrief,
+  type RestaurantMemoryStandardAdoptionGap,
 } from "@/lib/ai/restaurant-memory-graph";
 import { buildTeamLearningSummaries } from "@/lib/team/team-learning-progress";
 import { buildTeamLearningAdoptionSignal } from "@/lib/team/team-learning-adoption";
@@ -125,7 +126,9 @@ function learningGapLines(input: RestaurantMemoryInput): string[] {
     });
 }
 
-function learningAdoptionGapLines(input: RestaurantMemoryInput): string[] {
+function learningAdoptionGaps(
+  input: RestaurantMemoryInput,
+): RestaurantMemoryStandardAdoptionGap[] {
   return buildTeamLearningSummaries(
     input.staff,
     input.learningProgress,
@@ -141,10 +144,19 @@ function learningAdoptionGapLines(input: RestaurantMemoryInput): string[] {
     }))
     .filter(({ signal }) => signal.status === "needs_memory")
     .slice(0, 4)
-    .map(({ summary, signal }) => {
-      const title = signal.moduleTitle ?? "стандарт";
-      return `${summary.member.name}: ${title} сдан, нужен факт смены после практики`;
-    });
+    .map(({ summary, signal }) => ({
+      memberName: summary.member.name,
+      standardTitle: signal.moduleTitle ?? "стандарт",
+      detail: "сдан, нужен факт смены после практики",
+    }));
+}
+
+function learningAdoptionGapLines(
+  gaps: RestaurantMemoryStandardAdoptionGap[],
+): string[] {
+  return gaps.map(
+    (gap) => `${gap.memberName}: ${gap.standardTitle} ${gap.detail}`,
+  );
 }
 
 function extractClosedStandardTitle(summary: string): string | null {
@@ -260,10 +272,12 @@ export function buildRestaurantAdvisorMemory(
     fieldReadiness.complete === 0 && !fieldTaskStatus
       ? fieldReadiness.followUpQuestions
       : [];
+  const adoptionGaps = learningAdoptionGaps(input);
   const memoryGraphModel = buildRestaurantMemoryGraphModel({
     staff: input.staff,
     tasks: input.tasks,
     comments: input.comments,
+    learningAdoptionGaps: adoptionGaps,
   });
   const memoryGraph = formatRestaurantMemoryGraph(memoryGraphModel.relations);
   const memoryGraphTrace = explainRestaurantMemoryGraph(
@@ -287,7 +301,7 @@ export function buildRestaurantAdvisorMemory(
     memberSignals: memberMemoryLines(input),
     openTasks: openTaskLines(input.tasks),
     learningGaps: learningGapLines(input),
-    learningAdoptionGaps: learningAdoptionGapLines(input),
+    learningAdoptionGaps: learningAdoptionGapLines(adoptionGaps),
     closedStandardFollowUps: closedStandardFollowUpLines(input),
     memoryGraph,
     memoryGraphMarkdown:

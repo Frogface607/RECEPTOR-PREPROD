@@ -3,6 +3,7 @@ import {
   buildRestaurantMemoryGraph,
   explainRestaurantMemoryGraph,
   summarizeRestaurantMemoryGraph,
+  type RestaurantMemoryStandardAdoptionGap,
 } from "@/lib/ai/restaurant-memory-graph";
 import { summarizeFieldNoteReadiness } from "@/lib/team/field-note-input";
 import { buildTeamFieldContextDigest } from "@/lib/team/team-field-context";
@@ -100,6 +101,7 @@ type BuildOwnerBrainReadinessInput = {
   tasks: TeamTask[];
   comments: TeamTaskComment[];
   learningSummaries: TeamLearningMemberSummary[];
+  learningAdoptionGaps?: RestaurantMemoryStandardAdoptionGap[];
   dataMode: "live" | "mock";
 };
 
@@ -449,12 +451,19 @@ function buildOwnerMemoryGraph({
   staff,
   tasks,
   comments,
+  learningAdoptionGaps,
 }: {
   staff: StaffMember[];
   tasks: TeamTask[];
   comments: TeamTaskComment[];
+  learningAdoptionGaps?: RestaurantMemoryStandardAdoptionGap[];
 }): OwnerBrainMemoryGraph {
-  const relations = buildRestaurantMemoryGraph({ staff, tasks, comments });
+  const relations = buildRestaurantMemoryGraph({
+    staff,
+    tasks,
+    comments,
+    learningAdoptionGaps,
+  });
   const brief = summarizeRestaurantMemoryGraph(relations);
   const tone: OwnerReviewTone =
     brief.status === "ready"
@@ -463,12 +472,18 @@ function buildOwnerMemoryGraph({
         ? "watch"
         : "risk";
   const missingLabel = brief.missingLabels[0] ?? null;
+  const learningNeedsFact =
+    brief.status === "work" &&
+    brief.sourceLabels.includes("стандарты") &&
+    brief.nextAction.includes("стандарт");
   const target: OwnerBrainMemoryGraphTarget = missingLabel === "люди"
     ? "team"
     : missingLabel === "смена"
       ? "field"
       : missingLabel === "задачи"
         ? "team"
+        : learningNeedsFact
+          ? "learning"
         : "advisor";
   const actionLabel = missingLabel === "люди"
     ? "Добавить людей"
@@ -476,6 +491,8 @@ function buildOwnerMemoryGraph({
       ? "Собрать итог"
       : missingLabel === "задачи"
         ? "Связать задачу"
+        : learningNeedsFact
+          ? "Проверить стандарт"
         : "Спросить советника";
   const trace = (brief.traceLines ?? explainRestaurantMemoryGraph(relations)).map(
     (line): OwnerBrainMemoryGraphTrace => {
@@ -500,6 +517,13 @@ function buildOwnerMemoryGraph({
           actionLabel: "Задачи",
         };
       }
+      if (line.startsWith("Стандарты:")) {
+        return {
+          detail: line,
+          target: "learning",
+          actionLabel: "Стандарт",
+        };
+      }
 
       return {
         detail: line,
@@ -515,6 +539,8 @@ function buildOwnerMemoryGraph({
     detail:
       brief.missingLabels.length > 0
         ? `Следующее связать: ${brief.nextAction}.`
+        : learningNeedsFact
+          ? `Следующее связать: ${brief.nextAction}.`
         : "Люди, смена и задачи уже связаны в памяти советника.",
     trace,
     actionLabel,
@@ -558,6 +584,7 @@ export function buildOwnerBrainReadiness(
       staff: input.staff,
       tasks: input.tasks,
       comments: input.comments,
+      learningAdoptionGaps: input.learningAdoptionGaps,
     }),
     nextSource,
     sources,

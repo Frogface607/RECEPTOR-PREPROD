@@ -245,6 +245,43 @@ describe("owner brain readiness", () => {
     expect(readiness.memoryGraph.detail).toContain("связать память с задачей");
   });
 
+  test("routes the memory graph to learning when a standard waits for shift evidence", () => {
+    const readiness = buildOwnerBrainReadiness({
+      context: DEMO_CONTEXT_ANSWERS,
+      staff,
+      tasks,
+      comments,
+      learningSummaries: staff.map((member) => learningSummary(member)),
+      learningAdoptionGaps: [
+        {
+          memberName: "Алина",
+          standardTitle: "Как рекомендовать блюдо без давления",
+          detail: "сдан, нужен факт смены после практики",
+        },
+      ],
+      dataMode: "live",
+    });
+
+    expect(readiness.memoryGraph).toMatchObject({
+      tone: "watch",
+      actionLabel: "Проверить стандарт",
+      target: "learning",
+    });
+    expect(readiness.memoryGraph.summary).toContain("стандарты");
+    expect(readiness.memoryGraph.detail).toContain(
+      "добрать факт стандарта из смены",
+    );
+    expect(readiness.memoryGraph.trace).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          detail: expect.stringContaining("Стандарты: Алина"),
+          target: "learning",
+          actionLabel: "Стандарт",
+        }),
+      ]),
+    );
+  });
+
   test("keeps shift memory in progress when the note has no context or scale", () => {
     const readiness = buildOwnerBrainReadiness({
       context: DEMO_CONTEXT_ANSWERS,

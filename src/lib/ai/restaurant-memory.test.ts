@@ -173,6 +173,15 @@ describe("restaurant advisor memory", () => {
     expect(memory.learningAdoptionGaps).toEqual([
       "Алина: Как рекомендовать блюдо без давления сдан, нужен факт смены после практики",
     ]);
+    expect(memory.memoryGraph.join("\n")).toContain(
+      "Алина -> стандарт ждет факт смены -> Как рекомендовать блюдо без давления",
+    );
+    expect(memory.memoryGraphTrace?.join("\n")).toContain("Стандарты: Алина");
+    expect(memory.memoryGraphBrief).toMatchObject({
+      status: "work",
+      sourceLabels: ["люди", "смена", "стандарты", "задачи"],
+      nextAction: "добрать факт стандарта из смены",
+    });
   });
 
   test("feeds closed standards into advisor memory as shift fact follow-ups", () => {
