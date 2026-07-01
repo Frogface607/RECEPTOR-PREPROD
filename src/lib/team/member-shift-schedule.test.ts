@@ -470,7 +470,7 @@ describe("buildMemberShiftSchedule", () => {
     });
 
     expect(profile).toMatchObject({
-      title: "Маша: что известно",
+      title: "Маша: короткий бриф",
       tags: expect.arrayContaining(["Service", "активен", "нужен допуск", "итог полный"]),
       nextQuestion: "Что мешает пройти стандарт «Как рекомендовать блюдо» до смены?",
       memoryLink: {

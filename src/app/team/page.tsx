@@ -2120,41 +2120,30 @@ function MemberSecondBrainCard({
 }) {
   return (
     <div className="rounded-lg border border-brand/25 bg-card/55 p-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-start gap-3">
-          <SearchCheck className="mt-0.5 size-5 text-brand" />
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-              Что Receptor уже знает
-            </p>
-            <h3 className="mt-2 text-lg font-medium">{profile.title}</h3>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              {profile.summary}
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2 sm:justify-end">
-          {profile.tags.map((tag) => (
-            <Badge key={tag} variant="outline">
-              {tag}
-            </Badge>
-          ))}
+      <div className="flex items-start gap-3">
+        <SearchCheck className="mt-0.5 size-5 text-brand" />
+        <div className="min-w-0">
+          <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
+            Короткий бриф
+          </p>
+          <h3 className="mt-2 text-lg font-medium">{profile.title}</h3>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+            {profile.summary}
+          </p>
         </div>
       </div>
 
-      <div className="mt-4 grid gap-2 md:grid-cols-2">
-        {profile.facts.map((fact) => (
-          <MemberSecondBrainFactRow key={fact.label} fact={fact} />
-        ))}
-      </div>
-
-      <div className="mt-4 rounded-lg border border-border/45 bg-background/35 p-3">
-        <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-          Следующий вопрос
-        </p>
-        <p className="mt-1 text-sm leading-relaxed text-foreground/90">
-          {profile.nextQuestion}
-        </p>
+      <div className="mt-4 grid gap-3">
+        <MemberBriefLine
+          label="Что спросить"
+          value={profile.nextQuestion}
+          tone="work"
+        />
+        <MemberBriefLine
+          label="Что добавить в память"
+          value={profile.memoryLink.detail}
+          tone={profile.memoryLink.tone}
+        />
       </div>
 
       <Link
@@ -2166,13 +2155,10 @@ function MemberSecondBrainCard({
       >
         <span className="min-w-0">
           <span className="block text-[10px] uppercase tracking-[0.16em] opacity-75">
-            Что связываем в памяти
+            Следующее действие
           </span>
           <span className="mt-1 block text-sm font-medium">
             {profile.memoryLink.label}
-          </span>
-          <span className="mt-1 line-clamp-2 block text-xs leading-relaxed opacity-80">
-            {profile.memoryLink.detail}
           </span>
           <span className="mt-2 block text-xs leading-relaxed opacity-90">
             <span className="font-medium">Почему это важно:</span>{" "}
@@ -2184,6 +2170,50 @@ function MemberSecondBrainCard({
           <ArrowRight className="size-3.5" />
         </span>
       </Link>
+
+      <details className="group mt-3 border-t border-border/35 pt-3">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-1 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">
+          <span>Что учтено</span>
+          <span className="flex flex-wrap justify-end gap-1.5">
+            {profile.tags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-md border border-border/45 bg-background/35 px-2 py-1 text-[10px]"
+              >
+                {tag}
+              </span>
+            ))}
+          </span>
+        </summary>
+        <div className="mt-2 grid gap-2 md:grid-cols-2">
+          {profile.facts.map((fact) => (
+            <MemberSecondBrainFactRow key={fact.label} fact={fact} />
+          ))}
+        </div>
+      </details>
+    </div>
+  );
+}
+
+function MemberBriefLine({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: MemberSecondBrainTone;
+}) {
+  return (
+    <div
+      className={
+        "rounded-lg border p-3 " + memberSecondBrainToneClass(tone)
+      }
+    >
+      <p className="text-[10px] uppercase tracking-[0.16em] opacity-75">
+        {label}
+      </p>
+      <p className="mt-1 text-sm leading-relaxed">{value}</p>
     </div>
   );
 }

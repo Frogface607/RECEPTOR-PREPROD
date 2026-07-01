@@ -450,7 +450,7 @@ export function buildMemberSecondBrainProfile(input: {
     facts[0];
 
   return {
-    title: `${input.member.name}: что известно`,
+    title: `${input.member.name}: короткий бриф`,
     summary: primary
       ? `${primary.label}: ${primary.detail}`
       : "Receptor собирает роль, стандарты, задачи и короткие итоги смены.",
