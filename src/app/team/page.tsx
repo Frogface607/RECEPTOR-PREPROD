@@ -107,16 +107,11 @@ import {
   type FieldNoteReadinessSummary,
 } from "@/lib/team/field-note-input";
 import { buildTeamLaborReadiness } from "@/lib/team/team-labor-readiness";
-import {
-  buildTeamOpsReadiness,
-  type TeamOpsReadinessStatus,
-} from "@/lib/team/team-ops-readiness";
+import { buildTeamOpsReadiness } from "@/lib/team/team-ops-readiness";
 import {
   buildTeamManagerFollowUp,
   type TeamManagerFollowUp,
-  type TeamManagerFollowUpItem,
   type TeamManagerFollowUpStatus,
-  type TeamManagerFollowUpTone,
 } from "@/lib/team/team-manager-followup";
 import { buildTeamCommunicationDrafts } from "@/lib/team/team-communication-drafts";
 import {
@@ -434,6 +429,31 @@ export default async function TeamPage({
         labor: laborLoad.laborBi,
       })
     : null;
+  const managerFocusStep =
+    dailyWorkflow.find((step) => step.tone !== "ready") ?? dailyWorkflow[0];
+  const managerMemberFocus =
+    learningAdoptionFocus?.summary.member ??
+    learningSummaries.find((summary) => !summary.canWorkShift)?.member ??
+    representativeMember ??
+    workspace.staff[0] ??
+    null;
+  const managerMemberFocusDetail =
+    learningAdoptionFocus?.move?.detail ??
+    (managerMemberFocus
+      ? `${getTeamRole(managerMemberFocus.roleId).title}: ${managerMemberFocus.shiftLabel || "смена не указана"}`
+      : "Выберите сотрудника, которому сегодня нужен фокус.");
+  const managerMemberFocusHref = managerMemberFocus
+    ? teamHref(
+        workspace.venueId,
+        managerMemberFocus.roleId,
+        period,
+        managerMemberFocus.id,
+      )
+    : "#team-actions";
+  const managerShiftSummaryDetail =
+    fieldNoteReadiness.complete > 0
+      ? `${fieldNoteReadiness.complete}/${fieldNoteReadiness.total} итогов смены полезны для разбора.`
+      : "После смены попросите 3 строки: что было, почему важно, что проверить утром.";
 
   return (
     <AppShell
@@ -450,11 +470,11 @@ export default async function TeamPage({
                 Команда
               </Badge>
               <h1 className="mt-4 max-w-xl text-balance text-[clamp(1.9rem,3.2vw,2.75rem)] font-medium leading-[1.04]">
-                Контроль смены.
+                Утро управляющего.
               </h1>
               <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                Сначала закрываем то, что мешает смене: срочные задачи, ФОТ,
-                допуск, связь и план/факт.
+                Сегодня нужно выбрать один фокус, помочь одному человеку и
+                собрать короткий итог смены. Остальное ниже.
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
                 <LinkButton
@@ -477,61 +497,15 @@ export default async function TeamPage({
               </div>
             </div>
 
-            <div className="rounded-lg border border-border/60 bg-card/60 p-5">
-              <div className="grid gap-5 xl:grid-cols-[0.55fr_1fr]">
-                <div>
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                        Готовность команды
-                      </p>
-                      <div className="mt-3 flex items-end gap-3">
-                        <p className="numeric text-5xl font-medium leading-none">
-                          {opsReadiness.score}%
-                        </p>
-                        <Badge
-                          variant="outline"
-                          className={opsStatusClass(opsReadiness.status)}
-                        >
-                          {opsStatusLabel(opsReadiness.status)}
-                        </Badge>
-                      </div>
-                    </div>
-                    <CheckCircle2 className="size-5 shrink-0 text-brand" />
-                  </div>
-
-                  <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                    {home.role.title}: {home.role.description}
-                  </p>
-
-                  <div className="mt-4 grid gap-2">
-                    <ReadinessMetric
-                      label="Роли"
-                      value={`${opsReadiness.roleCoveragePct}%`}
-                    />
-                    <ReadinessMetric
-                      label="ФОТ"
-                      value={`${opsReadiness.laborCoveragePct}%`}
-                    />
-                    <ReadinessMetric
-                      label="Допуск"
-                      value={`${opsReadiness.learningAdmissionPct}%`}
-                    />
-                  </div>
-                </div>
-
-                <TeamManagerFollowUpCard
-                  venueId={workspace.venueId}
-                  followUp={managerFollowUp}
-                />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="border-b border-border/40">
-          <div className="mx-auto max-w-7xl px-6 py-6">
-            <TeamDailyWorkflowStrip steps={dailyWorkflow} />
+            <ManagerMorningCard
+              venueId={workspace.venueId}
+              focusStep={managerFocusStep}
+              member={managerMemberFocus}
+              memberHref={managerMemberFocusHref}
+              memberDetail={managerMemberFocusDetail}
+              shiftSummaryDetail={managerShiftSummaryDetail}
+              followUp={managerFollowUp}
+            />
           </div>
         </section>
 
@@ -1022,34 +996,12 @@ function Metric({ label, value }: { label: string; value: number | string }) {
   );
 }
 
-function opsStatusLabel(status: TeamOpsReadinessStatus): string {
-  if (status === "ready") return "готово";
-  if (status === "attention") return "внимание";
-  return "блокер";
-}
-
-function opsStatusClass(status: TeamOpsReadinessStatus): string {
-  if (status === "ready") return "border-brand/35 bg-brand/10 text-brand";
-  if (status === "attention") {
-    return "border-amber-400/30 bg-amber-400/10 text-amber-100";
-  }
-  return "border-destructive/30 bg-destructive/10 text-destructive";
-}
-
 function managerFollowUpStatusClass(status: TeamManagerFollowUpStatus): string {
   if (status === "ready") return "border-brand/35 bg-brand/10 text-brand";
   if (status === "attention") {
     return "border-amber-400/30 bg-amber-400/10 text-amber-100";
   }
   return "border-destructive/30 bg-destructive/10 text-destructive";
-}
-
-function managerFollowUpToneClass(tone: TeamManagerFollowUpTone): string {
-  if (tone === "good") return "border-brand/35 bg-brand/10 text-brand";
-  if (tone === "risk") {
-    return "border-destructive/30 bg-destructive/10 text-destructive";
-  }
-  return "border-amber-400/30 bg-amber-400/10 text-amber-100";
 }
 
 function managerFollowUpStatusLabel(status: TeamManagerFollowUpStatus): string {
@@ -1071,24 +1023,38 @@ function ReadinessMetric({ label, value }: { label: string; value: string }) {
   );
 }
 
-function TeamManagerFollowUpCard({
+function ManagerMorningCard({
   venueId,
+  focusStep,
+  member,
+  memberHref,
+  memberDetail,
+  shiftSummaryDetail,
   followUp,
 }: {
   venueId: string;
+  focusStep: TeamDailyWorkflowStep | undefined;
+  member: StaffMember | null;
+  memberHref: string;
+  memberDetail: string;
+  shiftSummaryDetail: string;
   followUp: TeamManagerFollowUp;
 }) {
   const primaryItem = followUp.items[0] ?? null;
-  const secondaryItems = followUp.items.slice(1, 3);
 
   return (
-    <div>
-      <div className="flex items-start justify-between gap-3">
+    <div className="rounded-lg border border-border/60 bg-card/60 p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-            Контроль смены
+            Сегодня управляющему
           </p>
-          <h2 className="mt-2 text-lg font-medium">{followUp.title}</h2>
+          <h2 className="mt-2 text-xl font-medium">
+            Один фокус, один человек, один итог.
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            {followUp.detail}
+          </p>
         </div>
         <Badge
           variant="outline"
@@ -1098,50 +1064,59 @@ function TeamManagerFollowUpCard({
         </Badge>
       </div>
 
-      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-        {followUp.detail}
-      </p>
-
-      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <FollowUpMetric
-          label="Срочно"
-          value={formatInteger(followUp.urgentTasks)}
+      <div className="mt-5 grid gap-2">
+        <ManagerMorningRow
+          index="01"
+          label="Фокус смены"
+          title={focusStep?.title ?? followUp.title}
+          detail={focusStep?.detail ?? followUp.detail}
+          href={focusStep?.href ?? "#team-actions"}
+          action="Открыть"
+          tone={focusStep?.tone ?? "work"}
         />
-        <FollowUpMetric
-          label="Допуск"
-          value={formatInteger(followUp.blockedAdmissions)}
+        <ManagerMorningRow
+          index="02"
+          label="Кому помочь"
+          title={member ? member.name : "Команда"}
+          detail={memberDetail}
+          href={memberHref}
+          action="К карточке"
+          tone={
+            followUp.blockedAdmissions > 0 || followUp.urgentTasks > 0
+              ? "risk"
+              : "work"
+          }
         />
-        <FollowUpMetric label="ФОТ" value={`${followUp.laborCoveragePct}%`} />
-        <FollowUpMetric
-          label="Связь"
-          value={formatInteger(followUp.unreadImportantAnnouncements)}
+        <ManagerMorningRow
+          index="03"
+          label="Итог смены"
+          title="Попросить 3 строки после смены"
+          detail={shiftSummaryDetail}
+          href="#shift-summary"
+          action="К итогам"
+          tone={shiftSummaryDetail.startsWith("После") ? "risk" : "ready"}
         />
       </div>
 
       {primaryItem ? (
-        <div className="mt-4 rounded-lg border border-brand/30 bg-brand/10 p-4">
-          <Link href={primaryItem.href} className="block">
-            <div className="flex flex-wrap items-center gap-2">
-              <span
-                className={
-                  "inline-flex size-7 items-center justify-center rounded-md border " +
-                  managerFollowUpToneClass(primaryItem.tone)
-                }
-              >
-                <span className="size-2 rounded-full bg-current" />
+        <div className="mt-4 rounded-lg border border-border/45 bg-background/35 p-3">
+          <Link
+            href={primaryItem.href}
+            className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+          >
+            <span className="min-w-0">
+              <span className="block text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                Следующий шаг
               </span>
-              <span className="rounded-md border border-border/45 bg-background/40 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                {primaryItem.metric}
+              <span className="mt-1 block text-sm font-medium text-foreground">
+                {primaryItem.title}
               </span>
-            </div>
-            <h3 className="mt-3 text-base font-medium leading-snug text-foreground">
-              {primaryItem.title}
-            </h3>
-            <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
-              {primaryItem.detail}
-            </p>
+              <span className="mt-1 line-clamp-2 block text-xs leading-relaxed text-muted-foreground">
+                {primaryItem.detail}
+              </span>
+            </span>
             {primaryItem.taskDraft?.learningChecklistTitle ? (
-              <div className="mt-3 inline-flex max-w-full items-center gap-2 rounded-md border border-sky-400/25 bg-sky-400/10 px-2.5 py-1.5 text-[11px] text-sky-100">
+              <span className="inline-flex max-w-full items-center gap-2 rounded-md border border-sky-400/25 bg-sky-400/10 px-2.5 py-1.5 text-[11px] text-sky-100">
                 <GraduationCap className="size-3.5 shrink-0" />
                 <span className="shrink-0 uppercase tracking-[0.12em]">
                   стандарт
@@ -1149,7 +1124,7 @@ function TeamManagerFollowUpCard({
                 <span className="truncate text-muted-foreground">
                   {primaryItem.taskDraft.learningChecklistTitle}
                 </span>
-              </div>
+              </span>
             ) : null}
           </Link>
           <div className="mt-4 flex flex-wrap gap-2">
@@ -1169,77 +1144,51 @@ function TeamManagerFollowUpCard({
           </div>
         </div>
       ) : null}
-
-      {secondaryItems.length > 0 ? (
-        <div className="mt-4 grid gap-2">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-            Следом
-          </p>
-          {secondaryItems.map((item) => (
-            <TeamManagerFollowUpRow
-              key={item.id}
-              venueId={venueId}
-              item={item}
-            />
-          ))}
-        </div>
-      ) : null}
     </div>
   );
 }
 
-function FollowUpMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-border/45 bg-background/35 px-3 py-2">
-      <p className="numeric text-sm font-medium text-foreground">{value}</p>
-      <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-        {label}
-      </p>
-    </div>
-  );
-}
-
-function TeamManagerFollowUpRow({
-  venueId,
-  item,
+function ManagerMorningRow({
+  index,
+  label,
+  title,
+  detail,
+  href,
+  action,
+  tone,
 }: {
-  venueId: string;
-  item: TeamManagerFollowUpItem;
+  index: string;
+  label: string;
+  title: string;
+  detail: string;
+  href: string;
+  action: string;
+  tone: TeamDailyWorkflowTone;
 }) {
   return (
-    <div className="grid gap-2 rounded-lg border border-border/45 bg-background/35 p-3 transition-colors hover:border-brand/35 hover:bg-background/55 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-      <Link
-        href={item.href}
-        className="grid min-w-0 gap-3 sm:grid-cols-[auto_1fr_auto] sm:items-center"
-      >
-        <span
-          className={
-            "size-2 rounded-full border " + managerFollowUpToneClass(item.tone)
-          }
-        />
-        <span className="min-w-0">
-          <span className="block text-sm font-medium text-foreground">
-            {item.title}
-          </span>
-          <span className="mt-1 block truncate text-xs text-muted-foreground">
-            {item.detail}
-          </span>
+    <Link
+      href={href}
+      className="group grid gap-3 rounded-lg border border-border/45 bg-background/35 p-3 transition-colors hover:border-brand/35 hover:bg-background/55 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center"
+    >
+      <span className="flex size-9 items-center justify-center rounded-lg border border-border/45 bg-card/45 text-[11px] font-medium text-muted-foreground">
+        {index}
+      </span>
+      <span className="min-w-0">
+        <span className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium text-foreground">{title}</span>
+          <Badge variant="outline" className={dailyWorkflowToneClass(tone)}>
+            {label}
+          </Badge>
         </span>
-        <span className="flex items-center gap-2 text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-          {item.taskDraft?.learningChecklistTitle ? (
-            <span className="inline-flex items-center gap-1 rounded-md border border-sky-400/25 bg-sky-400/10 px-2 py-1 text-sky-100">
-              <GraduationCap className="size-3" />
-              стандарт
-            </span>
-          ) : null}
-          {item.metric}
-          <ArrowRight className="size-4" />
+        <span className="mt-1 line-clamp-2 block text-xs leading-relaxed text-muted-foreground">
+          {detail}
         </span>
-      </Link>
-      {item.taskDraft ? (
-        <TeamFollowUpTaskButton venueId={venueId} draft={item.taskDraft} />
-      ) : null}
-    </div>
+      </span>
+      <span className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground transition-colors group-hover:text-foreground">
+        {action}
+        <ArrowRight className="size-3.5" />
+      </span>
+    </Link>
   );
 }
 
@@ -2394,78 +2343,6 @@ function ShiftMetric({
         {value}
       </p>
     </div>
-  );
-}
-
-function TeamDailyWorkflowStrip({ steps }: { steps: TeamDailyWorkflowStep[] }) {
-  const focusStep = steps.find((step) => step.tone !== "ready") ?? steps[0];
-
-  return (
-    <div className="grid gap-4 lg:grid-cols-[220px_1fr] lg:items-start">
-      <div>
-        <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-          Ритм дня
-        </p>
-        <h2 className="mt-2 text-xl font-medium">Как ведем смену</h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Один маршрут: подготовить, обучить, собрать факт и принять решение.
-        </p>
-        {focusStep ? (
-          <Link
-            href={focusStep.href}
-            className="group mt-3 block rounded-lg border border-border/45 bg-card/35 p-3 transition-colors hover:border-brand/40 hover:bg-card/55"
-          >
-            <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-              Почему фокус дня
-            </span>
-            <span className="mt-1 flex items-start justify-between gap-2 text-[12px] leading-relaxed text-muted-foreground">
-              <span>
-                {focusStep.label}: {focusStep.reason}
-              </span>
-              <ArrowRight className="mt-0.5 size-3.5 shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:text-brand" />
-            </span>
-          </Link>
-        ) : null}
-      </div>
-      <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
-        {steps.map((step) => (
-          <TeamDailyWorkflowStepLink key={step.id} step={step} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function TeamDailyWorkflowStepLink({
-  step,
-}: {
-  step: TeamDailyWorkflowStep;
-}) {
-  return (
-    <Link
-      href={step.href}
-      className="group flex min-h-[150px] flex-col justify-between rounded-lg border border-border/55 bg-card/45 p-4 transition-colors hover:border-brand/40 hover:bg-card/70"
-    >
-      <div>
-        <div className="flex items-center justify-between gap-3">
-          <span
-            className={
-              "rounded-md border px-2 py-1 text-[10px] uppercase tracking-[0.12em] " +
-              dailyWorkflowToneClass(step.tone)
-            }
-          >
-            {step.label}
-          </span>
-          <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-brand" />
-        </div>
-        <h3 className="mt-3 text-sm font-medium leading-snug text-foreground">
-          {step.title}
-        </h3>
-      </div>
-      <p className="mt-3 line-clamp-3 text-xs leading-relaxed text-muted-foreground">
-        {step.detail}
-      </p>
-    </Link>
   );
 }
 
