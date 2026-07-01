@@ -522,7 +522,7 @@ export default async function TeamPage({
           <div className="mx-auto max-w-7xl px-6 py-6">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
               <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground lg:w-36">
-                Кабинет
+                Роль
               </p>
               <div className="grid flex-1 gap-2 sm:grid-cols-2 lg:grid-cols-7">
                 {TEAM_ROLES.map((role) => {
@@ -707,7 +707,7 @@ export default async function TeamPage({
                   <h2 className="mt-3 text-2xl font-medium">Состав и риски</h2>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                     Короткая проверка перед посадкой: кто активен, где нет
-                    человека и сколько важных задач висит на смене.
+                    человека и сколько важных поручений висит на смене.
                   </p>
                 </div>
                 <CalendarDays className="size-6 shrink-0 text-brand" />
@@ -716,7 +716,7 @@ export default async function TeamPage({
               <div className="mt-5 grid grid-cols-2 gap-3">
                 <Metric label="Активны" value={shiftOverview.activeStaff} />
                 <Metric
-                  label="Важных задач"
+                  label="Поручений"
                   value={shiftOverview.importantTasks}
                 />
                 <Metric
@@ -755,10 +755,10 @@ export default async function TeamPage({
                   <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
                     Покрытие
                   </p>
-                  <h2 className="mt-2 text-xl font-medium">Роли и задачи</h2>
+                  <h2 className="mt-2 text-xl font-medium">Роли и поручения</h2>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {shiftOverview.openTasks} открытых задач
+                  {shiftOverview.openTasks} открытых поручений
                 </p>
               </div>
               <div className="mt-5 grid gap-3">
@@ -935,7 +935,7 @@ export default async function TeamPage({
                       Подробности управления
                     </span>
                     <span className="mt-1 block text-lg font-medium text-foreground">
-                      Доступы, сотрудники и полный список задач
+                      Доступы, сотрудники и полный список поручений
                     </span>
                   </span>
                 </span>
@@ -969,7 +969,7 @@ export default async function TeamPage({
                 <div className="rounded-lg border border-border/60 bg-background/30 p-5">
                   <div className="flex items-center gap-3">
                     <ClipboardList className="size-5 text-brand" />
-                    <h2 className="text-xl font-medium">Задачи в этом кабинете</h2>
+                    <h2 className="text-xl font-medium">Поручения в этом кабинете</h2>
                   </div>
                   <div className="mt-5 grid gap-3">
                     {home.visibleTasks.map((task) => (
@@ -1013,7 +1013,7 @@ export default async function TeamPage({
                     <div>
                       <h2 className="text-xl font-medium">Сменный чат позже.</h2>
                       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                        Сейчас достаточно задач, объявлений, комментариев и итогов
+                        Сейчас достаточно поручений, объявлений, комментариев и итогов
                         смены. Чат добавим, когда этот ритм станет привычным для
                         команды.
                       </p>

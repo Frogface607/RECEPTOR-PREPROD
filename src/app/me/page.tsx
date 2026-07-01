@@ -381,7 +381,7 @@ export default async function MyCabinetPage({
               <p className="mt-5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
                 {workspace.member.name} · {role.title.toLowerCase()} ·{" "}
                 {workspace.venueName}. {shiftLabel}. Один экран на смену:
-                задача, стандарт и короткий итог после работы.
+                поручение, стандарт и короткий итог после работы.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
@@ -509,7 +509,7 @@ export default async function MyCabinetPage({
                   ) : (
                     <>
                       <h2 className="mt-3 text-xl font-medium">
-                        Активных задач нет
+                        Активных поручений нет
                       </h2>
                       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                         Проверь объявления и подготовь смену по стандартам роли.
@@ -546,7 +546,7 @@ export default async function MyCabinetPage({
                     />
                   ))
                 ) : (
-                  <EmptyState text="Активных задач нет." />
+                  <EmptyState text="Активных поручений нет." />
                 )}
               </div>
             </div>
@@ -708,7 +708,7 @@ export default async function MyCabinetPage({
                     <h2 className="text-xl font-medium">Обучение по роли</h2>
                   </div>
                   <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                    Короткие материалы, которые привязаны к должности и задачам
+                    Короткие материалы, которые привязаны к должности и поручениям
                     на смену. Внутри — стандарт, проверка и личный прогресс.
                   </p>
                 </div>
@@ -757,7 +757,7 @@ function MemberDailyRoutePanel({ route }: { route: MemberDailyRoute }) {
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-[11px] uppercase tracking-[0.18em] text-brand">
-                Маршрут смены
+                Сегодня по шагам
               </p>
               <h2 className="mt-2 text-base font-medium">
                 {focus.title}: {focus.action.toLowerCase()}.
@@ -839,7 +839,7 @@ function MemberSecondBrainCard({
         <Lightbulb className="mt-1 size-5 shrink-0 text-brand" />
         <div className="min-w-0 flex-1">
           <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-            Что Receptor уже знает
+            Что уже известно
           </p>
           <h2 className="mt-3 text-xl font-medium">{profile.title}</h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">

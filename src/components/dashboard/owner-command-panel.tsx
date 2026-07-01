@@ -355,7 +355,7 @@ function buildOwnerMorningFocusRows({
         ? {
             label: "Факт команды",
             title: nextTeamTask.title,
-            detail: `${nextTeamTask.dueLabel}. Это ближайшая открытая задача команды.`,
+            detail: `${nextTeamTask.dueLabel}. Это ближайшее открытое поручение команды.`,
             tone: nextTeamTask.priority === "high" ? "risk" : "watch",
             icon: "field",
           }
@@ -569,7 +569,7 @@ export function OwnerCommandPanel({
                 )}
                 variant="outline"
               >
-                Открыть контур
+                Открыть работу
                 <ArrowRight className="size-4" />
               </LinkButton>
             ) : null}
@@ -589,7 +589,7 @@ export function OwnerCommandPanel({
                   До смены
                 </span>
                 <span className="mt-2 block text-sm font-medium text-foreground">
-                  Фокус, задачи и бриф
+                  Фокус, поручения и бриф
                 </span>
               </Link>
               <Link
@@ -601,7 +601,7 @@ export function OwnerCommandPanel({
                   После смены
                 </span>
                 <span className="mt-2 block text-sm font-medium text-foreground">
-                  Итог с поля в память
+                  Короткий итог смены
                 </span>
               </Link>
               <Link
@@ -613,7 +613,7 @@ export function OwnerCommandPanel({
                   Обучение
                 </span>
                 <span className="mt-2 block text-sm font-medium text-foreground">
-                  Закрыть пробел команды
+                  Дать стандарт
                 </span>
               </Link>
             </div>
@@ -662,7 +662,7 @@ export function OwnerCommandPanel({
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                    Память ресторана
+                    Что уже известно
                   </p>
                   <h3 className="mt-2 text-lg font-medium text-foreground">
                     {brainReadiness.title}
@@ -711,7 +711,7 @@ export function OwnerCommandPanel({
 
               <details className="mt-3 rounded-lg border border-border/45 bg-background/25 px-3 py-2">
                 <summary className="cursor-pointer select-none text-[10px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground">
-                  Источники памяти
+                  Что уже учтено
                 </summary>
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {brainReadiness.sources.map((source) => (
@@ -757,7 +757,7 @@ export function OwnerCommandPanel({
                     </span>
                     {brainReadiness.fieldMemory.answerSource ? (
                       <span className="mt-2 block text-[12px] leading-relaxed text-brand">
-                        Получено из задачи:{" "}
+                        Получено из поручения:{" "}
                         {brainReadiness.fieldMemory.answerSource.title}
                       </span>
                     ) : brainReadiness.fieldMemory.followUpTask ? (
@@ -810,7 +810,7 @@ export function OwnerCommandPanel({
                   </div>
                 ) : (
                   <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
-                    Пока нет связей между людьми, сменой и задачами. Начните с
+                    Пока мало связи между людьми, сменой и поручениями. Начните с
                     профиля ресторана, команды и короткого итога смены.
                   </p>
                 )}
@@ -862,7 +862,7 @@ export function OwnerCommandPanel({
                   <p className="mt-1 text-sm font-medium text-foreground">
                     {teamTaskQueue.openCount > 0
                       ? `${teamTaskQueue.openCount} открыто · ${teamTaskQueue.urgentOpenCount} срочно · ${teamTaskQueue.inProgressCount} в работе`
-                      : "Открытых задач нет"}
+                      : "Открытых поручений нет"}
                   </p>
                 </div>
                 <LinkButton
