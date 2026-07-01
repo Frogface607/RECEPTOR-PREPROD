@@ -985,6 +985,7 @@ function isClosedLoopEvent(event: TeamAuditEvent): boolean {
     summary.includes("закрыт") ||
     summary.includes("done") ||
     summary.includes("verified") ||
+    summary.includes("задача стандарта") ||
     summary.includes("сдачи модуля") ||
     summary.includes("обновления ставок")
   );
@@ -993,7 +994,7 @@ function isClosedLoopEvent(event: TeamAuditEvent): boolean {
 function auditEventLabel(event: TeamAuditEvent): string {
   if (event.type === "member_labor_rate_updated") return "ФОТ";
   if (event.type === "shift_plan_updated") return "План";
-  if (event.type === "learning_standard_updated") return "Обучение";
+  if (event.type === "learning_standard_updated") return "Стандарт";
   if (event.type === "member_invited") return "Доступ";
   if (event.type === "member_status_updated") return "Доступ";
   if (event.type === "member_password_reset") return "Логин";
@@ -2781,7 +2782,7 @@ function ownerActionFromTeam(
     learningModuleId: action.learningModuleId,
     learningModuleTitle: action.learningModuleTitle,
     briefingQuestion: isLearningAction
-      ? "какой обязательный модуль мешает сотруднику выйти в смену"
+      ? "какой обязательный стандарт роли мешает сотруднику выйти в смену"
       : undefined,
   };
 }

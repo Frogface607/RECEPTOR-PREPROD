@@ -151,13 +151,13 @@ async function closeLearningAdmissionTasks(input: {
     event_type: "task_status_updated",
     target_type: "task",
     target_id: taskIds[0] ?? null,
-    summary: `Автоматически закрыта задача обучения после сдачи модуля: ${moduleTitle}.`,
+    summary: `Автоматически закрыта задача стандарта после сдачи: ${moduleTitle}.`,
     metadata: {
       taskIds,
       memberId,
       moduleTitle,
       status: "done",
-      sourceLabel: "Обучение",
+      sourceLabel: "Стандарт",
       impactLabel: `${taskIds.length} допуск`,
     },
   });
@@ -358,9 +358,9 @@ export async function saveLearningProgressAction(
     mode: "saved",
     message:
       closedTaskIds.length > 0
-        ? "Прогресс сохранен, задача обучения закрыта."
+        ? "Прогресс сохранен, задача стандарта закрыта."
         : taskCloseWarning
-          ? "Прогресс сохранен. Задача обучения не закрылась автоматически."
+          ? "Прогресс сохранен. Задача стандарта не закрылась автоматически."
           : "Прогресс сохранен.",
     progress: savedProgress,
   };

@@ -1412,7 +1412,7 @@ describe("buildOwnerReview", () => {
         {
           id: "learning",
           tone: "setup",
-          title: "Дожать обучение",
+          title: "Закрыть стандарт",
           detail: "Маша: Восьмерка продаж и апселл в сервисе.",
           href: "#learning-progress",
           learningModuleId: "sales-eight-upsell",
@@ -1447,11 +1447,11 @@ describe("buildOwnerReview", () => {
         expect.objectContaining({
           target: "team-learning",
           role: "manager",
-          title: "Дожать обучение",
+          title: "Закрыть стандарт",
           learningModuleId: "sales-eight-upsell",
           learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
           briefingQuestion:
-            "какой обязательный модуль мешает сотруднику выйти в смену",
+            "какой обязательный стандарт роли мешает сотруднику выйти в смену",
         }),
       ]),
     );
@@ -1462,7 +1462,7 @@ describe("buildOwnerReview", () => {
       learningModuleTitle: "Восьмерка продаж и апселл в сервисе",
     });
     expect(review.tasks[0].contextNote).toContain(
-      "Вопрос: какой обязательный модуль мешает сотруднику выйти в смену.",
+      "Вопрос: какой обязательный стандарт роли мешает сотруднику выйти в смену.",
     );
     expect(review.tasks[0].contextNote).toContain(
       "Стандарт: Восьмерка продаж и апселл в сервисе.",
@@ -1486,7 +1486,7 @@ describe("buildOwnerReview", () => {
       {
         id: "task-closed",
         venueId: "venue-1",
-        title: "Пройти обучение",
+        title: "Пройти стандарт",
         source: "manager",
         priority: "medium",
         status: "done",
@@ -1499,12 +1499,12 @@ describe("buildOwnerReview", () => {
         id: "audit-learning-closed",
         venueId: "venue-1",
         type: "task_status_updated",
-        sourceLabel: "Обучение",
+        sourceLabel: "Стандарт",
         impactLabel: "1 допуск",
         targetType: "task",
         targetId: "task-closed",
         summary:
-          "Автоматически закрыта задача обучения после сдачи модуля: Как рекомендовать блюдо без давления.",
+          "Автоматически закрыта задача стандарта после сдачи: Как рекомендовать блюдо без давления.",
         createdAtLabel: "12:10",
       },
     ];
@@ -1544,7 +1544,7 @@ describe("buildOwnerReview", () => {
       closedLoops: 1,
       recentEvents: [
         expect.objectContaining({
-          label: "Обучение",
+          label: "Стандарт",
           summary: expect.stringContaining("1 допуск"),
           timeLabel: "12:10",
           tone: "good",
@@ -2843,8 +2843,8 @@ describe("buildOwnerReview", () => {
         {
           id: "learning",
           tone: "setup",
-          title: "Дожать обучение",
-          detail: "Маша: закрыть обязательный модуль роли.",
+          title: "Закрыть стандарт",
+          detail: "Маша: закрыть обязательный стандарт роли.",
           href: "#learning-progress",
         },
       ],
@@ -2853,7 +2853,7 @@ describe("buildOwnerReview", () => {
       {
         id: "task-learning-open",
         venueId: "venue-1",
-        title: "Дожать обучение: Маша: закрыть обязательный модуль роли.",
+        title: "Закрыть стандарт: Маша: закрыть обязательный стандарт роли.",
         source: "copilot",
         priority: "medium",
         status: "accepted",
@@ -2877,13 +2877,13 @@ describe("buildOwnerReview", () => {
     expect(review.actions).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          title: "Дожать обучение",
+          title: "Закрыть стандарт",
           target: "team-learning",
         }),
       ]),
     );
     expect(
-      review.tasks.some((task) => task.title.startsWith("Дожать обучение")),
+      review.tasks.some((task) => task.title.startsWith("Закрыть стандарт")),
     ).toBe(false);
   });
 

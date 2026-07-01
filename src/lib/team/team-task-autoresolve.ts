@@ -60,14 +60,17 @@ export function selectLearningAdmissionTasksToClose(
   const moduleTitle = input.moduleTitle.trim();
   if (!memberId || !moduleTitle) return [];
 
-  const expectedTitle = normalizeTaskTitle(`Пройти обучение: ${moduleTitle}`);
+  const expectedTitles = new Set([
+    normalizeTaskTitle(`Пройти стандарт: ${moduleTitle}`),
+    normalizeTaskTitle(`Пройти обучение: ${moduleTitle}`),
+  ]);
 
   return tasks.filter(
     (task) =>
       !CLOSED_STATUSES.has(task.status) &&
       task.audience.type === "member" &&
       task.audience.memberId === memberId &&
-      normalizeTaskTitle(task.title) === expectedTitle,
+      expectedTitles.has(normalizeTaskTitle(task.title)),
   );
 }
 

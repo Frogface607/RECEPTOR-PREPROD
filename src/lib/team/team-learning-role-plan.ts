@@ -114,7 +114,7 @@ export function buildLearningAdmissionTaskDraft(
   ].join("\n");
 
   return {
-    title: `Пройти обучение: ${moduleTitle}`,
+    title: `Пройти стандарт: ${moduleTitle}`,
     priority: plan.admissionPct < 50 ? "high" : "medium",
     audienceType: "member",
     audienceMemberId: blocker.memberId,
@@ -206,7 +206,7 @@ export function findOpenLearningAdmissionTask(
   tasks: TeamTask[],
   draft: TeamLearningAdmissionTaskDraft,
 ): TeamTask | null {
-  const draftTitle = normalizeLearningTaskTitle(draft.title);
+  const draftTitles = learningAdmissionTaskTitleCandidates(draft.moduleTitle);
 
   return (
     tasks.find(
@@ -214,9 +214,16 @@ export function findOpenLearningAdmissionTask(
         OPEN_TASK_STATUSES.has(task.status) &&
         task.audience.type === "member" &&
         task.audience.memberId === draft.audienceMemberId &&
-        normalizeLearningTaskTitle(task.title) === draftTitle,
+        draftTitles.has(normalizeLearningTaskTitle(task.title)),
     ) ?? null
   );
+}
+
+function learningAdmissionTaskTitleCandidates(moduleTitle: string): Set<string> {
+  return new Set([
+    normalizeLearningTaskTitle(`Пройти стандарт: ${moduleTitle}`),
+    normalizeLearningTaskTitle(`Пройти обучение: ${moduleTitle}`),
+  ]);
 }
 
 function normalizeLearningTaskTitle(value: string): string {

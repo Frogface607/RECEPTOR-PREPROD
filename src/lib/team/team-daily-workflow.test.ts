@@ -14,7 +14,7 @@ describe("buildTeamDailyWorkflow", () => {
         actions: [
           {
             id: "learning",
-            title: "Дожать обучение",
+            title: "Закрыть стандарт",
             detail: "Маша: Как рекомендовать блюдо без давления.",
             href: "#learning-progress",
             tone: "watch",

@@ -85,7 +85,13 @@ describe("team task autoresolve", () => {
     const tasks: Array<Pick<TeamTask, "id" | "title" | "status" | "audience">> =
       [
         task(
-          "admission",
+          "standard-admission",
+          "  Пройти стандарт: Как рекомендовать блюдо без давления  ",
+          "petr",
+          "accepted",
+        ),
+        task(
+          "legacy-admission",
           "  Пройти обучение: Как рекомендовать блюдо без давления  ",
           "petr",
           "accepted",
@@ -109,7 +115,7 @@ describe("team task autoresolve", () => {
         memberId: "petr",
         moduleTitle: "Как рекомендовать блюдо без давления",
       }),
-    ).toEqual([tasks[0]]);
+    ).toEqual([tasks[0], tasks[1]]);
   });
 
   test("extracts a learning standard title from a shift-memory note", () => {

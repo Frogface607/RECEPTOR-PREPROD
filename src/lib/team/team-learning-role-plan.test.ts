@@ -94,7 +94,7 @@ describe("buildTeamLearningRolePlans", () => {
     const draft = buildLearningAdmissionTaskDraft(service!);
 
     expect(draft).toEqual({
-      title: "Пройти обучение: Как рекомендовать блюдо без давления",
+      title: "Пройти стандарт: Как рекомендовать блюдо без давления",
       priority: "medium",
       audienceType: "member",
       audienceMemberId: "service-2",
@@ -157,7 +157,7 @@ describe("buildTeamLearningRolePlans", () => {
       {
         id: "task-existing",
         venueId: "venue-1",
-        title: `  ${draft!.title}  `,
+        title: "  Пройти обучение: Как рекомендовать блюдо без давления  ",
         source: "manager",
         priority: "medium",
         status: "accepted",

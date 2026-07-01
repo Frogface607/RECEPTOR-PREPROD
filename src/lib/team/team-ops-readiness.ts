@@ -169,10 +169,10 @@ export function buildTeamOpsReadiness(input: {
     actions.push({
       id: "learning",
       tone: learningBlocker.status === "not_started" ? "setup" : "watch",
-      title: "Дожать обучение",
+      title: "Закрыть стандарт",
       detail: `${learningBlocker.member.name}: ${actionDetail(
         learningBlocker.nextItem?.title ?? "",
-        "закрыть материалы роли",
+        "закрыть стандарт роли",
       )}.`,
       href: "#learning-progress",
       learningModuleId: learningBlocker.nextItem?.id,
