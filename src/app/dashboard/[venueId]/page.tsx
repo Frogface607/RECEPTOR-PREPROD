@@ -260,8 +260,8 @@ export default async function DashboardPage({
       memberName: row.summary.member.name,
       standardTitle: row.signal.moduleTitle ?? "стандарт",
       detail: row.existingTask
-        ? "факт смены уже назначен задачей"
-        : "сдан, нужен факт смены после практики",
+        ? "итог смены уже запрошен задачей"
+        : "сдан, нужен короткий итог после практики",
     }));
   const laborReadiness = buildTeamLaborReadiness(teamWorkspace.staff, laborBi);
   const laborSetupProgress = buildTeamLaborSetupProgress(

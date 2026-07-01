@@ -2365,23 +2365,23 @@ function ownerActionFromLearningAdoption(
 
   return {
     title: isAssigned
-      ? "Проверить факт стандарта после смены"
-      : "Добрать факт внедрения стандарта",
-    detail: `${memberName}: ${row.move.detail} Без факта смены Receptor не считает обучение внедренным.`,
+      ? "Проверить итог по стандарту"
+      : "Попросить итог по стандарту",
+    detail: `${memberName}: ${row.move.detail} Тест уже сдан, но владельцу нужен живой пример из смены.`,
     role: "manager",
     tone: isAssigned ? "watch" : "risk",
     target: isAssigned ? "team-actions" : "team-learning",
     sourceLabel: "Стандарт команды",
     taskTitle:
       row.draft?.title ??
-      `Вернуть факт смены: ${memberName} — ${moduleTitle}`,
+      `Оставить итог смены: ${memberName} — ${moduleTitle}`,
     memberId: row.summary.member.id,
     memberName,
     learningModuleId: row.signal.moduleId ?? undefined,
     learningModuleTitle: moduleTitle,
     learningChecklistTitle:
       row.draft?.checklistTitle ??
-      "Если стандарт сдан, но нет факта смены",
+      "Если стандарт сдан, но нет итога смены",
     briefingQuestion:
       row.draft?.memoryPrompt ??
       `где ${memberName} применил(а) стандарт "${moduleTitle}", что изменилось и что проверить утром`,

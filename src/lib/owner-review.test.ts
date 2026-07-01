@@ -3552,7 +3552,7 @@ describe("buildOwnerReview", () => {
       expect.arrayContaining([
         expect.objectContaining({
           label: "Стандарт",
-          value: "Нужен факт",
+          value: "Нужен короткий итог",
           detail: expect.stringContaining("Маша"),
           tone: "risk",
         }),
@@ -3561,7 +3561,7 @@ describe("buildOwnerReview", () => {
     expect(review.actions).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          title: "Добрать факт внедрения стандарта",
+          title: "Попросить итог по стандарту",
           target: "team-learning",
           sourceLabel: "Стандарт команды",
           memberId: "service-1",

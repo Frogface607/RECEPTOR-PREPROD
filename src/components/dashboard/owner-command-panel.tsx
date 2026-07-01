@@ -366,7 +366,7 @@ export function OwnerCommandPanel({
   const memoryPrimary = brainReadiness
     ? brainReadiness.nextSource.status === "ready"
       ? {
-          label: "Карта связей",
+          label: "Почему совет будет точным",
           value: brainReadiness.memoryGraph.summary,
           detail: brainReadiness.memoryGraph.detail,
           actionLabel: brainReadiness.memoryGraph.actionLabel,
@@ -378,7 +378,7 @@ export function OwnerCommandPanel({
           className: TONE_CLASS[brainReadiness.memoryGraph.tone],
         }
       : {
-          label: "Следующий сбор",
+          label: "Что спросить у команды",
           value: `${brainReadiness.nextSource.label}: ${brainReadiness.nextSource.value}`,
           detail: brainReadiness.nextSource.detail,
           actionLabel: brainReadiness.nextSource.actionLabel,
@@ -572,7 +572,7 @@ export function OwnerCommandPanel({
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                    Память ресторана
+                    Что Receptor уже знает
                   </p>
                   <h3 className="mt-2 text-lg font-medium text-foreground">
                     {brainReadiness.score}% · {brainReadiness.title}
@@ -651,7 +651,7 @@ export function OwnerCommandPanel({
                   </span>
                   <span className="min-w-0">
                     <span className="block text-[10px] uppercase tracking-[0.16em] text-brand">
-                      Живой факт смены
+                      Итог с поля
                     </span>
                     <span className="mt-1 block text-sm font-medium text-foreground">
                       {brainReadiness.fieldMemory.title} ·{" "}
@@ -691,7 +691,7 @@ export function OwnerCommandPanel({
 
               <details className="mt-3 rounded-lg border border-border/45 bg-background/25 px-3 py-2">
                 <summary className="cursor-pointer select-none text-[10px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground">
-                  Почему советник так думает
+                  Из чего Receptor делает вывод
                 </summary>
                 {brainReadiness.memoryGraph.trace.length > 0 ? (
                   <div className="mt-3 grid gap-1.5">

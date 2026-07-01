@@ -124,9 +124,9 @@ function scoreTone(score: number): OwnerReviewTone {
 }
 
 function statusTitle(tone: OwnerReviewTone): string {
-  if (tone === "good") return "советник видит ресторан";
-  if (tone === "watch") return "память почти собрана";
-  return "советнику не хватает памяти";
+  if (tone === "good") return "можно спрашивать";
+  if (tone === "watch") return "почти готов к советам";
+  return "нужен контекст";
 }
 
 function contextSource(context: unknown): OwnerBrainSource {
@@ -538,10 +538,10 @@ function buildOwnerMemoryGraph({
     summary: brief.summary,
     detail:
       brief.missingLabels.length > 0
-        ? `Следующее связать: ${brief.nextAction}.`
+        ? `Чтобы совет был точнее, нужен следующий короткий итог: ${brief.nextAction}.`
         : learningNeedsFact
-          ? `Следующее связать: ${brief.nextAction}.`
-        : "Люди, смена и задачи уже связаны в памяти советника.",
+          ? `Чтобы совет был точнее, нужен следующий короткий итог: ${brief.nextAction}.`
+        : "Receptor уже видит людей, смену и задачи. Можно просить конкретный совет.",
     trace,
     actionLabel,
     target,
@@ -576,10 +576,10 @@ export function buildOwnerBrainReadiness(
     title: statusTitle(tone),
     summary:
       tone === "good"
-        ? "Можно спрашивать советника о причинах, людях, меню и действиях на день."
+        ? "Цифры, команда и итоги смены уже вместе. Можно спрашивать, что делать сегодня."
         : tone === "watch"
-          ? "Доберите следующий источник памяти, чтобы советы опирались не только на цифры."
-          : "Сначала соберите живой контекст: профиль заведения, команда, итог смены и допуск.",
+          ? "Receptor видит часть картины. Добавьте один живой итог смены, чтобы совет был не общим, а по делу."
+          : "Сначала нужен минимум: профиль заведения, команда и короткий итог смены.",
     memoryGraph: buildOwnerMemoryGraph({
       staff: input.staff,
       tasks: input.tasks,

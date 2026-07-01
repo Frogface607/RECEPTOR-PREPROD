@@ -83,7 +83,7 @@ describe("owner brain readiness", () => {
 
     expect(readiness.tone).toBe("risk");
     expect(readiness.nextSource.id).toBe("context");
-    expect(readiness.summary).toContain("живой контекст");
+    expect(readiness.summary).toContain("профиль заведения");
     expect(readiness.memoryGraph).toMatchObject({
       tone: "risk",
       summary: "связей пока нет",
@@ -130,7 +130,7 @@ describe("owner brain readiness", () => {
       tone: "good",
       actionLabel: "Спросить советника",
       target: "advisor",
-      detail: "Люди, смена и задачи уже связаны в памяти советника.",
+      detail: "Receptor уже видит людей, смену и задачи. Можно просить конкретный совет.",
     });
     expect(readiness.memoryGraph.summary).toContain("люди, смена, задачи");
     expect(readiness.memoryGraph.trace.map((item) => item.detail).join("\n")).toContain(
