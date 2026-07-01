@@ -121,6 +121,7 @@ import {
 import { buildTeamCommunicationDrafts } from "@/lib/team/team-communication-drafts";
 import {
   buildTeamDailyWorkflow,
+  type TeamDailyWorkflowLearningAdoptionFocus,
   type TeamDailyWorkflowStep,
   type TeamDailyWorkflowTone,
 } from "@/lib/team/team-daily-workflow";
@@ -172,6 +173,14 @@ const ROLE_PARAM_VALUES = new Set<TeamRoleId>(
   TEAM_ROLES.map((role) => role.id),
 );
 
+type LearningAdoptionRow = {
+  summary: TeamLearningMemberSummary;
+  signal: TeamLearningAdoptionSignal;
+  draft: TeamLearningAdoptionTaskDraft | null;
+  existingTask: TeamTask | null;
+  move: TeamLearningAdoptionNextMove | null;
+};
+
 function parseRole(value: string | string[] | undefined): TeamRoleId {
   const raw = Array.isArray(value) ? value[0] : value;
   return raw && ROLE_PARAM_VALUES.has(raw as TeamRoleId)
@@ -207,6 +216,42 @@ function teamHref(
 function dashboardHref(venueId: string, period: Period): string {
   const params = new URLSearchParams(periodToSearchParams(period));
   return `/dashboard/${encodeURIComponent(venueId)}?${params.toString()}`;
+}
+
+function pickLearningAdoptionFocus(
+  rows: LearningAdoptionRow[],
+): LearningAdoptionRow | null {
+  return (
+    rows.find((row) => row.move?.action === "assign_fact") ??
+    rows.find(
+      (row) =>
+        row.signal.status === "needs_memory" &&
+        row.move?.label === "Факт назначен",
+    ) ??
+    null
+  );
+}
+
+function learningAdoptionWorkflowFocus(
+  row: LearningAdoptionRow | null,
+): TeamDailyWorkflowLearningAdoptionFocus | null {
+  if (!row?.move) return null;
+
+  const href =
+    row.move.action === "assign_fact" ? "#learning-progress" : "#team-actions";
+  const title =
+    row.move.action === "assign_fact"
+      ? "Добрать факт стандарта"
+      : "Факт стандарта уже назначен";
+
+  return {
+    title,
+    detail: `${row.summary.member.name}: ${row.move.detail}`,
+    reason:
+      "Стандарт уже сдан; без факта смены Receptor не считает внедрение доказанным.",
+    href,
+    tone: row.move.action === "assign_fact" ? "risk" : "work",
+  };
 }
 
 function priorityClass(priority: TeamTask["priority"]): string {
@@ -268,8 +313,8 @@ export default async function TeamPage({
     workspace.learningProgress,
     workspace.learningStandards,
   );
-  const learningAdoptionByMember = new Map(
-    learningSummaries.map((summary) => {
+  const learningAdoptionRows: LearningAdoptionRow[] = learningSummaries.map(
+    (summary) => {
       const signal = buildTeamLearningAdoptionSignal({
         summary,
         progress: workspace.learningProgress,
@@ -279,17 +324,24 @@ export default async function TeamPage({
       const existingTask = draft
         ? findOpenLearningAdoptionTask(workspace.tasks, draft)
         : null;
+      const move = buildTeamLearningAdoptionNextMove({
+        signal,
+        taskExists: Boolean(existingTask),
+      });
 
-      return [
-        summary.member.id,
-        {
-          signal,
-          draft,
-          existingTask,
-        },
-      ] as const;
-    }),
+      return {
+        summary,
+        signal,
+        draft,
+        existingTask,
+        move,
+      };
+    },
   );
+  const learningAdoptionByMember = new Map(
+    learningAdoptionRows.map((row) => [row.summary.member.id, row] as const),
+  );
+  const learningAdoptionFocus = pickLearningAdoptionFocus(learningAdoptionRows);
   const learningOverview = summarizeTeamLearning(learningSummaries);
   const learningRolePlans = buildTeamLearningRolePlans(
     learningSummaries,
@@ -361,6 +413,9 @@ export default async function TeamPage({
     opsReadiness,
     managerFollowUp,
     learningFocus: learningFocusPlan,
+    learningAdoptionFocus: learningAdoptionWorkflowFocus(
+      learningAdoptionFocus,
+    ),
     fieldContext: learningFieldContext,
   });
   const selectedMemberId = memberId || focusMemberId;
@@ -572,6 +627,7 @@ export default async function TeamPage({
           venueId={venueId}
           digest={learningFieldContext}
           readiness={fieldNoteReadiness}
+          adoptionFocus={learningAdoptionFocus}
         />
 
         <ShiftOperationsRoute
@@ -2461,10 +2517,12 @@ function TeamShiftMemorySection({
   venueId,
   digest,
   readiness,
+  adoptionFocus,
 }: {
   venueId: string;
   digest: TeamFieldContextDigest | null;
   readiness: FieldNoteReadinessSummary;
+  adoptionFocus: LearningAdoptionRow | null;
 }) {
   const followUpTaskDraft = buildFieldNoteFollowUpTaskDraft({
     readiness,
@@ -2472,6 +2530,7 @@ function TeamShiftMemorySection({
   });
   const primaryFollowUpQuestion = readiness.followUpQuestions[0] ?? null;
   const secondaryFollowUpQuestions = readiness.followUpQuestions.slice(1, 3);
+  const adoptionMove = adoptionFocus?.move ?? null;
 
   return (
     <section
@@ -2579,6 +2638,65 @@ function TeamShiftMemorySection({
               ) : null}
             </div>
           )}
+
+          {adoptionFocus && adoptionMove ? (
+            <div className="mt-4 border-t border-border/45 pt-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex min-w-0 items-start gap-2">
+                  <span
+                    className={`mt-2 size-2 shrink-0 rounded-full ${learningAdoptionMarkerClass(
+                      adoptionFocus.signal.status,
+                    )}`}
+                  />
+                  <div className="min-w-0">
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                      Факт стандарта
+                    </p>
+                    <p
+                      className={`mt-1 text-sm font-medium ${learningAdoptionTextClass(
+                        adoptionFocus.signal.status,
+                      )}`}
+                    >
+                      {adoptionMove.label}
+                    </p>
+                    <p className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-muted-foreground">
+                      {adoptionFocus.summary.member.name}: {adoptionMove.detail}
+                    </p>
+                  </div>
+                </div>
+
+                {adoptionMove.action === "assign_fact" &&
+                adoptionFocus.draft ? (
+                  <div className="shrink-0">
+                    <LearningAdoptionTaskButton
+                      venueId={venueId}
+                      draft={adoptionFocus.draft}
+                      existingTask={false}
+                    />
+                  </div>
+                ) : null}
+
+                {adoptionMove.action === "none" &&
+                adoptionFocus.existingTask ? (
+                  <LinkButton href="#team-actions" variant="outline">
+                    Открыть задачу
+                    <ArrowRight className="size-4" />
+                  </LinkButton>
+                ) : null}
+
+                {adoptionMove.action === "open_evidence" &&
+                adoptionFocus.signal.evidenceHref ? (
+                  <LinkButton
+                    href={adoptionFocus.signal.evidenceHref}
+                    variant="outline"
+                  >
+                    {adoptionMove.actionLabel ?? "Открыть факт"}
+                    <ArrowRight className="size-4" />
+                  </LinkButton>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
 
           <div className="mt-4 flex flex-wrap gap-2">
             {followUpTaskDraft ? (

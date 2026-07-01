@@ -135,4 +135,63 @@ describe("buildTeamDailyWorkflow", () => {
       tone: "ready",
     });
   });
+
+  test("prioritizes a passed standard that still needs shift evidence", () => {
+    const steps = buildTeamDailyWorkflow({
+      opsReadiness: {
+        score: 92,
+        status: "ready",
+        roleCoveragePct: 100,
+        laborCoveragePct: 100,
+        learningAdmissionPct: 100,
+        learningAveragePct: 92,
+        actions: [],
+      },
+      managerFollowUp: {
+        status: "ready",
+        title: "Готово",
+        detail: "Блокеров нет.",
+        openTasks: 0,
+        urgentTasks: 0,
+        blockedAdmissions: 0,
+        laborCoveragePct: 100,
+        planCoveragePct: 100,
+        unreadImportantAnnouncements: 0,
+        items: [],
+      },
+      learningFocus: [
+        {
+          id: "ready-service",
+          title: "Официант: развитие команды",
+          detail: "Можно усилить следующий стандарт.",
+          reason: "Блокеров нет.",
+          roleTitle: "Официант",
+          moduleTitle: "Восьмерка продаж и апселл в сервисе",
+          practiceAction: "На смене предложить пару к заказу.",
+          memoryPrompt: "После смены зафиксировать, что сработало.",
+          href: "#learning-progress",
+          tone: "ready",
+        },
+      ],
+      learningAdoptionFocus: {
+        title: "Добрать факт стандарта",
+        detail:
+          "Маша: Как рекомендовать блюдо без давления — назначьте один итог смены после практики.",
+        reason:
+          "Стандарт уже сдан; без факта смены Receptor не считает внедрение доказанным.",
+        href: "#learning-progress",
+        tone: "risk",
+      },
+      fieldContext: null,
+    });
+
+    expect(steps[1]).toMatchObject({
+      title: "Добрать факт стандарта",
+      detail:
+        "Маша: Как рекомендовать блюдо без давления — назначьте один итог смены после практики.",
+      href: "#learning-progress",
+      tone: "risk",
+    });
+    expect(steps[1].reason).toContain("не считает внедрение доказанным");
+  });
 });

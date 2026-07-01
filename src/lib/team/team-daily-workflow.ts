@@ -15,14 +15,24 @@ export type TeamDailyWorkflowStep = {
   tone: TeamDailyWorkflowTone;
 };
 
+export type TeamDailyWorkflowLearningAdoptionFocus = {
+  title: string;
+  detail: string;
+  reason: string;
+  href: string;
+  tone: TeamDailyWorkflowTone;
+};
+
 export function buildTeamDailyWorkflow(input: {
   opsReadiness: TeamOpsReadiness;
   managerFollowUp: TeamManagerFollowUp;
   learningFocus: TeamLearningFocusItem[];
+  learningAdoptionFocus?: TeamDailyWorkflowLearningAdoptionFocus | null;
   fieldContext: TeamFieldContextDigest | null;
 }): TeamDailyWorkflowStep[] {
   const primaryFollowUp = input.managerFollowUp.items[0] ?? null;
   const primaryLearning = input.learningFocus[0] ?? null;
+  const primaryAdoption = input.learningAdoptionFocus ?? null;
   const primaryAction = input.opsReadiness.actions.find(
     (action) => action.id !== "ready",
   );
@@ -46,15 +56,25 @@ export function buildTeamDailyWorkflow(input: {
     {
       id: "training",
       label: "Обучение",
-      title: primaryLearning?.title ?? "Закрыть стандарт дня",
-      detail: primaryLearning
-        ? `В смене: ${primaryLearning.practiceAction} После: ${primaryLearning.memoryPrompt}`
-        : "Критичных учебных блокеров нет, можно закрепить следующий стандарт.",
-      reason: primaryLearning
-        ? `После обучения ждем факт в память: ${primaryLearning.memoryPrompt}`
-        : "Допуски в норме: обучение можно вести как закрепление стандарта.",
-      href: primaryLearning?.href ?? "#learning-progress",
-      tone: primaryLearning ? learningTone(primaryLearning.tone) : "ready",
+      title:
+        primaryAdoption?.title ??
+        primaryLearning?.title ??
+        "Закрыть стандарт дня",
+      detail:
+        primaryAdoption?.detail ??
+        (primaryLearning
+          ? `В смене: ${primaryLearning.practiceAction} После: ${primaryLearning.memoryPrompt}`
+          : "Критичных учебных блокеров нет, можно закрепить следующий стандарт."),
+      reason:
+        primaryAdoption?.reason ??
+        (primaryLearning
+          ? `После обучения ждем факт в память: ${primaryLearning.memoryPrompt}`
+          : "Допуски в норме: обучение можно вести как закрепление стандарта."),
+      href:
+        primaryAdoption?.href ?? primaryLearning?.href ?? "#learning-progress",
+      tone:
+        primaryAdoption?.tone ??
+        (primaryLearning ? learningTone(primaryLearning.tone) : "ready"),
     },
     {
       id: "field_note",
