@@ -780,48 +780,82 @@ export default async function TeamPage({
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-                      Стандарты команды
+                      Проверка смены
                     </p>
                     <h2 className="mt-3 text-2xl font-medium">
-                      Кого обучить сегодня
+                      Кого допустить, кому помочь
                     </h2>
                     <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      Управляющему нужен не процент, а следующий шаг: дать
-                      стандарт, увидеть действие в смене и получить короткий
-                      итог.
+                      Откройте список справа: у каждого сотрудника одно
+                      действие. Если стандарт пройден, попросите применить его
+                      в смене и оставить 3 строки итога.
                     </p>
                   </div>
                   <GraduationCap className="size-6 shrink-0 text-brand" />
                 </div>
 
-                <div className="mt-5 grid grid-cols-2 gap-3">
-                  <Metric
-                    label="Допущены"
-                    value={learningOverview.admittedMembers}
-                  />
-                  <Metric
-                    label="Дать стандарт"
-                    value={learningOverview.blockedMembers}
-                  />
-                  <Metric
-                    label="Ждем итог"
-                    value={learningWaitingForSummary}
-                  />
-                  <Metric
-                    label="Есть итог"
-                    value={learningReturnedSummaries}
-                  />
+                <div className="mt-5 grid gap-2">
+                  <div className="flex items-center justify-between gap-3 rounded-lg border border-border/45 bg-background/35 p-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium">Дать стандарт</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Люди, которых нужно провести через правило до смены.
+                      </p>
+                    </div>
+                    <span className="text-2xl font-semibold tabular-nums">
+                      {learningOverview.blockedMembers}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 rounded-lg border border-border/45 bg-background/35 p-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium">Дождаться итога</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Стандарт уже пройден, но нет короткой заметки из смены.
+                      </p>
+                    </div>
+                    <span className="text-2xl font-semibold tabular-nums">
+                      {learningWaitingForSummary}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 rounded-lg border border-brand/25 bg-brand/10 p-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium">Проверить итог</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Есть реальный факт из смены, можно закреплять стандарт.
+                      </p>
+                    </div>
+                    <span className="text-2xl font-semibold tabular-nums text-brand">
+                      {learningReturnedSummaries}
+                    </span>
+                  </div>
                 </div>
+
+                <details className="group mt-4 border-t border-border/35 pt-2">
+                  <summary className="flex cursor-pointer list-none items-center justify-between rounded-lg px-1 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">
+                    <span>Цифры готовности</span>
+                    <span>{learningOverview.admittedMembers} допущены</span>
+                  </summary>
+                  <div className="mt-2 grid grid-cols-2 gap-3">
+                    <Metric
+                      label="Допущены"
+                      value={learningOverview.admittedMembers}
+                    />
+                    <Metric
+                      label="Дать стандарт"
+                      value={learningOverview.blockedMembers}
+                    />
+                  </div>
+                </details>
               </div>
 
               <div className="rounded-lg border border-border/60 bg-card/50 p-5">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                      На сегодня
+                      Список людей
                     </p>
                     <h2 className="mt-2 text-xl font-medium">
-                      Кому что сделать
+                      Одно действие на человека
                     </h2>
                   </div>
                   <p className="text-xs text-muted-foreground">
