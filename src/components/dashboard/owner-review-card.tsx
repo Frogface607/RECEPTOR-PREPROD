@@ -14,7 +14,6 @@ import Link from "next/link";
 import type {
   OwnerReview,
   OwnerReviewAction,
-  OwnerReviewConfidence,
   OwnerProfitReadinessAction,
   OwnerReviewRole,
   OwnerReviewTone,
@@ -35,12 +34,6 @@ const ROLE_LABEL: Record<OwnerReviewRole, string> = {
   manager: "управляющий",
   chef: "шеф",
   service: "зал",
-};
-
-const CONFIDENCE_LABEL: Record<OwnerReviewConfidence, string> = {
-  high: "высокая уверенность",
-  medium: "средняя уверенность",
-  low: "низкая уверенность",
 };
 
 function actionContour(action: OwnerReviewAction): string {
@@ -239,6 +232,13 @@ export function OwnerReviewCard({
   review: OwnerReview;
   teamPeriodParams?: TeamPeriodParams;
 }) {
+  const firstAction = review.actions[0] ?? null;
+  const nextActions = review.actions.slice(1);
+  const keyEvidence = review.evidence.slice(0, 4);
+  const otherEvidence = review.evidence.slice(4);
+  const visibleHypotheses = review.hypotheses.slice(0, 3);
+  const hiddenHypotheses = review.hypotheses.slice(3);
+
   return (
     <section className="rounded-xl border border-brand/25 bg-card/70 p-5 sm:p-6">
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
@@ -246,10 +246,10 @@ export function OwnerReviewCard({
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-2 rounded-full border border-brand/35 bg-brand/10 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-brand">
               <ShieldCheck className="size-3.5" />
-              Разбор владельца
+              Почему Receptor так решил
             </span>
             <span className="rounded-full border border-border/55 bg-background/45 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-              {CONFIDENCE_LABEL[review.confidence]}
+              проверка, не приговор
             </span>
           </div>
 
@@ -264,12 +264,12 @@ export function OwnerReviewCard({
             <div className="flex items-start gap-2">
               <HelpCircle className="mt-0.5 size-4 shrink-0 text-brand" />
               <p className="text-[12px] leading-relaxed text-muted-foreground">
-                Уверенность:{" "}
+                Почему можно смотреть:{" "}
                 <span className="text-foreground/85">
                   {review.confidenceReason}
                 </span>
-                . Каждый вывод ниже — гипотеза для проверки, а не магическое
-                утверждение.
+                . Ниже не лекция и не отчёт, а короткая проверка: что мешает,
+                куда нажать и что спросить у команды.
               </p>
             </div>
           </div>
@@ -284,21 +284,15 @@ export function OwnerReviewCard({
               >
                 <GaugeCircle className="size-4" />
               </span>
-              <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                  Достоверность прибыли
-                </p>
-                <p className="mt-1 text-[14px] font-medium text-foreground">
-                  {review.readiness.title}
-                </p>
+                <div className="min-w-0">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                    Что мешает точному совету
+                  </p>
+                  <p className="mt-1 text-[14px] font-medium text-foreground">
+                    {review.readiness.title}
+                  </p>
+                </div>
               </div>
-              <div className="sm:text-right">
-                <p className="text-xl font-medium text-foreground">
-                  {review.readiness.score}%
-                </p>
-                <p className="text-[11px] text-muted-foreground">готовность</p>
-              </div>
-            </div>
             <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
               {review.readiness.detail}
             </p>
@@ -331,7 +325,7 @@ export function OwnerReviewCard({
                 </span>
                 <div className="min-w-0">
                   <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                    Контур управления
+                    Что уже в работе
                   </p>
                   <p className="mt-1 text-[14px] font-medium text-foreground">
                     {review.operationalPulse.title}
@@ -343,7 +337,7 @@ export function OwnerReviewCard({
                       {review.operationalPulse.openTasks}
                     </p>
                     <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                      открыто
+                      задач открыто
                     </p>
                   </div>
                   <div>
@@ -418,7 +412,7 @@ export function OwnerReviewCard({
           ) : null}
 
           <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-            {review.evidence.map((item) => (
+            {keyEvidence.map((item) => (
               <div
                 key={item.label}
                 className="rounded-lg border border-border/45 bg-background/35 p-3"
@@ -445,24 +439,129 @@ export function OwnerReviewCard({
               </div>
             ))}
           </div>
+
+          {otherEvidence.length > 0 ? (
+            <details className="mt-3 rounded-lg border border-border/45 bg-background/25 px-3 py-2">
+              <summary className="cursor-pointer select-none text-[11px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground">
+                Остальные факты · {otherEvidence.length}
+              </summary>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {otherEvidence.map((item) => (
+                  <div
+                    key={item.label}
+                    className="rounded-lg border border-border/45 bg-card/35 p-3"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                        {item.label}
+                      </p>
+                      <span
+                        className={
+                          "inline-flex size-6 items-center justify-center rounded-md border " +
+                          TONE_CLASS[item.tone]
+                        }
+                      >
+                        <ToneIcon tone={item.tone} />
+                      </span>
+                    </div>
+                    <p className="mt-3 truncate text-lg font-medium text-foreground">
+                      {item.value}
+                    </p>
+                    <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
+                      {item.detail}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </details>
+          ) : null}
         </div>
 
         <div className="rounded-lg border border-border/55 bg-background/35 p-4">
-          {review.actions.length > 0 ? (
+          {firstAction ? (
             <div className="mb-5 border-b border-border/45 pb-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                    Что сделать первым
+                    Следующий шаг
                   </p>
                   <h3 className="mt-2 text-lg font-medium">
-                    Очередь владельца
+                    Сделать одно, не всё сразу
                   </h3>
                 </div>
                 <ClipboardList className="size-5 text-brand" />
               </div>
-              <div className="mt-3 space-y-2.5">
-                {review.actions.map((action) => (
+              <div className="mt-3">
+                <div className="grid gap-3 rounded-lg border border-brand/30 bg-brand/10 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className={
+                          "inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] uppercase tracking-[0.12em] " +
+                          TONE_CLASS[firstAction.tone]
+                        }
+                      >
+                        <ToneIcon tone={firstAction.tone} />
+                        {ROLE_LABEL[firstAction.role]}
+                      </span>
+                      {firstAction.sourceLabel ? (
+                        <span className="rounded-md border border-brand/30 bg-background/35 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-brand">
+                          {actionContour(firstAction)}
+                        </span>
+                      ) : null}
+                      {firstAction.impactLabel ? (
+                        <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-amber-200">
+                          {firstAction.impactLabel}
+                        </span>
+                      ) : null}
+                      {firstAction.learningModuleTitle ? (
+                        <span className="rounded-md border border-sky-400/30 bg-sky-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-sky-200">
+                          стандарт
+                        </span>
+                      ) : null}
+                      {firstAction.existingTaskId ? (
+                        <span className="rounded-md border border-border/45 bg-background/50 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                          уже в задачах
+                        </span>
+                      ) : null}
+                      <p className="text-[13px] font-medium text-foreground">
+                        {firstAction.title}
+                      </p>
+                    </div>
+                    <p className="mt-2 text-[12px] leading-relaxed text-muted-foreground">
+                      {firstAction.detail}
+                    </p>
+                    {firstAction.briefingQuestion ? (
+                      <p className="mt-1 flex items-start gap-2 text-[12px] leading-relaxed text-foreground/85">
+                        <HelpCircle className="mt-0.5 size-3.5 shrink-0 text-brand" />
+                        <span>{firstAction.briefingQuestion}</span>
+                      </p>
+                    ) : null}
+                    {firstAction.learningModuleTitle ? (
+                      <p className="mt-1 text-[12px] leading-relaxed text-sky-100/85">
+                        Стандарт команды: {firstAction.learningModuleTitle}
+                        {firstAction.learningChecklistTitle
+                          ? `. Чеклист: ${firstAction.learningChecklistTitle}`
+                          : ""}
+                      </p>
+                    ) : null}
+                  </div>
+                  <LinkButton
+                    href={actionHref(firstAction, venueId, teamPeriodParams)}
+                    className="h-8 shrink-0 px-3 text-[12px]"
+                  >
+                    {actionCta(firstAction)}
+                    <ArrowRight className="size-3.5" />
+                  </LinkButton>
+                </div>
+
+                {nextActions.length > 0 ? (
+                  <details className="mt-3 rounded-lg border border-border/45 bg-background/25 px-3 py-2">
+                    <summary className="cursor-pointer select-none text-[11px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground">
+                      Потом можно открыть ещё · {nextActions.length}
+                    </summary>
+                    <div className="mt-3 space-y-2.5">
+                      {nextActions.map((action) => (
                   <div
                     key={`${action.target}-${action.title}`}
                     className="grid gap-3 rounded-lg border border-border/45 bg-card/45 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
@@ -529,7 +628,10 @@ export function OwnerReviewCard({
                       <ArrowRight className="size-3.5" />
                     </LinkButton>
                   </div>
-                ))}
+                      ))}
+                    </div>
+                  </details>
+                ) : null}
               </div>
             </div>
           ) : null}
@@ -540,14 +642,14 @@ export function OwnerReviewCard({
                 Что проверить
               </p>
               <h3 className="mt-2 text-lg font-medium">
-                Гипотезы вместо очевидных советов
+                Почему это может быть важно
               </h3>
             </div>
             <MessageSquareText className="size-5 text-brand" />
           </div>
 
           <div className="mt-4 space-y-3">
-            {review.hypotheses.map((hypothesis) => (
+            {visibleHypotheses.map((hypothesis) => (
               <div
                 key={`${hypothesis.role}-${hypothesis.title}`}
                 className="rounded-lg border border-border/45 bg-card/45 p-3"
@@ -604,6 +706,48 @@ export function OwnerReviewCard({
               </div>
             ))}
           </div>
+
+          {hiddenHypotheses.length > 0 ? (
+            <details className="mt-3 rounded-lg border border-border/45 bg-background/25 px-3 py-2">
+              <summary className="cursor-pointer select-none text-[11px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground">
+                Ещё проверки · {hiddenHypotheses.length}
+              </summary>
+              <div className="mt-3 space-y-3">
+                {hiddenHypotheses.map((hypothesis) => (
+                  <div
+                    key={`${hypothesis.role}-${hypothesis.title}`}
+                    className="rounded-lg border border-border/45 bg-card/45 p-3"
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className={
+                          "inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] uppercase tracking-[0.12em] " +
+                          TONE_CLASS[hypothesis.tone]
+                        }
+                      >
+                        <ToneIcon tone={hypothesis.tone} />
+                        {ROLE_LABEL[hypothesis.role]}
+                      </span>
+                      {hypothesis.taskSourceLabel ? (
+                        <span className="rounded-md border border-brand/30 bg-brand/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-brand">
+                          {hypothesis.taskSourceLabel}
+                        </span>
+                      ) : null}
+                      <p className="text-[13px] font-medium text-foreground">
+                        {hypothesis.title}
+                      </p>
+                    </div>
+                    <p className="mt-2 text-[12px] leading-relaxed text-muted-foreground">
+                      {hypothesis.why}
+                    </p>
+                    <p className="mt-2 text-[13px] leading-relaxed text-foreground/85">
+                      {hypothesis.check}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </details>
+          ) : null}
         </div>
       </div>
 
