@@ -1213,9 +1213,9 @@ function ShiftOperationsRoute({
   }> = [
     {
       index: "01",
-      label: "Факт",
-      title: "Кто работал",
-      detail: "Смены, часы, выручка и ФОТ из iiko.",
+      label: "Кто работал",
+      title: "Факт из iiko",
+      detail: "Смены, часы и выручка за выбранный период.",
       metric: `${formatInteger(roster.totalShifts)} смен`,
       href: "#shift-roster",
       tone: roster.rowsMissingRates > 0 ? "watch" : "good",
@@ -1223,9 +1223,9 @@ function ShiftOperationsRoute({
     },
     {
       index: "02",
-      label: "План",
-      title: "Кого ставим",
-      detail: "График, выходные и прогноз ФОТ до смены.",
+      label: "Кто был в плане",
+      title: "План команды",
+      detail: "График, выходные и ожидаемая оплата до смены.",
       metric: `${formatInteger(plan.plannedShifts)} план`,
       href: "#shift-plan",
       tone: plan.missingRateShifts > 0 ? "watch" : "good",
@@ -1233,9 +1233,9 @@ function ShiftOperationsRoute({
     },
     {
       index: "03",
-      label: "Отклонения",
-      title: "Что не совпало",
-      detail: "План против факта: выходные, прогулы и часы.",
+      label: "Что изменилось",
+      title: "План против факта",
+      detail: "Кто вышел не по плану, кто не вышел и где уехали часы.",
       metric: `${formatInteger(variance.issues.length)} сигналов`,
       href: "#shift-plan-variance",
       tone: variance.issues.some((issue) => issue.tone === "risk")
@@ -1247,9 +1247,9 @@ function ShiftOperationsRoute({
     },
     {
       index: "04",
-      label: "Диагностика",
-      title: "Где копать",
-      detail: "Дорогие смены, слабая выручка и ставки.",
+      label: "Что проверить",
+      title: "Деньги смены",
+      detail: "Ставки, дорогие смены и слабая выручка на час.",
       metric: formatPct(laborCoveragePct),
       href: "#iiko-shift-diagnostics",
       tone:
@@ -1271,15 +1271,15 @@ function ShiftOperationsRoute({
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-[11px] uppercase tracking-[0.2em] text-brand">
-                Маршрут смены
+                Разбор смены
               </p>
               <h2 className="mt-2 text-xl font-medium">
-                Факт, план и отклонения в одном порядке
+                Кто работал, кто был в плане, что изменилось
               </h2>
             </div>
             <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
-              Сначала смотрим реальные смены из iiko, затем график команды,
-              расхождения и точечную диагностику ФОТ.
+              Сначала простой маршрут для управляющего: факт смены, план,
+              расхождения и только потом денежная диагностика.
             </p>
           </div>
 
@@ -1372,14 +1372,14 @@ function TeamShiftRosterSection({
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-                    Сменная сетка
+                    Кто работал
                   </p>
                   <h2 className="mt-3 text-2xl font-medium">
-                    Кто работал и сколько стоила смена
+                    Факт смены из iiko
                   </h2>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    Фактические смены из iiko связаны с карточками сотрудников и
-                    ставками ФОТ.
+                    Смотрим людей, часы и выручку. Оплата подтягивается из
+                    карточек команды.
                   </p>
                 </div>
                 <UsersRound className="size-6 shrink-0 text-brand" />
@@ -1401,10 +1401,10 @@ function TeamShiftRosterSection({
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                    Сетка периода
+                    Период
                   </p>
                   <h3 className="mt-2 text-xl font-medium">
-                    Сотрудники, дни, ФОТ
+                    Люди, дни, оплата
                   </h3>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-right sm:min-w-[260px]">
@@ -1519,14 +1519,14 @@ function TeamShiftPlanVarianceSection({
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-                План vs факт
+                Что изменилось
               </p>
               <h2 className="mt-3 text-2xl font-medium">
-                Где график разошелся с реальностью
+                План смены против факта
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Сверяем график команды с фактическими сменами iiko: кто вышел без
-                плана, кто не вышел и где ФОТ уехал по часам.
+                Сравниваем, кто был запланирован, кто реально вышел и где
+                часы или оплата ушли от ожидания.
               </p>
             </div>
             <ClipboardCheck className="size-6 shrink-0 text-brand" />
@@ -1562,10 +1562,10 @@ function TeamShiftPlanVarianceSection({
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                Отклонения
+                Разбор
               </p>
               <h3 className="mt-2 text-xl font-medium">
-                Что разобрать с управляющим
+                Что спросить на планерке
               </h3>
             </div>
             <p className="text-xs text-muted-foreground">
