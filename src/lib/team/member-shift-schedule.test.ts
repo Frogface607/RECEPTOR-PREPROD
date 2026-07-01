@@ -185,7 +185,7 @@ describe("buildMemberShiftSchedule", () => {
     });
   });
 
-  test("builds a personal operation plan from FOT, learning and tasks", () => {
+  test("builds a personal operation plan from pay, learning and tasks", () => {
     const plan = buildMemberOperationPlan({
       member,
       tasks: [
@@ -221,7 +221,7 @@ describe("buildMemberShiftSchedule", () => {
       "task-task-high",
     ]);
     expect(plan[0]).toMatchObject({
-      title: "Заполнить ставку ФОТ",
+      title: "Заполнить ставку сотрудника",
       href: "#labor-member-staff-service",
       tone: "risk",
     });

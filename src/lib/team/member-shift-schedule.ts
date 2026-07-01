@@ -187,11 +187,11 @@ export function buildMemberOperationPlan(input: {
   if (input.laborProfile?.status === "missing_rate") {
     items.push({
       id: "labor-rate",
-      title: "Заполнить ставку ФОТ",
+      title: "Заполнить ставку сотрудника",
       detail: `${formatCount(input.laborProfile.shifts, "смена", "смены", "смен")} есть, но стоимость сотрудника не участвует в экономике.`,
       href: `#labor-member-${encodeURIComponent(input.member.id)}`,
       tone: "risk",
-      badge: "ФОТ",
+      badge: "ставка",
     });
   } else if (
     input.laborProfile?.status === "no_shifts" &&
@@ -293,7 +293,7 @@ export function buildMemberOperationPlan(input: {
     items.push({
       id: "ready",
       title: "Смена без блокеров",
-      detail: "ФОТ, допуск и очередь задач не требуют срочного действия.",
+      detail: "Ставка, допуск и очередь задач не требуют срочного действия.",
       href: "#shift-coverage",
       tone: "ready",
       badge: "готово",
@@ -551,7 +551,7 @@ function laborFact(
     value: schedule.length > 0 ? `${schedule.length}` : "нет",
     detail:
       schedule.length > 0
-        ? "Есть план/факт смен, но профиль ФОТ еще не доказан."
+        ? "Есть план/факт смен, но оплата смен еще не подтверждена."
         : "В выбранном периоде смены сотрудника не найдены.",
     tone: schedule.length > 0 ? "work" : "setup",
   };

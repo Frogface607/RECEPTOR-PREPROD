@@ -131,10 +131,13 @@ import {
   type TeamLaborLoadResult,
 } from "@/lib/team/team-labor-load";
 import {
+  buildMemberDailyRoute,
   buildMemberOperationPlan,
   buildMemberLaborProfile,
   buildMemberShiftSchedule,
   buildMemberSecondBrainProfile,
+  type MemberDailyRoute,
+  type MemberDailyRouteItem,
   type MemberLaborProfile,
   type MemberLaborProfileStatus,
   type MemberOperationPlanItem,
@@ -1832,6 +1835,15 @@ function RolePersonalBrief({
   const nextLearning = learning?.nextItem ?? learningFallback[0] ?? null;
   const learningPct = learning ? `${learning.averageBest}%` : "0%";
   const admissionStatus = learning?.admissionStatus ?? "not_started";
+  const dailyRoute = buildMemberDailyRoute({
+    member,
+    tasks,
+    comments,
+    learning,
+    announcements,
+    announcementReads,
+    nextLearning,
+  });
   const operationPlan = buildMemberOperationPlan({
     member,
     tasks,
@@ -1859,7 +1871,7 @@ function RolePersonalBrief({
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-                Личный кабинет
+                Смена сегодня
               </p>
               <h2 className="mt-3 text-2xl font-medium">{member.name}</h2>
               <p className="mt-2 text-sm text-muted-foreground">
@@ -1874,42 +1886,23 @@ function RolePersonalBrief({
             </Badge>
           </div>
 
-          <div className="mt-5 grid grid-cols-3 gap-3">
-            <PersonalMetric
-              label="Открыто"
-              value={formatInteger(openTasks.length)}
-              detail="задач"
-            />
-            <PersonalMetric
-              label="Срочно"
-              value={formatInteger(urgentTasks.length)}
-              detail="в фокусе"
-            />
-            <PersonalMetric
-              label="Обучение"
-              value={learningPct}
-              detail="средний"
-            />
-          </div>
+          <MemberDailyRouteCard route={dailyRoute} />
 
           <div className="mt-5 grid gap-2">
-            {laborProfile ? (
-              <MemberLaborProfileCard profile={laborProfile} />
-            ) : null}
             <LinkButton
               href="#learning-progress"
               variant="outline"
               className="justify-between"
             >
-              Открыть стандарты
+              Пройти стандарт
               <ArrowRight className="size-4" />
             </LinkButton>
             <LinkButton
-              href="#shift-coverage"
+              href="#shift-summary"
               variant="outline"
               className="justify-between"
             >
-              Состав смены
+              Написать итог смены
               <ArrowRight className="size-4" />
             </LinkButton>
           </div>
@@ -1937,6 +1930,24 @@ function RolePersonalBrief({
             </summary>
 
             <div className="mt-3 grid gap-5">
+              <div className="grid gap-3 sm:grid-cols-3">
+                <PersonalMetric
+                  label="Задач"
+                  value={formatInteger(openTasks.length)}
+                  detail="открыто"
+                />
+                <PersonalMetric
+                  label="Срочно"
+                  value={formatInteger(urgentTasks.length)}
+                  detail="в фокусе"
+                />
+                <PersonalMetric
+                  label="Стандарты"
+                  value={learningPct}
+                  detail="средний"
+                />
+              </div>
+
               <div className="rounded-lg border border-border/60 bg-card/50 p-5">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex items-center gap-3">
@@ -1969,6 +1980,10 @@ function RolePersonalBrief({
                   )}
                 </div>
               </div>
+
+              {laborProfile ? (
+                <MemberLaborProfileCard profile={laborProfile} />
+              ) : null}
 
               <div className="grid gap-5 lg:grid-cols-2">
                 <div className="rounded-lg border border-border/60 bg-card/50 p-5">
@@ -2035,6 +2050,69 @@ function RolePersonalBrief({
   );
 }
 
+function MemberDailyRouteCard({ route }: { route: MemberDailyRoute }) {
+  const visibleItems = route.items.filter((item) =>
+    ["learning", "task", "shift_memory"].includes(item.id),
+  );
+
+  return (
+    <div className="mt-5 rounded-lg border border-brand/25 bg-brand/10 p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[10px] uppercase tracking-[0.16em] text-brand">
+            Минимум на смену
+          </p>
+          <p className="mt-1 text-sm font-medium text-foreground">
+            {route.focus.title}
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+            {route.focus.detail}
+          </p>
+        </div>
+        <Badge variant="outline">
+          {route.readyCount}/{route.totalCount}
+        </Badge>
+      </div>
+
+      <div className="mt-3 grid gap-2">
+        {visibleItems.map((item) => (
+          <MemberDailyRouteRow key={item.id} item={item} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MemberDailyRouteRow({ item }: { item: MemberDailyRouteItem }) {
+  return (
+    <Link
+      href={item.href}
+      className="grid gap-2 rounded-lg border border-border/45 bg-background/35 p-2.5 transition-colors hover:border-brand/35 hover:bg-background/55 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center"
+    >
+      <span
+        className={
+          "flex size-7 items-center justify-center rounded-md border text-[10px] " +
+          memberOperationPlanToneClass(item.tone)
+        }
+      >
+        {item.step}
+      </span>
+      <span className="min-w-0">
+        <span className="block text-[13px] font-medium text-foreground">
+          {item.title}
+        </span>
+        <span className="mt-0.5 line-clamp-2 block text-[11px] leading-relaxed text-muted-foreground">
+          {item.detail}
+        </span>
+      </span>
+      <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+        {item.action}
+        <ArrowRight className="size-3" />
+      </span>
+    </Link>
+  );
+}
+
 function MemberSecondBrainCard({
   profile,
 }: {
@@ -2047,7 +2125,7 @@ function MemberSecondBrainCard({
           <SearchCheck className="mt-0.5 size-5 text-brand" />
           <div>
             <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-              Профиль сотрудника
+              Что Receptor уже знает
             </p>
             <h3 className="mt-2 text-lg font-medium">{profile.title}</h3>
             <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
@@ -2156,7 +2234,7 @@ function MemberOperationPlanCard({
           <div>
             <h3 className="text-lg font-medium">Что сделать сейчас</h3>
             <p className="mt-1 text-xs text-muted-foreground">
-              План собран из смен, оплаты, обучения и задач.
+              Только действия, которые требуют внимания.
             </p>
           </div>
         </div>
@@ -2223,7 +2301,7 @@ function MemberLaborProfileCard({ profile }: { profile: MemberLaborProfile }) {
     <div className="rounded-lg border border-border/45 bg-background/35 p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-          Экономика сотрудника
+          Деньги смен
         </p>
         <Badge
           variant="outline"
