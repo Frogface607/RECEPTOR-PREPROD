@@ -3446,29 +3446,72 @@ function LearningSummaryRow({
       : `${nextStandardTitle}: закрыть правило до смены, затем попросить короткий итог.`);
 
   return (
-    <div className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-3 xl:grid-cols-[0.92fr_1.08fr] xl:items-start">
-      <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="truncate text-sm font-medium">{summary.member.name}</p>
-          <Badge variant="outline">{role.title}</Badge>
-          <Badge
-            variant="outline"
-            className={learningSummaryStatusClass(summary.status)}
-          >
-            {learningSummaryStatusLabel(summary.status)}
-          </Badge>
-          <Badge
-            variant="outline"
-            className={learningAdmissionClass(summary.admissionStatus)}
-          >
-            {learningAdmissionLabel(summary.admissionStatus)}
-          </Badge>
+    <div className="rounded-lg border border-border/45 bg-background/35 p-3">
+      <div className="grid gap-3 xl:grid-cols-[0.72fr_1.28fr] xl:items-start">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="truncate text-sm font-medium">
+              {summary.member.name}
+            </p>
+            <Badge variant="outline">{role.title}</Badge>
+          </div>
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+            Стандарт:{" "}
+            <span className="text-foreground/85">{nextStandardTitle}</span>
+          </p>
         </div>
-        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-          Следующий стандарт:{" "}
-          <span className="text-foreground/85">{nextStandardTitle}</span>
-        </p>
-        <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
+
+        <div className="min-w-0 rounded-lg border border-brand/25 bg-brand/10 p-3">
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+            <div className="min-w-0">
+              <p className="text-[10px] uppercase tracking-[0.16em] text-brand">
+                Что сделать
+              </p>
+              <p className="mt-1 text-sm font-medium text-foreground">
+                {nextStepLabel}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                {nextStepDetail}
+              </p>
+            </div>
+            {adoption && adoptionMove ? (
+              <LearningAdoptionAction
+                venueId={venueId}
+                signal={adoption}
+                move={adoptionMove}
+                draft={adoptionTaskDraft}
+              />
+            ) : null}
+          </div>
+          {adoption && adoptionMove ? (
+            <LearningAdoptionNextMoveLine signal={adoption} />
+          ) : null}
+        </div>
+      </div>
+
+      <details className="group mt-3 border-t border-border/35 pt-2">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-1 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">
+          <span>Статус сотрудника</span>
+          <span className="flex flex-wrap justify-end gap-1.5">
+            <span
+              className={
+                "rounded-md border px-2 py-1 text-[10px] " +
+                learningSummaryStatusClass(summary.status)
+              }
+            >
+              {learningSummaryStatusLabel(summary.status)}
+            </span>
+            <span
+              className={
+                "rounded-md border px-2 py-1 text-[10px] " +
+                learningAdmissionClass(summary.admissionStatus)
+              }
+            >
+              {learningAdmissionLabel(summary.admissionStatus)}
+            </span>
+          </span>
+        </summary>
+        <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
           <span className="inline-flex items-center gap-1.5 rounded-md border border-border/45 bg-card/35 px-2 py-1">
             <ListChecks className="size-3.5 shrink-0 text-brand" />
             {summary.requiredCompleted}/{summary.requiredCount || 0} обязательных
@@ -3478,36 +3521,7 @@ function LearningSummaryRow({
             {formatLearningDate(summary.lastCompletedAt)}
           </span>
         </div>
-      </div>
-
-      <div className="min-w-0 rounded-lg border border-border/40 bg-card/40 p-3">
-        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-          <div className="min-w-0">
-            <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-              Следующий шаг
-            </p>
-            <p className="mt-1 text-sm font-medium text-foreground">
-              {nextStepLabel}
-            </p>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              {nextStepDetail}
-            </p>
-          </div>
-          {adoption && adoptionMove ? (
-            <LearningAdoptionAction
-              venueId={venueId}
-              signal={adoption}
-              move={adoptionMove}
-              draft={adoptionTaskDraft}
-            />
-          ) : null}
-        </div>
-        {adoption && adoptionMove ? (
-          <LearningAdoptionNextMoveLine
-            signal={adoption}
-          />
-        ) : null}
-      </div>
+      </details>
     </div>
   );
 }
