@@ -155,7 +155,7 @@ import type { Period } from "@/lib/iiko/models";
 export const metadata: Metadata = {
   title: "Команда — RECEPTOR",
   description:
-    "Роли, права, сотрудники, задачи, обучение и смены внутри Receptor.",
+    "Роли, права, сотрудники, задачи, стандарты и смены внутри Receptor.",
 };
 
 async function saveTeamLearningStandardFormAction(
@@ -776,13 +776,13 @@ export default async function TeamPage({
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-                      Обучение команды
+                      Стандарты команды
                     </p>
                     <h2 className="mt-3 text-2xl font-medium">
                       Стандарты под контролем
                     </h2>
                     <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      Допуск к смене считается по обязательным материалам.
+                      Допуск к смене считается по обязательным стандартам.
                       Остальное — развитие и точки роста.
                     </p>
                   </div>
@@ -2882,12 +2882,12 @@ function LearningFocusPanel({ items }: { items: TeamLearningFocusItem[] }) {
           <GraduationCap className="mt-0.5 size-5 text-brand" />
           <div>
             <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-              Что учить сегодня
+              Стандарты на смену
             </p>
-            <h2 className="mt-2 text-xl font-medium">Фокус обучения</h2>
+            <h2 className="mt-2 text-xl font-medium">Фокус стандартов</h2>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              Система поднимает стандарты из заметок смены, задач и допуска к
-              работе.
+              Receptor поднимает стандарт роли, действие на смену и факт,
+              который сотрудник должен вернуть в память ресторана.
             </p>
           </div>
         </div>
@@ -2933,7 +2933,7 @@ function LearningFocusCard({ item }: { item: TeamLearningFocusItem }) {
 
       <div className="rounded-lg border border-border/35 bg-card/40 p-3">
         <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-          Материал
+          Стандарт роли
         </p>
         <p className="mt-1 text-sm font-medium text-foreground">
           {item.moduleTitle}
@@ -2992,12 +2992,12 @@ function LearningRolePlanGrid({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-            Учебный план
+            Библиотека стандартов
           </p>
-          <h2 className="mt-2 text-xl font-medium">Материалы по ролям</h2>
+          <h2 className="mt-2 text-xl font-medium">Стандарты по ролям</h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
             Управляющий видит, какие стандарты нужны каждой роли и кто не
-            допущен к смене по обязательным материалам.
+            допущен к смене по обязательным стандартам.
           </p>
         </div>
         <Badge variant="outline">{visiblePlans.length} ролей</Badge>
@@ -3049,7 +3049,7 @@ function LearningRolePlanCard({
             <Badge variant="outline">{formatInteger(plan.members)} чел.</Badge>
           </div>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            {formatInteger(plan.totalItems)} материалов · обязательных{" "}
+            {formatInteger(plan.totalItems)} стандартов · обязательных{" "}
             {formatInteger(plan.requiredItems)}
             {plan.customStandards > 0
               ? ` · настроено ${formatInteger(plan.customStandards)}`
@@ -3078,12 +3078,12 @@ function LearningRolePlanCard({
           Следующий фокус
         </p>
         <p className="mt-1 text-sm font-medium text-foreground">
-          {plan.nextItem ? plan.nextItem.title : "Роль закрыта по материалам"}
+          {plan.nextItem ? plan.nextItem.title : "Роль закрыта по стандартам"}
         </p>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
           {plan.nextItem
             ? `${learningItemStatusLabel(plan.nextItem.status)} · ${plan.nextItem.timeLabel} · проходной ${plan.nextItem.passPercentage}%`
-            : "Новые материалы можно добавить позже под стандарты заведения."}
+            : "Новые стандарты можно добавить позже под конкретное заведение."}
         </p>
       </div>
 
@@ -3316,7 +3316,7 @@ function LearningSummaryRow({
           <span className="truncate">
             {summary.nextItem
               ? `Дальше: ${summary.nextItem.title}`
-              : "Все материалы роли закрыты"}
+              : "Все стандарты роли закрыты"}
           </span>
         </div>
         <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">

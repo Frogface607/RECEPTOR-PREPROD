@@ -102,7 +102,7 @@ describe("buildTeamLearningRolePlans", () => {
       moduleId: "service-recommendation",
       moduleTitle: "Как рекомендовать блюдо без давления",
       roleTitle: "Официант",
-      checklistTitle: "Если сотрудник не прошел обязательное обучение",
+      checklistTitle: "Если сотрудник не прошел обязательный стандарт",
       practiceAction:
         "На смене выбери одну позицию или пару к заказу и предложи ее гостю в подходящей ситуации.",
       memoryPrompt:
@@ -119,13 +119,13 @@ describe("buildTeamLearningRolePlans", () => {
       "Стандарт: Как рекомендовать блюдо без давления.",
     );
     expect(draft?.contextNote).toContain(
-      "Чеклист: Если сотрудник не прошел обязательное обучение.",
+      "Чеклист: Если сотрудник не прошел обязательный стандарт.",
     );
     expect(taskLearningHintFromContext(draft?.contextNote)).toBe(
       "Как рекомендовать блюдо без давления",
     );
     expect(taskChecklistHintFromContext(draft?.contextNote)).toBe(
-      "Если сотрудник не прошел обязательное обучение",
+      "Если сотрудник не прошел обязательный стандарт",
     );
     expect(taskContextBriefDisplayFromContext(draft?.contextNote)).toMatchObject(
       {

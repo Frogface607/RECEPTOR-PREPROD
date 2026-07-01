@@ -90,7 +90,7 @@ export function buildLearningAdmissionTaskDraft(
   const blocker = plan.blockedMembers[0] ?? null;
   if (!blocker) return null;
 
-  const checklistTitle = "Если сотрудник не прошел обязательное обучение";
+  const checklistTitle = "Если сотрудник не прошел обязательный стандарт";
   const item =
     plan.nextItem ??
     plan.items.find((candidate) => candidate.title === blocker.nextItemTitle) ??
@@ -101,14 +101,14 @@ export function buildLearningAdmissionTaskDraft(
     ? learningFocusPractice(item, checklistTitle)
     : {
         practiceAction:
-          "Перед выходом в смену пройти материал и назвать управляющему одно правило, которое применит сегодня.",
+          "Перед выходом в смену пройти стандарт и назвать управляющему одно правило, которое применит сегодня.",
         memoryPrompt:
           "После смены оставить короткий факт: что из стандарта применил, где помогло или где возник вопрос.",
       };
   const contextNote = [
     `Вопрос: ${practice.memoryPrompt}`,
     `Проверка: ${practice.practiceAction}`,
-    "Зачем: обучение должно вернуться живым фактом в память ресторана, а не остаться просто пройденным уроком.",
+    "Зачем: стандарт должен вернуться живым фактом в память ресторана, а не остаться просто пройденной теорией.",
     `Стандарт: ${moduleTitle}.`,
     `Чеклист: ${checklistTitle}.`,
   ].join("\n");
@@ -154,7 +154,7 @@ export function buildTeamLearningFocusPlan(input: {
     if (!item) continue;
     const practice = learningFocusPractice(
       item,
-      "Если сотрудник не прошел обязательное обучение",
+      "Если сотрудник не прошел обязательный стандарт",
     );
     items.push({
       id: `admission-${plan.roleId}-${item.id}`,
@@ -182,7 +182,7 @@ export function buildTeamLearningFocusPlan(input: {
         id: `ready-${readyPlan.roleId}-${item.id}`,
         title: `${readyPlan.roleTitle}: развитие команды`,
         detail: "Критичных блокеров нет. Можно усилить следующий стандарт.",
-        reason: "План обучения готов к развитию без срочного блокера.",
+        reason: "Библиотека стандартов готова к развитию без срочного блокера.",
         roleTitle: readyPlan.roleTitle,
         moduleTitle: item.title,
         practiceAction: practice.practiceAction,
@@ -248,7 +248,7 @@ function buildRolePlan(
     .map((summary) => ({
       memberId: summary.member.id,
       memberName: summary.member.name,
-      nextItemTitle: summary.nextItem?.title ?? "обязательный материал",
+      nextItemTitle: summary.nextItem?.title ?? "обязательный стандарт",
     }));
 
   return {
