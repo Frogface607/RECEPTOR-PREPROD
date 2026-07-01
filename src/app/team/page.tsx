@@ -78,6 +78,11 @@ import {
   type TeamLearningMemberSummary,
 } from "@/lib/team/team-learning-progress";
 import {
+  buildTeamLearningAdoptionSignal,
+  type TeamLearningAdoptionSignal,
+  type TeamLearningAdoptionStatus,
+} from "@/lib/team/team-learning-adoption";
+import {
   buildLearningAdmissionTaskDraft,
   buildTeamLearningFocusPlan,
   buildTeamLearningRolePlans,
@@ -256,6 +261,16 @@ export default async function TeamPage({
     workspace.staff,
     workspace.learningProgress,
     workspace.learningStandards,
+  );
+  const learningAdoptionByMember = new Map(
+    learningSummaries.map((summary) => [
+      summary.member.id,
+      buildTeamLearningAdoptionSignal({
+        summary,
+        progress: workspace.learningProgress,
+        comments: workspace.comments,
+      }),
+    ]),
   );
   const learningOverview = summarizeTeamLearning(learningSummaries);
   const learningRolePlans = buildTeamLearningRolePlans(
@@ -797,6 +812,9 @@ export default async function TeamPage({
                     <LearningSummaryRow
                       key={summary.member.id}
                       summary={summary}
+                      adoption={learningAdoptionByMember.get(
+                        summary.member.id,
+                      )}
                     />
                   ))}
                 </div>
@@ -3207,6 +3225,16 @@ function learningAdmissionClass(
   return "border-destructive/30 bg-destructive/10 text-destructive";
 }
 
+function learningAdoptionClass(status: TeamLearningAdoptionStatus): string {
+  if (status === "returned_memory") {
+    return "border-brand/30 bg-brand/10 text-brand";
+  }
+  if (status === "needs_memory") {
+    return "border-amber-400/30 bg-amber-400/10 text-amber-100";
+  }
+  return "border-border/55 bg-muted/25 text-muted-foreground";
+}
+
 function formatLearningDate(value: string): string {
   if (!value) return "нет попыток";
   const date = new Date(value);
@@ -3222,8 +3250,10 @@ function formatLearningDate(value: string): string {
 
 function LearningSummaryRow({
   summary,
+  adoption,
 }: {
   summary: TeamLearningMemberSummary;
+  adoption?: TeamLearningAdoptionSignal;
 }) {
   const role = getTeamRole(summary.member.roleId);
 
@@ -3266,6 +3296,21 @@ function LearningSummaryRow({
             Последняя попытка: {formatLearningDate(summary.lastCompletedAt)}
           </span>
         </div>
+        {adoption ? (
+          <div
+            className={`mt-2 flex items-start gap-2 rounded-md border px-2.5 py-2 text-xs ${learningAdoptionClass(
+              adoption.status,
+            )}`}
+          >
+            <SearchCheck className="mt-0.5 size-3.5 shrink-0" />
+            <div className="min-w-0">
+              <p className="font-medium">{adoption.label}</p>
+              <p className="mt-0.5 leading-relaxed text-muted-foreground">
+                {adoption.detail}
+              </p>
+            </div>
+          </div>
+        ) : null}
       </div>
       <div className="rounded-lg border border-border/50 bg-card/45 px-3 py-2 text-left lg:text-right">
         <p className="numeric text-xl font-medium text-foreground">
