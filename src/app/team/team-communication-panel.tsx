@@ -35,6 +35,12 @@ function resultToMessage(result: TeamActionResult): Message {
   return { tone: "success", text: result.message };
 }
 
+function announcementPriorityLabel(
+  priority: TeamAnnouncement["priority"],
+): string {
+  return priority === "important" ? "важно" : "обычно";
+}
+
 export function TeamCommunicationPanel({
   venueId,
   roleId,
@@ -100,14 +106,15 @@ export function TeamCommunicationPanel({
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-[11px] uppercase tracking-[0.18em] text-brand">
-              Связь
+              Бриф смены
             </p>
             <h2 className="mt-2 text-2xl font-medium">
-              Объявления и комментарии
+              Что сказать и что уточнить
             </h2>
           </div>
           <p className="max-w-md text-sm text-muted-foreground">
-            Решения по смене и контекст задач.
+            Сообщение команде, ответ по поручению и короткий контекст, который
+            не должен потеряться в чате.
           </p>
         </div>
 
@@ -128,7 +135,7 @@ export function TeamCommunicationPanel({
           <div className="rounded-lg border border-border/60 bg-card/50 p-5">
             <div className="flex items-center gap-3">
               <Megaphone className="size-5 text-brand" />
-              <h3 className="text-lg font-medium">Объявления</h3>
+              <h3 className="text-lg font-medium">Сообщение команде</h3>
             </div>
 
             {drafts.length > 0 ? (
@@ -136,7 +143,7 @@ export function TeamCommunicationPanel({
                 <div className="flex items-center gap-2">
                   <WandSparkles className="size-4 text-brand" />
                   <p className="text-[11px] uppercase tracking-[0.16em] text-brand">
-                    Быстрые черновики
+                    Готовые сообщения
                   </p>
                 </div>
                 <div className="mt-3 grid gap-2">
@@ -212,8 +219,8 @@ export function TeamCommunicationPanel({
                     }
                     className={FIELD_CLASS}
                   >
-                    <option value="normal">normal</option>
-                    <option value="important">important</option>
+                    <option value="normal">обычно</option>
+                    <option value="important">важно</option>
                   </select>
                 </FieldLabel>
                 <FieldLabel label="Кому">
@@ -255,7 +262,7 @@ export function TeamCommunicationPanel({
               </div>
               <Button type="submit" disabled={pending}>
                 <Send className="size-4" />
-                Опубликовать
+                Отправить команде
               </Button>
             </form>
 
@@ -276,11 +283,11 @@ export function TeamCommunicationPanel({
           <div className="rounded-lg border border-border/60 bg-card/50 p-5">
             <div className="flex items-center gap-3">
               <MessageSquareText className="size-5 text-brand" />
-              <h3 className="text-lg font-medium">Комментарии к задаче</h3>
+              <h3 className="text-lg font-medium">Ответ по поручению</h3>
             </div>
 
             <div className="mt-5 space-y-3">
-              <FieldLabel label="Задача">
+              <FieldLabel label="Поручение">
                 <select
                   value={selectedTaskId}
                   onChange={(event) => setSelectedTaskId(event.target.value)}
@@ -309,18 +316,18 @@ export function TeamCommunicationPanel({
                   });
                 }}
               >
-                <FieldLabel label="Комментарий">
+                <FieldLabel label="Что изменилось">
                   <textarea
                     value={commentBody}
                     onChange={(event) => setCommentBody(event.target.value)}
                     className={`${FIELD_CLASS} min-h-24 resize-none`}
-                    placeholder="Что изменилось по задаче?"
+                    placeholder="Что сделали, что не получилось, что проверить утром?"
                     required
                   />
                 </FieldLabel>
                 <Button type="submit" disabled={pending || !selectedTaskId}>
                   <Send className="size-4" />
-                  Добавить комментарий
+                  Сохранить ответ
                 </Button>
               </form>
             </div>
@@ -332,7 +339,7 @@ export function TeamCommunicationPanel({
                 ))
               ) : (
                 <p className="rounded-lg border border-border/45 bg-background/35 p-3 text-sm text-muted-foreground">
-                  Комментариев по этой задаче пока нет.
+                  Ответов по этому поручению пока нет.
                 </p>
               )}
             </div>
@@ -364,7 +371,7 @@ function AnnouncementRow({
               : ""
           }
         >
-          {announcement.priority}
+          {announcementPriorityLabel(announcement.priority)}
         </Badge>
         <span className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
           {announcement.createdAtLabel}
