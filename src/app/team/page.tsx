@@ -1017,19 +1017,6 @@ function managerFollowUpStatusLabel(status: TeamManagerFollowUpStatus): string {
   return "блокер";
 }
 
-function ReadinessMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between rounded-lg border border-border/45 bg-background/35 px-3 py-2">
-      <span className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-        {label}
-      </span>
-      <span className="numeric text-sm font-medium text-foreground">
-        {value}
-      </span>
-    </div>
-  );
-}
-
 function ManagerMorningCard({
   venueId,
   focusStep,
@@ -2963,8 +2950,8 @@ function LearningRolePlanGrid({
           </p>
           <h2 className="mt-2 text-xl font-medium">Стандарты по ролям</h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            Управляющий видит, какие стандарты нужны каждой роли и кто не
-            допущен к смене по обязательным стандартам.
+            Не каталог курсов, а настройка смены: какая роль, какой стандарт,
+            кому назначить и какой итог потом дождаться.
           </p>
         </div>
         <Badge variant="outline">{visiblePlans.length} ролей</Badge>
@@ -2997,8 +2984,9 @@ function LearningRolePlanCard({
   const existingTask = taskDraft
     ? findOpenLearningAdmissionTask(tasks, taskDraft)
     : null;
+  const blockedCount = plan.blockedMembers.length;
   const blockedLabel =
-    plan.blockedMembers.length > 0
+    blockedCount > 0
       ? plan.blockedMembers
           .slice(0, 3)
           .map((member) => member.memberName)
@@ -3027,31 +3015,42 @@ function LearningRolePlanCard({
           variant="outline"
           className={rolePlanAdmissionClass(plan.admissionPct)}
         >
-          допуск {plan.admissionPct}%
+          {blockedCount > 0
+            ? `проверить ${formatInteger(blockedCount)}`
+            : "можно в смену"}
         </Badge>
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-2">
-        <ReadinessMetric label="обяз." value={`${plan.requiredProgressPct}%`} />
-        <ReadinessMetric
-          label="готово"
-          value={formatInteger(plan.readyItems)}
+      <div className="mt-4 grid gap-2">
+        <RoleStandardStep
+          index="01"
+          label="Кого проверить"
+          title={blockedLabel}
+          detail={
+            blockedCount > 0
+              ? "Этих людей нужно провести через обязательный стандарт до смены."
+              : "Обязательные стандарты роли не блокируют смену."
+          }
         />
-        <ReadinessMetric label="скоро" value={formatInteger(plan.soonItems)} />
-      </div>
-
-      <div className="mt-4 rounded-lg border border-border/40 bg-card/40 p-3">
-        <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-          Следующий фокус
-        </p>
-        <p className="mt-1 text-sm font-medium text-foreground">
-          {plan.nextItem ? plan.nextItem.title : "Роль закрыта по стандартам"}
-        </p>
-        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-          {plan.nextItem
-            ? `${learningItemStatusLabel(plan.nextItem.status)} · ${plan.nextItem.timeLabel} · проходной ${plan.nextItem.passPercentage}%`
-            : "Новые стандарты можно добавить позже под конкретное заведение."}
-        </p>
+        <RoleStandardStep
+          index="02"
+          label="Что дать"
+          title={plan.nextItem ? plan.nextItem.title : "Роль закрыта"}
+          detail={
+            plan.nextItem
+              ? "Один стандарт, одно действие в смене, без лишней теории."
+              : "Можно позже добавить стандарт под конкретную боль заведения."
+          }
+        />
+        <RoleStandardStep
+          index="03"
+          label="Что дождаться"
+          title="3 строки после смены"
+          detail={
+            taskDraft?.memoryPrompt ??
+            "После смены сотрудник оставляет короткий итог: что применил, что получилось и что проверить утром."
+          }
+        />
       </div>
 
       <details className="group mt-3 border-t border-border/35 pt-3">
@@ -3122,8 +3121,9 @@ function LearningRolePlanCard({
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs leading-relaxed text-muted-foreground">
-          Не допущены:{" "}
-          <span className="text-foreground/85">{blockedLabel}</span>
+          {taskDraft
+            ? `${taskDraft.memberName}: назначьте стандарт и дождитесь итога после ближайшей смены.`
+            : "Роль не требует срочного назначения. Следующий итог собираем после смены."}
         </p>
         {existingTask ? (
           <Link
@@ -3140,6 +3140,37 @@ function LearningRolePlanCard({
           <LearningAdmissionTaskButton venueId={venueId} draft={taskDraft} />
         ) : null}
       </div>
+    </div>
+  );
+}
+
+function RoleStandardStep({
+  index,
+  label,
+  title,
+  detail,
+}: {
+  index: string;
+  label: string;
+  title: string;
+  detail: string;
+}) {
+  return (
+    <div className="grid gap-3 rounded-lg border border-border/40 bg-card/40 p-3 sm:grid-cols-[auto_minmax(0,1fr)]">
+      <span className="flex size-8 items-center justify-center rounded-lg border border-brand/30 bg-brand/10 text-[11px] font-medium text-brand">
+        {index}
+      </span>
+      <span className="min-w-0">
+        <span className="block text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+          {label}
+        </span>
+        <span className="mt-1 block text-sm font-medium text-foreground">
+          {title}
+        </span>
+        <span className="mt-1 line-clamp-2 block text-xs leading-relaxed text-muted-foreground">
+          {detail}
+        </span>
+      </span>
     </div>
   );
 }
