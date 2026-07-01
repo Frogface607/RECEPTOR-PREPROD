@@ -1386,10 +1386,10 @@ function TeamShiftRosterSection({
               </div>
 
               <div className="mt-5 grid grid-cols-2 gap-3">
-                <Metric label="В сменах" value={roster.rowsWithShifts} />
+                <Metric label="Работали" value={roster.rowsWithShifts} />
                 <Metric label="Смен" value={roster.totalShifts} />
                 <Metric label="Часов" value={formatHours(roster.totalHours)} />
-                <Metric label="Без ставки" value={roster.rowsMissingRates} />
+                <Metric label="Ставку добавить" value={roster.rowsMissingRates} />
               </div>
 
               <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
@@ -1413,7 +1413,7 @@ function TeamShiftRosterSection({
                     value={formatRubles(roster.totalRevenue)}
                   />
                   <RosterTotal
-                    label="ФОТ"
+                    label="Оплата"
                     value={formatRubles(roster.totalLaborCost)}
                   />
                 </div>
@@ -1425,7 +1425,7 @@ function TeamShiftRosterSection({
                     <thead>
                       <tr className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
                         <th className="sticky left-0 z-10 w-[230px] bg-card/95 px-3 py-2 font-normal">
-                          Сотрудник
+                          Человек
                         </th>
                         {roster.days.map((day) => (
                           <th
@@ -1436,7 +1436,7 @@ function TeamShiftRosterSection({
                           </th>
                         ))}
                         <th className="w-[168px] px-3 py-2 text-right font-normal">
-                          Итог
+                          Итого за период
                         </th>
                       </tr>
                     </thead>
@@ -1474,7 +1474,7 @@ function TeamShiftRosterSection({
                               {formatRubles(row.revenue)}
                             </p>
                             <p className="mt-1 text-[11px] text-muted-foreground">
-                              {formatHours(row.hours)} · ФОТ{" "}
+                              {formatHours(row.hours)} · оплата{" "}
                               {formatPct(row.laborCostPct)}
                             </p>
                           </td>
@@ -1485,10 +1485,12 @@ function TeamShiftRosterSection({
                 </div>
               ) : (
                 <div className="mt-5 rounded-lg border border-border/45 bg-background/35 p-4">
-                  <p className="text-sm font-medium">Смены не загрузились</p>
+                  <p className="text-sm font-medium">
+                    Пока не видим фактические смены
+                  </p>
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                     {error ??
-                      "Для сменной сетки нужны права iiko на смены за выбранный период."}
+                      "Проверьте доступ iiko к сменам за выбранный период, затем обновите кабинет."}
                   </p>
                 </div>
               )}
@@ -1548,7 +1550,7 @@ function TeamShiftPlanVarianceSection({
               value={formatSignedHours(variance.hoursDelta)}
             />
             <VarianceMetric
-              label="Δ ФОТ"
+              label="Δ оплата"
               value={formatSignedRubles(variance.laborDelta)}
             />
           </div>
@@ -1584,8 +1586,8 @@ function TeamShiftPlanVarianceSection({
                   План и факт без критичных расхождений
                 </p>
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  Если смены уже закрыты в iiko, можно переходить к разбору
-                  выручки, ФОТ и маржи по сменам.
+                  Если смены уже закрыты в iiko, можно переходить к короткому
+                  разбору выручки, оплаты и причин результата.
                 </p>
               </div>
             )}
@@ -1629,11 +1631,14 @@ function ShiftPlanVarianceIssueRow({
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
           {varianceIssueDetail(issue)}
         </p>
+        <p className="mt-2 text-xs font-medium text-foreground">
+          {varianceIssueAction(issue)}
+        </p>
       </div>
 
       <div className="grid grid-cols-3 gap-2 text-[11px] text-muted-foreground sm:min-w-[340px]">
         <ShiftValue label="часы" value={formatSignedHours(issue.hoursDelta)} />
-        <ShiftValue label="ФОТ" value={formatSignedRubles(issue.laborDelta)} />
+        <ShiftValue label="оплата" value={formatSignedRubles(issue.laborDelta)} />
         <ShiftValue label="выручка" value={formatRubles(issue.revenue)} />
       </div>
     </div>
@@ -1667,9 +1672,28 @@ function varianceIssueDetail(issue: TeamShiftPlanVarianceIssue): string {
     return `${issue.dateLabel}: смена была в плане, но в iiko факта нет. ${plan}.`;
   }
   if (issue.status === "missing_rate") {
-    return `${issue.dateLabel}: смена есть, но ФОТ не считается без ставки. ${plan} / ${fact}.`;
+    return `${issue.dateLabel}: смена есть, но оплата не считается без ставки. ${plan} / ${fact}.`;
   }
   return `${issue.dateLabel}: ${plan} / ${fact}. Проверьте причину расхождения.`;
+}
+
+function varianceIssueAction(issue: TeamShiftPlanVarianceIssue): string {
+  if (issue.status === "day_off_worked") {
+    return "Спросить управляющего: почему человек вышел в выходной и было ли это согласовано.";
+  }
+  if (issue.status === "unplanned_actual") {
+    return "Спросить на планерке: почему смена появилась без графика.";
+  }
+  if (issue.status === "missed_plan") {
+    return "Проверить: человек не вышел или смена не закрыта в iiko.";
+  }
+  if (issue.status === "missing_rate") {
+    return "Добавить ставку в карточку сотрудника, иначе деньги смены будут неточными.";
+  }
+  if (issue.status === "over_hours") {
+    return "Понять, зачем понадобились лишние часы и повторится ли это.";
+  }
+  return "Понять, почему часов меньше плана: ошибка графика, ранний уход или тихая смена.";
 }
 
 function varianceToneClass(tone: TeamShiftPlanVarianceTone): string {
@@ -1698,8 +1722,8 @@ function RosterTotal({ label, value }: { label: string; value: string }) {
 function RosterCell({ cell }: { cell: TeamShiftRosterCell }) {
   if (cell.status === "no_shift") {
     return (
-      <div className="h-[72px] rounded-lg border border-border/30 bg-background/20 px-2 py-2 text-center text-[11px] text-muted-foreground">
-        —
+      <div className="h-[78px] rounded-lg border border-border/30 bg-background/20 px-2 py-2 text-center text-[11px] text-muted-foreground">
+        <span className="block pt-4">нет смены</span>
       </div>
     );
   }
@@ -1707,21 +1731,33 @@ function RosterCell({ cell }: { cell: TeamShiftRosterCell }) {
   return (
     <div
       className={
-        "min-h-[72px] rounded-lg border px-2 py-2 " +
+        "min-h-[78px] rounded-lg border px-2 py-2 " +
         rosterCellStatusClass(cell.status)
       }
     >
-      <p className="numeric text-sm font-medium text-foreground">
-        {formatRubles(cell.revenue)}
+      <p className="text-[11px] font-medium text-foreground">
+        {rosterCellHeadline(cell)}
       </p>
       <p className="mt-1 truncate text-[11px] text-muted-foreground">
-        {cell.timeLabels.join(", ")}
+        {rosterCellDetail(cell)}
       </p>
-      <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-        {formatHours(cell.hours)} · {formatInteger(cell.items)} поз.
+      <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">
+        {formatRubles(cell.revenue)} · {formatHours(cell.hours)} ·{" "}
+        {formatInteger(cell.items)} поз.
       </p>
     </div>
   );
+}
+
+function rosterCellHeadline(cell: TeamShiftRosterCell): string {
+  if (cell.status === "missing_rate") return "был в смене · нужна ставка";
+  return "был в смене";
+}
+
+function rosterCellDetail(cell: TeamShiftRosterCell): string {
+  const shifts = cell.shifts > 1 ? `${cell.shifts} смен` : "1 смена";
+  const times = cell.timeLabels.length > 0 ? cell.timeLabels.join(", ") : "";
+  return times ? `${shifts}: ${times}` : shifts;
 }
 
 function rosterCellStatusClass(status: TeamShiftRosterCellStatus): string {
@@ -1735,7 +1771,7 @@ function rosterCellStatusClass(status: TeamShiftRosterCellStatus): string {
 }
 
 function rosterRowStatusLabel(status: TeamShiftRosterRowStatus): string {
-  if (status === "ready") return "ФОТ есть";
+  if (status === "ready") return "оплата настроена";
   if (status === "missing_rate") return "нет ставки";
   return "нет смен";
 }
