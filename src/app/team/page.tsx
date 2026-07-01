@@ -156,7 +156,7 @@ import type { Period } from "@/lib/iiko/models";
 export const metadata: Metadata = {
   title: "Команда — RECEPTOR",
   description:
-    "Роли, права, сотрудники, задачи, стандарты и смены внутри Receptor.",
+    "Роли, права, сотрудники, поручения, стандарты и смены внутри Receptor.",
 };
 
 async function saveTeamLearningStandardFormAction(
@@ -240,6 +240,12 @@ function priorityClass(priority: TeamTask["priority"]): string {
     return "border-[color:var(--pro)]/30 bg-[color:var(--pro)]/10 text-[color:var(--pro)]";
   }
   return "border-border bg-muted/40 text-muted-foreground";
+}
+
+function priorityLabel(priority: TeamTask["priority"]): string {
+  if (priority === "high") return "важно";
+  if (priority === "medium") return "средне";
+  return "низко";
 }
 
 function statusLabel(status: TeamTask["status"]): string {
@@ -1955,7 +1961,7 @@ function RolePersonalBrief({
                   смен {formatInteger(schedule.length)}
                 </span>
                 <span className="rounded-md border border-border/45 bg-card/45 px-2 py-1">
-                  задач {formatInteger(openTasks.length)}
+                  поручений {formatInteger(openTasks.length)}
                 </span>
                 <span className="rounded-md border border-border/45 bg-card/45 px-2 py-1">
                   чеклист {formatInteger(checklist.length)}
@@ -1966,7 +1972,7 @@ function RolePersonalBrief({
             <div className="mt-3 grid gap-5">
               <div className="grid gap-3 sm:grid-cols-3">
                 <PersonalMetric
-                  label="Задач"
+                  label="Поручений"
                   value={formatInteger(openTasks.length)}
                   detail="открыто"
                 />
@@ -2057,7 +2063,7 @@ function RolePersonalBrief({
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <ClipboardList className="size-5 text-brand" />
-                      <h3 className="text-lg font-medium">Мои задачи</h3>
+                      <h3 className="text-lg font-medium">Мои поручения</h3>
                     </div>
                     <Badge variant="outline">{openTasks.length}</Badge>
                   </div>
@@ -2067,7 +2073,7 @@ function RolePersonalBrief({
                     ))}
                     {openTasks.length === 0 ? (
                       <div className="rounded-lg border border-border/45 bg-background/35 p-3">
-                        <p className="text-sm font-medium">Задач нет</p>
+                        <p className="text-sm font-medium">Поручений нет</p>
                         <p className="mt-1 text-xs text-muted-foreground">
                           Можно принимать смену без незакрытой очереди.
                         </p>
@@ -2996,7 +3002,7 @@ function ShiftCoverageRow({ coverage }: { coverage: ShiftRoleCoverage }) {
       </div>
       <div className="flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground sm:justify-end">
         <span className="rounded-md border border-border/50 bg-card/45 px-2 py-1">
-          задач {coverage.openTasks}
+          поручений {coverage.openTasks}
         </span>
         {coverage.importantTasks > 0 ? (
           <span className="rounded-md border border-destructive/30 bg-destructive/10 px-2 py-1 text-destructive">
@@ -3666,7 +3672,7 @@ function TaskRow({
     >
       <div className="flex flex-wrap items-center gap-2">
         <Badge variant="outline" className={priorityClass(task.priority)}>
-          {task.priority}
+          {priorityLabel(task.priority)}
         </Badge>
         <Badge variant="outline">{statusLabel(task.status)}</Badge>
         {sourceLabel ? (

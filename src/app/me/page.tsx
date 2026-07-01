@@ -691,7 +691,7 @@ export default async function MyCabinetPage({
                       </div>
                     ))
                   ) : (
-                    <EmptyState text="Пока нет закрытых задач." />
+                    <EmptyState text="Пока нет закрытых поручений." />
                   )}
                 </div>
               </div>
