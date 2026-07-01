@@ -48,10 +48,10 @@ export function buildTeamDailyWorkflow(input: {
       label: "Обучение",
       title: primaryLearning?.title ?? "Закрыть стандарт дня",
       detail: primaryLearning
-        ? `${primaryLearning.moduleTitle}. ${primaryLearning.reason}`
+        ? `В смене: ${primaryLearning.practiceAction} После: ${primaryLearning.memoryPrompt}`
         : "Критичных учебных блокеров нет, можно закрепить следующий стандарт.",
       reason: primaryLearning
-        ? `Память смены связала роль "${primaryLearning.roleTitle}" с материалом "${primaryLearning.moduleTitle}".`
+        ? `После обучения ждем факт в память: ${primaryLearning.memoryPrompt}`
         : "Допуски в норме: обучение можно вести как закрепление стандарта.",
       href: primaryLearning?.href ?? "#learning-progress",
       tone: primaryLearning ? learningTone(primaryLearning.tone) : "ready",
