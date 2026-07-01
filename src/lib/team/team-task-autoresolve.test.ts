@@ -1,6 +1,8 @@
 import { describe, expect, test } from "vitest";
 import {
+  extractLearningStandardTitleFromFieldNote,
   selectIikoMemberImportTasksToClose,
+  selectLearningAdoptionTasksToClose,
   selectLaborRateTasksToClose,
   selectLearningAdmissionTasksToClose,
 } from "./team-task-autoresolve";
@@ -108,5 +110,67 @@ describe("team task autoresolve", () => {
         moduleTitle: "Как рекомендовать блюдо без давления",
       }),
     ).toEqual([tasks[0]]);
+  });
+
+  test("extracts a learning standard title from a shift-memory note", () => {
+    expect(
+      extractLearningStandardTitleFromFieldNote(
+        'Итог смены по стандарту "Как рекомендовать блюдо без давления": факт - гости спрашивали лимонад.',
+      ),
+    ).toBe("Как рекомендовать блюдо без давления");
+  });
+
+  test("selects only the open adoption task after a matching shift-memory fact", () => {
+    const tasks: Array<Pick<TeamTask, "id" | "title" | "status" | "audience">> =
+      [
+        task(
+          "adoption",
+          "Вернуть факт смены: Маша — Как рекомендовать блюдо без давления",
+          "petr",
+          "accepted",
+        ),
+        task(
+          "other-module",
+          "Вернуть факт смены: Маша — Восьмерка продаж и апселл в сервисе",
+          "petr",
+        ),
+        task(
+          "other-member",
+          "Вернуть факт смены: Маша — Как рекомендовать блюдо без давления",
+          "anna",
+        ),
+        task(
+          "closed",
+          "Вернуть факт смены: Маша — Как рекомендовать блюдо без давления",
+          "petr",
+          "done",
+        ),
+      ];
+
+    expect(
+      selectLearningAdoptionTasksToClose(tasks, {
+        memberId: "petr",
+        fieldNoteBody:
+          'Итог смены по стандарту "Как рекомендовать блюдо без давления": факт - гости спрашивали лимонад; контекст - жара; когда/сколько - вечер; что проверить - апселл десерта.',
+      }),
+    ).toEqual([tasks[0]]);
+  });
+
+  test("does not close adoption tasks when the note has no standard marker", () => {
+    expect(
+      selectLearningAdoptionTasksToClose(
+        [
+          task(
+            "adoption",
+            "Вернуть факт смены: Маша — Как рекомендовать блюдо без давления",
+            "petr",
+          ),
+        ],
+        {
+          memberId: "petr",
+          fieldNoteBody: "Итог смены: гости спрашивали лимонад.",
+        },
+      ),
+    ).toEqual([]);
   });
 });

@@ -6,6 +6,8 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { getSupabaseAdmin } from "@/lib/db/admin";
 import { getServerSupabase } from "@/lib/db/server";
 import { hasMeaningfulFieldNoteBody } from "@/lib/team/field-note-input";
+import { selectLearningAdoptionTasksToClose } from "@/lib/team/team-task-autoresolve";
+import type { TeamTask } from "@/lib/team/team-os";
 
 const OwnTaskStatusInput = z.object({
   taskId: z.string().min(1),
@@ -19,6 +21,15 @@ const MarkAnnouncementReadInput = z.object({
 const SubmitFieldNoteInput = z.object({
   body: z.string().trim().min(5).max(1500),
 });
+
+const OPEN_TASK_STATUSES = ["new", "accepted", "in_progress"] as const;
+
+type FieldNoteTaskRow = {
+  id: string;
+  title: string;
+  status: TeamTask["status"];
+  audience_member_id: string | null;
+};
 
 export type OwnTaskStatusResult =
   { ok: true; message: string } | { ok: false; error: string };
@@ -41,6 +52,82 @@ function missingSourceLabelColumn(message: string): boolean {
 
 function missingImpactLabelColumn(message: string): boolean {
   return /impact_label/i.test(message);
+}
+
+async function closeLearningAdoptionTasks(input: {
+  admin: NonNullable<ReturnType<typeof getSupabaseAdmin>>;
+  venueId: string;
+  memberId: string;
+  userId: string;
+  commentId: string | null;
+  fieldNoteBody: string;
+}): Promise<string[]> {
+  const { admin, venueId, memberId, userId, commentId, fieldNoteBody } = input;
+
+  const { data, error } = await admin
+    .from("team_tasks")
+    .select("id,title,status,audience_member_id")
+    .eq("venue_id", venueId)
+    .eq("audience_type", "member")
+    .eq("audience_member_id", memberId)
+    .in("status", OPEN_TASK_STATUSES);
+
+  if (error) {
+    if (missingFieldNoteTables(error.message)) return [];
+    throw new Error(error.message);
+  }
+
+  const taskIds = selectLearningAdoptionTasksToClose(
+    ((data ?? []) as FieldNoteTaskRow[]).map((task) => ({
+      id: task.id,
+      title: task.title,
+      status: task.status,
+      audience: { type: "member", memberId: task.audience_member_id ?? "" },
+    })),
+    { memberId, fieldNoteBody },
+  ).map((task) => task.id);
+
+  if (taskIds.length === 0) return [];
+
+  const updatedAt = new Date().toISOString();
+  const { error: updateError } = await admin
+    .from("team_tasks")
+    .update({ status: "done", updated_at: updatedAt })
+    .eq("venue_id", venueId)
+    .in("id", taskIds);
+
+  if (updateError) {
+    if (missingFieldNoteTables(updateError.message)) return [];
+    throw new Error(updateError.message);
+  }
+
+  const auditResult = await admin.from("team_audit_events").insert({
+    venue_id: venueId,
+    actor_user_id: userId,
+    actor_membership_id: memberId,
+    event_type: "task_status_updated",
+    target_type: "task",
+    target_id: taskIds[0] ?? null,
+    summary:
+      "Автоматически закрыта задача внедрения стандарта после итога смены.",
+    metadata: {
+      taskIds,
+      memberId,
+      commentId,
+      status: "done",
+      sourceLabel: "Обучение",
+      impactLabel: "факт смены получен",
+    },
+  });
+
+  if (auditResult.error && !missingFieldNoteTables(auditResult.error.message)) {
+    console.warn(
+      "Failed to write learning adoption task audit:",
+      auditResult.error.message,
+    );
+  }
+
+  return taskIds;
 }
 
 export async function updateOwnTaskStatusAction(
@@ -389,11 +476,32 @@ export async function submitFieldNoteAction(
     },
   });
 
+  let closedAdoptionTaskIds: string[] = [];
+  let adoptionTaskCloseWarning = false;
+  try {
+    closedAdoptionTaskIds = await closeLearningAdoptionTasks({
+      admin,
+      venueId: membership.venue_id,
+      memberId: membership.id,
+      userId: user.id,
+      commentId: comment?.id ?? null,
+      fieldNoteBody: parsed.data.body,
+    });
+  } catch (error) {
+    adoptionTaskCloseWarning = true;
+    console.warn("Failed to auto-close learning adoption task:", error);
+  }
+
   revalidatePath("/me");
   revalidatePath("/team");
   revalidatePath(`/dashboard/${membership.venue_id}`);
   return {
     ok: true,
-    message: "Заметка смены сохранена. Receptor учтет ее в советах.",
+    message:
+      closedAdoptionTaskIds.length > 0
+        ? "Заметка смены сохранена. Задача внедрения стандарта закрыта."
+        : adoptionTaskCloseWarning
+          ? "Заметка смены сохранена. Задача внедрения не закрылась автоматически."
+          : "Заметка смены сохранена. Receptor учтет ее в советах.",
   };
 }

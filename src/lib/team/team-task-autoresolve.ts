@@ -71,6 +71,46 @@ export function selectLearningAdmissionTasksToClose(
   );
 }
 
+export function extractLearningStandardTitleFromFieldNote(
+  body: string,
+): string | null {
+  const match = body.match(
+    /итог\s+смены\s+по\s+стандарту\s*["«“](.+?)["»”]/iu,
+  );
+  const title = match?.[1]?.trim();
+  return title || null;
+}
+
+export function selectLearningAdoptionTasksToClose(
+  tasks: AutoClosableTask[],
+  input: { memberId: string; fieldNoteBody: string },
+): AutoClosableTask[] {
+  const memberId = input.memberId.trim();
+  const moduleTitle = extractLearningStandardTitleFromFieldNote(
+    input.fieldNoteBody,
+  );
+  if (!memberId || !moduleTitle) return [];
+
+  const titlePrefix = normalizeTaskTitle("Вернуть факт смены:");
+  const normalizedModuleTitle = normalizeTaskTitle(moduleTitle);
+
+  return tasks.filter((task) => {
+    const title = normalizeTaskTitle(task.title);
+
+    return (
+      !CLOSED_STATUSES.has(task.status) &&
+      task.audience.type === "member" &&
+      task.audience.memberId === memberId &&
+      title.startsWith(titlePrefix) &&
+      title.endsWith(normalizedModuleTitle)
+    );
+  });
+}
+
 function normalizeTaskTitle(value: string): string {
-  return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("ru-RU");
+  return value
+    .trim()
+    .replace(/[‐‑‒–—]/g, "-")
+    .replace(/\s+/g, " ")
+    .toLocaleLowerCase("ru-RU");
 }
