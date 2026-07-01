@@ -301,6 +301,12 @@ export default async function TeamPage({
   const learningAdoptionFocus =
     pickTeamLearningAdoptionFocus(learningAdoptionRows);
   const learningOverview = summarizeTeamLearning(learningSummaries);
+  const learningWaitingForSummary = learningAdoptionRows.filter(
+    (row) => row.signal.status === "needs_memory",
+  ).length;
+  const learningReturnedSummaries = learningAdoptionRows.filter(
+    (row) => row.signal.status === "returned_memory",
+  ).length;
   const learningRolePlans = buildTeamLearningRolePlans(
     learningSummaries,
     workspace.learningStandards,
@@ -774,11 +780,12 @@ export default async function TeamPage({
                       Стандарты команды
                     </p>
                     <h2 className="mt-3 text-2xl font-medium">
-                      Стандарты под контролем
+                      Кого обучить сегодня
                     </h2>
                     <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      Допуск к смене считается по обязательным стандартам.
-                      Остальное — развитие и точки роста.
+                      Управляющему нужен не процент, а следующий шаг: дать
+                      стандарт, увидеть действие в смене и получить короткий
+                      итог.
                     </p>
                   </div>
                   <GraduationCap className="size-6 shrink-0 text-brand" />
@@ -790,16 +797,16 @@ export default async function TeamPage({
                     value={learningOverview.admittedMembers}
                   />
                   <Metric
-                    label="Нет допуска"
+                    label="Дать стандарт"
                     value={learningOverview.blockedMembers}
                   />
                   <Metric
-                    label="Нужен фокус"
-                    value={learningOverview.attentionMembers}
+                    label="Ждем итог"
+                    value={learningWaitingForSummary}
                   />
                   <Metric
-                    label="Средний %"
-                    value={learningOverview.averageBest}
+                    label="Есть итог"
+                    value={learningReturnedSummaries}
                   />
                 </div>
               </div>
@@ -808,14 +815,14 @@ export default async function TeamPage({
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                      Допуск
+                      На сегодня
                     </p>
                     <h2 className="mt-2 text-xl font-medium">
-                      Прогресс по сотрудникам
+                      Кому что сделать
                     </h2>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {workspace.learningProgress.length} попыток сохранено
+                    стандарт → смена → 3 строки итога
                   </p>
                 </div>
                 <div className="mt-5 grid gap-3">
@@ -3251,9 +3258,18 @@ function LearningSummaryRow({
     signal: adoption,
     taskExists: adoptionTaskExists,
   });
+  const nextStandardTitle = summary.nextItem?.title ?? "стандарты роли закрыты";
+  const nextStepLabel =
+    adoptionMove?.label ??
+    (summary.canWorkShift ? "Закрепить в смене" : "Сначала стандарт");
+  const nextStepDetail =
+    adoptionMove?.detail ??
+    (summary.canWorkShift
+      ? "Попросите сотрудника применить один стандарт и оставить 3 строки после смены."
+      : `${nextStandardTitle}: закрыть правило до смены, затем попросить короткий итог.`);
 
   return (
-    <div className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-3 lg:grid-cols-[1.05fr_0.95fr_auto] lg:items-center">
+    <div className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-3 xl:grid-cols-[0.92fr_1.08fr] xl:items-start">
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <p className="truncate text-sm font-medium">{summary.member.name}</p>
@@ -3272,60 +3288,61 @@ function LearningSummaryRow({
           </Badge>
         </div>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-          Обязательные: {summary.requiredCompleted}/{summary.requiredCount || 0}{" "}
-          · всего: {summary.completedCount}/{summary.totalCount}
+          Следующий стандарт:{" "}
+          <span className="text-foreground/85">{nextStandardTitle}</span>
         </p>
-      </div>
-      <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          <span className="inline-flex min-w-0 items-center gap-1.5">
+        <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-border/45 bg-card/35 px-2 py-1">
             <ListChecks className="size-3.5 shrink-0 text-brand" />
-            <span className="truncate">
-            {summary.nextItem
-              ? `Дальше: ${summary.nextItem.title}`
-              : "Все стандарты роли закрыты"}
-            </span>
+            {summary.requiredCompleted}/{summary.requiredCount || 0} обязательных
           </span>
-          <span className="inline-flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-border/45 bg-card/35 px-2 py-1">
             <Trophy className="size-3.5 shrink-0 text-brand" />
-            Последняя попытка: {formatLearningDate(summary.lastCompletedAt)}
+            {formatLearningDate(summary.lastCompletedAt)}
           </span>
+        </div>
+      </div>
+
+      <div className="min-w-0 rounded-lg border border-border/40 bg-card/40 p-3">
+        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <div className="min-w-0">
+            <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+              Следующий шаг
+            </p>
+            <p className="mt-1 text-sm font-medium text-foreground">
+              {nextStepLabel}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              {nextStepDetail}
+            </p>
+          </div>
+          {adoption && adoptionMove ? (
+            <LearningAdoptionAction
+              venueId={venueId}
+              signal={adoption}
+              move={adoptionMove}
+              draft={adoptionTaskDraft}
+            />
+          ) : null}
         </div>
         {adoption && adoptionMove ? (
           <LearningAdoptionNextMoveLine
-            venueId={venueId}
             signal={adoption}
-            move={adoptionMove}
-            draft={adoptionTaskDraft}
           />
         ) : null}
-      </div>
-      <div className="rounded-lg border border-border/50 bg-card/45 px-3 py-2 text-left lg:text-right">
-        <p className="numeric text-xl font-medium text-foreground">
-          {summary.averageBest}%
-        </p>
-        <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-          средний
-        </p>
       </div>
     </div>
   );
 }
 
 function LearningAdoptionNextMoveLine({
-  venueId,
   signal,
-  move,
-  draft,
 }: {
-  venueId: string;
   signal: TeamLearningAdoptionSignal;
-  move: TeamLearningAdoptionNextMove;
-  draft?: TeamLearningAdoptionTaskDraft | null;
 }) {
   return (
-    <div className="mt-2 border-t border-border/45 pt-2">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mt-3 border-t border-border/35 pt-3">
+      <div className="flex flex-col gap-2">
         <div className="flex min-w-0 items-start gap-2 text-xs">
           <span
             className={`mt-1.5 size-2 shrink-0 rounded-full ${learningAdoptionMarkerClass(
@@ -3338,36 +3355,54 @@ function LearningAdoptionNextMoveLine({
                 signal.status,
               )}`}
             >
-              {move.label}
+              {signal.label}
             </p>
             <p className="mt-0.5 line-clamp-2 leading-relaxed text-muted-foreground">
-              {move.detail}
+              {signal.detail}
             </p>
           </div>
         </div>
-
-        {move.action === "assign_fact" && draft ? (
-          <div className="shrink-0">
-            <LearningAdoptionTaskButton
-              venueId={venueId}
-              draft={draft}
-              existingTask={false}
-            />
-          </div>
-        ) : null}
-
-        {move.action === "open_evidence" && signal.evidenceHref ? (
-          <Link
-            href={signal.evidenceHref}
-            className="inline-flex h-8 w-fit shrink-0 items-center gap-1.5 rounded-lg border border-brand/30 bg-brand/10 px-2.5 text-[11px] font-medium text-brand transition-colors hover:bg-brand/15"
-          >
-            {move.actionLabel ?? signal.evidenceLabel ?? "Открыть итог"}
-            <ArrowRight className="size-3" />
-          </Link>
-        ) : null}
       </div>
     </div>
   );
+}
+
+function LearningAdoptionAction({
+  venueId,
+  signal,
+  move,
+  draft,
+}: {
+  venueId: string;
+  signal: TeamLearningAdoptionSignal;
+  move: TeamLearningAdoptionNextMove;
+  draft?: TeamLearningAdoptionTaskDraft | null;
+}) {
+  if (move.action === "assign_fact" && draft) {
+    return (
+      <div className="shrink-0">
+        <LearningAdoptionTaskButton
+          venueId={venueId}
+          draft={draft}
+          existingTask={false}
+        />
+      </div>
+    );
+  }
+
+  if (move.action === "open_evidence" && signal.evidenceHref) {
+    return (
+      <Link
+        href={signal.evidenceHref}
+        className="inline-flex h-8 w-fit shrink-0 items-center gap-1.5 rounded-lg border border-brand/30 bg-brand/10 px-2.5 text-[11px] font-medium text-brand transition-colors hover:bg-brand/15"
+      >
+        {move.actionLabel ?? signal.evidenceLabel ?? "Открыть итог"}
+        <ArrowRight className="size-3" />
+      </Link>
+    );
+  }
+
+  return null;
 }
 
 function TaskRow({
