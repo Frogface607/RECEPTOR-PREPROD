@@ -221,14 +221,14 @@ function learningAdoptionWorkflowFocus(
     row.move.action === "assign_fact" ? "#learning-progress" : "#team-actions";
   const title =
     row.move.action === "assign_fact"
-      ? "Добрать факт стандарта"
-      : "Факт стандарта уже назначен";
+      ? "Попросить итог по стандарту"
+      : "Итог по стандарту уже в работе";
 
   return {
     title,
     detail: `${row.summary.member.name}: ${row.move.detail}`,
     reason:
-      "Стандарт уже сдан; без факта смены Receptor не считает внедрение доказанным.",
+      "Тест не показывает, как человек работает в зале или на кухне. Нужен короткий итог из смены.",
     href,
     tone: row.move.action === "assign_fact" ? "risk" : "work",
   };
@@ -2613,7 +2613,7 @@ function TeamShiftMemorySection({
                   />
                   <div className="min-w-0">
                     <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                      Факт стандарта
+                      Итог по стандарту
                     </p>
                     <p
                       className={`mt-1 text-sm font-medium ${learningAdoptionTextClass(
@@ -2653,7 +2653,7 @@ function TeamShiftMemorySection({
                     href={adoptionFocus.signal.evidenceHref}
                     variant="outline"
                   >
-                    {adoptionMove.actionLabel ?? "Открыть факт"}
+                    {adoptionMove.actionLabel ?? "Открыть итог"}
                     <ArrowRight className="size-4" />
                   </LinkButton>
                 ) : null}
@@ -2969,8 +2969,8 @@ function LearningFocusPanel({ items }: { items: TeamLearningFocusItem[] }) {
             </p>
             <h2 className="mt-2 text-xl font-medium">Фокус стандартов</h2>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              Receptor поднимает стандарт роли, действие на смену и факт,
-              который сотрудник должен вернуть в память ресторана.
+              Один простой путь: понять правило, попробовать в смене и оставить
+              короткий итог. Дальше Receptor сам покажет, что усилить.
             </p>
           </div>
         </div>
@@ -3028,13 +3028,13 @@ function LearningFocusCard({ item }: { item: TeamLearningFocusItem }) {
 
       <div className="rounded-lg border border-brand/20 bg-brand/[0.06] p-3">
         <p className="text-[10px] uppercase tracking-[0.16em] text-brand">
-          Проверка в смене
+          Попробовать в смене
         </p>
         <p className="mt-1 text-xs leading-relaxed text-foreground/90">
           {item.practiceAction}
         </p>
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-          В память: {item.memoryPrompt}
+          Короткий итог: {item.memoryPrompt}
         </p>
       </div>
     </Link>
@@ -3484,7 +3484,7 @@ function LearningAdoptionNextMoveLine({
             href={signal.evidenceHref}
             className="inline-flex h-8 w-fit shrink-0 items-center gap-1.5 rounded-lg border border-brand/30 bg-brand/10 px-2.5 text-[11px] font-medium text-brand transition-colors hover:bg-brand/15"
           >
-            {move.actionLabel ?? signal.evidenceLabel ?? "Открыть факт"}
+            {move.actionLabel ?? signal.evidenceLabel ?? "Открыть итог"}
             <ArrowRight className="size-3" />
           </Link>
         ) : null}

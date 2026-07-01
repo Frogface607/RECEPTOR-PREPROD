@@ -68,7 +68,7 @@ export function buildTeamDailyWorkflow(input: {
       reason:
         primaryAdoption?.reason ??
         (primaryLearning
-          ? `После обучения ждем факт в память: ${primaryLearning.memoryPrompt}`
+          ? `После обучения ждем короткий итог смены: ${primaryLearning.memoryPrompt}`
           : "Допуски в норме: обучение можно вести как закрепление стандарта."),
       href:
         primaryAdoption?.href ?? primaryLearning?.href ?? "#learning-progress",

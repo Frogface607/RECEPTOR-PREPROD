@@ -55,9 +55,9 @@ export const FIELD_NOTE_SAVED_MEMORY_COPY: FieldNoteSavedMemoryCopy = {
 };
 
 export const FIELD_NOTE_CLOSED_LOOP_COPY: FieldNoteSavedMemoryCopy = {
-  title: "Стандарт доказан сменой.",
+  title: "Стандарт сработал в смене.",
   detail:
-    "Итог смены показал, где стандарт сработал в реальной работе. Управляющий увидит, что обучение вернулось в память ресторана.",
+    "Итог смены показал, где стандарт помог в реальной работе. Управляющий увидит, что обучение стало частью смены и попало в память ресторана.",
 };
 
 export const FIELD_NOTE_MEMORY_PROMPTS: FieldNotePrompt[] = [

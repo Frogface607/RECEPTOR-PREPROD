@@ -68,13 +68,13 @@ describe("team learning adoption", () => {
 
     expect(signal).toMatchObject({
       status: "returned_memory",
-      label: "Стандарт доказан сменой",
+      label: "Стандарт работает",
       moduleId: "service-recommendation",
       memoryCommentId: "comment-1",
       evidenceLabel: "Открыть память смены",
       evidenceHref: "#shift-summary",
     });
-    expect(signal.detail).toContain("где стандарт сработал");
+    expect(signal.detail).toContain("Receptor запомнил");
   });
 
   test("asks for a shift fact when the latest passed standard has no memory", () => {
@@ -88,12 +88,12 @@ describe("team learning adoption", () => {
 
     expect(signal).toMatchObject({
       status: "needs_memory",
-      label: "Стандарт сдан — нужен факт",
+      label: "Стандарт сдан — нужен итог",
       moduleId: "service-recommendation",
       memoryCommentId: null,
     });
-    expect(signal.detail).toContain("считал стандарт внедренным");
-    expect(signal.detail).toContain("где применили");
+    expect(signal.detail).toContain("попробовать это в смене");
+    expect(signal.detail).toContain("где применил");
   });
 
   test("waits for learning before asking for operational adoption", () => {
@@ -124,14 +124,14 @@ describe("team learning adoption", () => {
 
     expect(draft).toMatchObject({
       title:
-        "Вернуть факт смены: Маша — Как рекомендовать блюдо без давления",
+        "Оставить итог смены: Маша — Как рекомендовать блюдо без давления",
       audienceType: "member",
       audienceMemberId: "service-1",
       moduleId: "service-recommendation",
-      checklistTitle: "Если стандарт сдан, но нет факта смены",
+      checklistTitle: "Если стандарт сдан, но нет итога смены",
       dueLabel: "после ближайшей смены",
     });
-    expect(draft?.contextNote).toContain("нет факта применения");
+    expect(draft?.contextNote).toContain("не оставил(а) итог");
     expect(draft?.contextNote).toContain("В память:");
   });
 
@@ -151,9 +151,9 @@ describe("team learning adoption", () => {
     expect(
       buildTeamLearningAdoptionNextMove({ signal: needsMemory }),
     ).toMatchObject({
-      label: "Нужен факт",
+      label: "Нужен короткий итог",
       action: "assign_fact",
-      actionLabel: "Назначить факт",
+      actionLabel: "Попросить итог",
     });
     expect(
       buildTeamLearningAdoptionNextMove({
@@ -161,15 +161,15 @@ describe("team learning adoption", () => {
         taskExists: true,
       }),
     ).toMatchObject({
-      label: "Факт назначен",
+      label: "Ждем итог смены",
       action: "none",
     });
     expect(
       buildTeamLearningAdoptionNextMove({ signal: returnedMemory }),
     ).toMatchObject({
-      label: "Доказан сменой",
+      label: "Стандарт работает",
       action: "open_evidence",
-      actionLabel: "Открыть факт",
+      actionLabel: "Открыть итог",
     });
   });
 
@@ -218,7 +218,7 @@ describe("team learning adoption", () => {
       summary: { member: { id: "service-1" } },
       signal: { status: "needs_memory" },
       move: {
-        label: "Нужен факт",
+        label: "Нужен короткий итог",
         action: "assign_fact",
       },
     });

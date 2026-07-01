@@ -50,7 +50,7 @@ export function LearningAdoptionTaskButton({
               dueLabel: draft.dueLabel,
               contextNote: draft.contextNote,
               sourceLabel: "Обучение",
-              impactLabel: "внедрение стандарта",
+              impactLabel: "итог по стандарту",
               learningModuleId: draft.moduleId ?? undefined,
               learningModuleTitle: draft.moduleTitle,
               learningChecklistTitle: draft.checklistTitle,
@@ -64,7 +64,7 @@ export function LearningAdoptionTaskButton({
         }}
       >
         <Plus className="size-3.5" />
-        {pending ? "Создаем" : "Назначить факт"}
+        {pending ? "Создаем" : "Попросить итог"}
       </Button>
       {message ? (
         <p

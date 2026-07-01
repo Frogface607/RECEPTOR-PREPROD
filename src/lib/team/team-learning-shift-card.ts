@@ -106,7 +106,7 @@ export function buildTeamLearningShiftCard(
       "На смене выбери одно действие из материала и примени его в реальной ситуации.",
     fieldNote:
       rule?.fieldNote ??
-      "После смены оставь короткий факт: что получилось, что мешало и что проверить утром.",
+      "После смены оставь короткий итог: что получилось, что мешало и что проверить утром.",
     fieldNoteTemplate: `Итог смены по стандарту "${item.title}": факт - ...; контекст - ...; когда/сколько - ...; что проверить - ...`,
     checklistLabel,
   };
@@ -122,7 +122,7 @@ export function buildTeamLearningOperatingStandard(
     label: "Операционный стандарт роли",
     title: item.title,
     promise:
-      "Коротко понять правило, применить его в реальной смене и вернуть один факт в память ресторана.",
+      "Коротко понять правило, попробовать его в реальной смене и оставить один итог в память ресторана.",
     steps: [
       {
         label: "01",
@@ -136,7 +136,7 @@ export function buildTeamLearningOperatingStandard(
       },
       {
         label: "03",
-        title: "Вернуть факт",
+        title: "Оставить итог",
         detail: shiftCard.fieldNote,
       },
       {

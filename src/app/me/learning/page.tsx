@@ -16,7 +16,7 @@ import { LearningWorkspace } from "./learning-workspace";
 
 export const metadata: Metadata = {
   title: "Стандарты роли — RECEPTOR",
-  description: "Операционные стандарты, практика смены и проверка сотрудника.",
+  description: "Простые правила роли, практика в смене и короткий итог сотрудника.",
 };
 
 function parseParam(value: string | string[] | undefined): string {
@@ -134,21 +134,21 @@ export default async function EmployeeLearningPage({
                   </span>
                 </div>
                 <h1 className="mt-5 max-w-3xl text-balance text-[clamp(2rem,4vw,3.25rem)] font-medium leading-[1.04]">
-                  Стандарты роли для реальной смены.
+                  Простые стандарты для смены.
                 </h1>
                 <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                  {workspace.member.name} · {workspace.venueName}. Каждый
-                  стандарт ведет к действию на смене и факту в память ресторана.
+                  {workspace.member.name} · {workspace.venueName}. Прочитай
+                  правило, попробуй в смене и оставь короткий итог.
                 </p>
               </div>
               <div className="rounded-lg border border-border/60 bg-card/50 p-4">
                 <div className="flex items-center gap-3">
                   <GraduationCap className="size-5 text-brand" />
                   <div>
-                    <p className="text-sm font-medium">Готовность к смене</p>
+                    <p className="text-sm font-medium">Путь на смену</p>
                     <p className="mt-1 text-[12px] text-muted-foreground">
-                      Стандарт засчитывается после короткой проверки и факта из
-                      смены.
+                      Сначала понять правило. Потом применить. После смены
+                      написать 3 строки, чтобы ресторан это запомнил.
                     </p>
                   </div>
                 </div>

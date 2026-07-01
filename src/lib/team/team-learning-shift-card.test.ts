@@ -51,7 +51,7 @@ describe("team learning shift card", () => {
     expect(standard.steps.map((step) => step.title)).toEqual([
       "Понять правило",
       "Применить в смене",
-      "Вернуть факт",
+      "Оставить итог",
       "Закрыть проверку",
     ]);
     expect(standard.steps[1]?.detail).toContain("предложи");

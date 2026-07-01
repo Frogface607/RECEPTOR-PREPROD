@@ -140,8 +140,8 @@ export function buildTeamLearningAdoptionSignal(input: {
   if (memoryComment) {
     return {
       status: "returned_memory",
-      label: "Стандарт доказан сменой",
-      detail: `"${moduleTitle}" вернулся фактом из смены. Теперь видно, где стандарт сработал в реальной работе, а не только в тесте.`,
+      label: "Стандарт работает",
+      detail: `"${moduleTitle}" уже применили в смене. Receptor запомнил живой итог и может показывать руководителю, где правило помогло в работе.`,
       moduleId: latestPassed.moduleId,
       moduleTitle,
       memoryCommentId: memoryComment.id,
@@ -152,8 +152,8 @@ export function buildTeamLearningAdoptionSignal(input: {
 
   return {
     status: "needs_memory",
-    label: "Стандарт сдан — нужен факт",
-    detail: `"${moduleTitle}" сдан. Чтобы Receptor считал стандарт внедренным, нужен итог смены: где применили, что изменилось и что проверить утром.`,
+    label: "Стандарт сдан — нужен итог",
+    detail: `"${moduleTitle}" сдан. Теперь сотруднику нужно один раз попробовать это в смене и коротко написать: где применил, что получилось и что проверить утром.`,
     moduleId: latestPassed.moduleId,
     moduleTitle,
     memoryCommentId: null,
@@ -173,17 +173,17 @@ export function buildTeamLearningAdoptionNextMove(input: {
 
   if (signal.status === "returned_memory") {
     return {
-      label: "Доказан сменой",
-      detail: `${title}: есть факт из смены, можно открыть доказательство.`,
+      label: "Стандарт работает",
+      detail: `${title}: есть итог из смены, можно открыть живой пример.`,
       action: signal.evidenceHref ? "open_evidence" : "none",
-      actionLabel: signal.evidenceHref ? "Открыть факт" : null,
+      actionLabel: signal.evidenceHref ? "Открыть итог" : null,
     };
   }
 
   if (signal.status === "needs_memory") {
     if (input.taskExists) {
       return {
-        label: "Факт назначен",
+        label: "Ждем итог смены",
         detail: `${title}: ждем итог смены от сотрудника.`,
         action: "none",
         actionLabel: null,
@@ -191,16 +191,16 @@ export function buildTeamLearningAdoptionNextMove(input: {
     }
 
     return {
-      label: "Нужен факт",
-      detail: `${title}: назначьте один итог смены после практики.`,
+      label: "Нужен короткий итог",
+      detail: `${title}: попросите сотрудника попробовать стандарт в смене и оставить короткий итог.`,
       action: "assign_fact",
-      actionLabel: "Назначить факт",
+      actionLabel: "Попросить итог",
     };
   }
 
   return {
     label: "Сначала стандарт",
-    detail: `${title}: после проверки попросите факт смены.`,
+    detail: `${title}: после проверки попросите короткий итог смены.`,
     action: "none",
     actionLabel: null,
   };
@@ -245,7 +245,7 @@ export function pickTeamLearningAdoptionFocus<
     rows.find(
       (row) =>
         row.signal.status === "needs_memory" &&
-        row.move?.label === "Факт назначен",
+        row.move?.label === "Ждем итог смены",
     ) ??
     null
   );
@@ -253,6 +253,17 @@ export function pickTeamLearningAdoptionFocus<
 
 function normalizeTaskTitle(value: string): string {
   return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("ru-RU");
+}
+
+function learningAdoptionTaskTitleNeedles(
+  draft: TeamLearningAdoptionTaskDraft,
+): string[] {
+  const titles = [
+    draft.title,
+    `Вернуть факт смены: ${draft.memberName} — ${draft.moduleTitle ?? "стандарт"}`,
+  ];
+
+  return Array.from(new Set(titles.map(normalizeTaskTitle)));
 }
 
 export function buildTeamLearningAdoptionTaskDraft(
@@ -265,26 +276,26 @@ export function buildTeamLearningAdoptionTaskDraft(
     (candidate) => candidate.id === signal.moduleId,
   );
   const moduleTitle = signal.moduleTitle ?? item?.title ?? "стандарт";
-  const checklistTitle = "Если стандарт сдан, но нет факта смены";
+  const checklistTitle = "Если стандарт сдан, но нет итога смены";
   const shiftCard = item
     ? buildTeamLearningShiftCard(item, checklistTitle)
     : {
         action:
           "На смене применить сданный стандарт в одной реальной ситуации.",
         fieldNote:
-          "После смены оставить факт: что применил, где помогло, что мешало и что проверить утром.",
+          "После смены оставить короткий итог: что применил, где помогло, что мешало и что проверить утром.",
       };
   const contextNote = [
-    `Проверка: ${summary.member.name} сдал(а) стандарт "${moduleTitle}", но в памяти смены нет факта применения.`,
+    `Проверка: ${summary.member.name} сдал(а) стандарт "${moduleTitle}", но еще не оставил(а) итог из реальной смены.`,
     `В смене: ${shiftCard.action}`,
     `В память: ${shiftCard.fieldNote}`,
-    "Зачем: обучение становится операционной ценностью только когда стандарт возвращается живым фактом с поля.",
+    "Зачем: Receptor не угадывает по тесту, работает ли правило. Ему нужен короткий итог из смены.",
     `Стандарт: ${moduleTitle}.`,
     `Чеклист: ${checklistTitle}.`,
   ].join("\n");
 
   return {
-    title: `Вернуть факт смены: ${summary.member.name} — ${moduleTitle}`,
+    title: `Оставить итог смены: ${summary.member.name} — ${moduleTitle}`,
     priority: summary.canWorkShift ? "medium" : "high",
     audienceType: "member",
     audienceMemberId: summary.member.id,
@@ -303,7 +314,7 @@ export function findOpenLearningAdoptionTask(
   tasks: TeamTask[],
   draft: TeamLearningAdoptionTaskDraft,
 ): TeamTask | null {
-  const draftTitle = normalizeTaskTitle(draft.title);
+  const draftTitles = learningAdoptionTaskTitleNeedles(draft);
 
   return (
     tasks.find(
@@ -311,7 +322,7 @@ export function findOpenLearningAdoptionTask(
         OPEN_TASK_STATUSES.has(task.status) &&
         task.audience.type === "member" &&
         task.audience.memberId === draft.audienceMemberId &&
-        normalizeTaskTitle(task.title) === draftTitle,
+        draftTitles.includes(normalizeTaskTitle(task.title)),
     ) ?? null
   );
 }
