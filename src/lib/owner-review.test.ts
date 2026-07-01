@@ -10,6 +10,11 @@ import type {
 import { buildMenuMarginReadiness } from "./menu-margin-readiness";
 import { buildOwnerReview } from "./owner-review";
 import { buildLaborBi } from "./team/labor-bi";
+import { buildTeamLearningAdoptionRows } from "./team/team-learning-adoption";
+import {
+  buildTeamLearningSummaries,
+  type TeamLearningProgress,
+} from "./team/team-learning-progress";
 import {
   buildTeamLaborReadiness,
   buildTeamLaborSetupProgress,
@@ -3492,6 +3497,87 @@ describe("buildOwnerReview", () => {
           title: "Дособрать итог смены для советника",
           sourceLabel: "Полевой контекст",
           contextNote: expect.stringContaining("чего не хватает"),
+        }),
+      ]),
+    );
+  });
+
+  test("surfaces a passed standard without shift evidence in owner review", () => {
+    const teamStaff: StaffMember[] = [
+      {
+        id: "service-1",
+        name: "Маша",
+        roleId: "service",
+        venueId: "venue-1",
+        status: "active",
+        shiftLabel: "зал",
+      },
+    ];
+    const progress: TeamLearningProgress = {
+      venueId: "venue-1",
+      membershipId: "service-1",
+      userId: "user-1",
+      moduleId: "service-recommendation",
+      bestPercentage: 100,
+      lastPercentage: 100,
+      correct: 3,
+      total: 3,
+      passed: true,
+      answers: [1, 0, 2],
+      completedAt: "2026-06-26T10:00:00.000Z",
+      updatedAt: "2026-06-26T10:00:00.000Z",
+    };
+    const [learningAdoptionFocus] = buildTeamLearningAdoptionRows({
+      summaries: buildTeamLearningSummaries(teamStaff, [progress]),
+      progress: [progress],
+      comments: [],
+      tasks: [],
+    });
+
+    const review = buildOwnerReview({
+      summary,
+      dishes,
+      categories,
+      shifts,
+      brief,
+      dataQuality: quality,
+      dataMode: "live",
+      labor: buildReadyLabor(),
+      margin: buildReadyMargin(),
+      team: buildReadyTeam(),
+      learningAdoptionFocus,
+    });
+
+    expect(review.evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Стандарт",
+          value: "Нужен факт",
+          detail: expect.stringContaining("Маша"),
+          tone: "risk",
+        }),
+      ]),
+    );
+    expect(review.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: "Добрать факт внедрения стандарта",
+          target: "team-learning",
+          sourceLabel: "Стандарт команды",
+          memberId: "service-1",
+          learningModuleId: "service-recommendation",
+          tone: "risk",
+        }),
+      ]),
+    );
+    expect(review.tasks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          sourceLabel: "Стандарт команды",
+          audienceMemberId: "service-1",
+          contextNote: expect.stringContaining(
+            "не считать обучение внедренным",
+          ),
         }),
       ]),
     );

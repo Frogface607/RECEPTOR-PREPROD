@@ -36,6 +36,10 @@ import {
   buildTeamLaborSetupProgress,
 } from "@/lib/team/team-labor-readiness";
 import { buildTeamLearningSummaries } from "@/lib/team/team-learning-progress";
+import {
+  buildTeamLearningAdoptionRows,
+  pickTeamLearningAdoptionFocus,
+} from "@/lib/team/team-learning-adoption";
 import { buildTeamOpsReadiness } from "@/lib/team/team-ops-readiness";
 import { buildTeamShiftPlanSummary } from "@/lib/team/team-shift-plan";
 import { buildTeamShiftPlanVariance } from "@/lib/team/team-shift-plan-variance";
@@ -241,6 +245,15 @@ export default async function DashboardPage({
     teamWorkspace.learningProgress,
     teamWorkspace.learningStandards,
   );
+  const teamLearningAdoptionRows = buildTeamLearningAdoptionRows({
+    summaries: teamLearningSummaries,
+    progress: teamWorkspace.learningProgress,
+    comments: teamWorkspace.comments,
+    tasks: teamWorkspace.tasks,
+  });
+  const teamLearningAdoptionFocus = pickTeamLearningAdoptionFocus(
+    teamLearningAdoptionRows,
+  );
   const laborReadiness = buildTeamLaborReadiness(teamWorkspace.staff, laborBi);
   const laborSetupProgress = buildTeamLaborSetupProgress(
     teamWorkspace.staff,
@@ -277,6 +290,7 @@ export default async function DashboardPage({
     teamAnnouncements: teamWorkspace.announcements,
     teamAnnouncementReads: teamWorkspace.announcementReads,
     shiftPlanVariance,
+    learningAdoptionFocus: teamLearningAdoptionFocus,
   });
   const brainReadiness = buildOwnerBrainReadiness({
     context: venue.context,

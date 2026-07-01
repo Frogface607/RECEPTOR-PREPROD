@@ -2,9 +2,11 @@ import { describe, expect, test } from "vitest";
 import type { StaffMember, TeamTask, TeamTaskComment } from "./team-os";
 import {
   buildTeamLearningAdoptionNextMove,
+  buildTeamLearningAdoptionRows,
   buildTeamLearningAdoptionSignal,
   buildTeamLearningAdoptionTaskDraft,
   findOpenLearningAdoptionTask,
+  pickTeamLearningAdoptionFocus,
 } from "./team-learning-adoption";
 import {
   buildTeamLearningSummaries,
@@ -197,6 +199,28 @@ describe("team learning adoption", () => {
 
     expect(findOpenLearningAdoptionTask(tasks, draft!)).toMatchObject({
       id: "task-1",
+    });
+  });
+
+  test("builds shared adoption rows and picks the owner-visible next focus", () => {
+    const summaries = buildTeamLearningSummaries(staff, [serviceProgress]);
+
+    const rows = buildTeamLearningAdoptionRows({
+      summaries,
+      progress: [serviceProgress],
+      comments: [],
+      tasks: [],
+    });
+    const focus = pickTeamLearningAdoptionFocus(rows);
+
+    expect(rows).toHaveLength(2);
+    expect(focus).toMatchObject({
+      summary: { member: { id: "service-1" } },
+      signal: { status: "needs_memory" },
+      move: {
+        label: "Нужен факт",
+        action: "assign_fact",
+      },
     });
   });
 });

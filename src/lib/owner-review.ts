@@ -34,6 +34,7 @@ import type {
   TeamOpsActionTone,
   TeamOpsReadiness,
 } from "@/lib/team/team-ops-readiness";
+import type { TeamLearningAdoptionRow } from "@/lib/team/team-learning-adoption";
 import { buildTeamTaskQueue, isOpenTeamTask } from "@/lib/team/team-task-queue";
 import type {
   StaffMember,
@@ -209,6 +210,7 @@ type BuildOwnerReviewInput = {
   teamAnnouncements?: TeamAnnouncement[];
   teamAnnouncementReads?: TeamAnnouncementRead[];
   shiftPlanVariance?: TeamShiftPlanVarianceSummary;
+  learningAdoptionFocus?: TeamLearningAdoptionRow | null;
 };
 
 function pct(part: number, total: number): number {
@@ -576,6 +578,9 @@ function taskReasonForSource(
   }
   if (sourceLabel === "Полевой контекст") {
     return "связать факты смены с цифрами, назначить ответственного и убрать повторяемую причину";
+  }
+  if (sourceLabel === "Стандарт команды") {
+    return "не считать обучение внедренным, пока сотрудник не вернул живой факт из смены";
   }
   if (sourceLabel?.startsWith("ФОТ")) {
     return "доказать стоимость смен до выводов о прибыли";
@@ -2328,6 +2333,63 @@ function ownerActionFromFieldHypothesis(
   };
 }
 
+function ownerToneFromLearningAdoption(
+  row: TeamLearningAdoptionRow,
+): OwnerReviewTone {
+  if (row.move?.action === "assign_fact") return "risk";
+  if (row.signal.status === "needs_memory") return "watch";
+  return "good";
+}
+
+function learningAdoptionEvidence(
+  row: TeamLearningAdoptionRow | null | undefined,
+): OwnerReviewEvidence | null {
+  if (!row?.move || row.signal.status === "not_ready") return null;
+
+  return {
+    label: "Стандарт",
+    value: row.move.label,
+    detail: `${row.summary.member.name}: ${row.move.detail}`,
+    tone: ownerToneFromLearningAdoption(row),
+  };
+}
+
+function ownerActionFromLearningAdoption(
+  row: TeamLearningAdoptionRow | null | undefined,
+): OwnerReviewAction | null {
+  if (!row?.move || row.signal.status !== "needs_memory") return null;
+
+  const memberName = row.summary.member.name;
+  const moduleTitle = row.signal.moduleTitle ?? "стандарт";
+  const isAssigned = Boolean(row.existingTask);
+
+  return {
+    title: isAssigned
+      ? "Проверить факт стандарта после смены"
+      : "Добрать факт внедрения стандарта",
+    detail: `${memberName}: ${row.move.detail} Без факта смены Receptor не считает обучение внедренным.`,
+    role: "manager",
+    tone: isAssigned ? "watch" : "risk",
+    target: isAssigned ? "team-actions" : "team-learning",
+    sourceLabel: "Стандарт команды",
+    taskTitle:
+      row.draft?.title ??
+      `Вернуть факт смены: ${memberName} — ${moduleTitle}`,
+    memberId: row.summary.member.id,
+    memberName,
+    learningModuleId: row.signal.moduleId ?? undefined,
+    learningModuleTitle: moduleTitle,
+    learningChecklistTitle:
+      row.draft?.checklistTitle ??
+      "Если стандарт сдан, но нет факта смены",
+    briefingQuestion:
+      row.draft?.memoryPrompt ??
+      `где ${memberName} применил(а) стандарт "${moduleTitle}", что изменилось и что проверить утром`,
+    existingTaskId: row.existingTask?.id,
+    existingTaskStatus: row.existingTask?.status,
+  };
+}
+
 function shiftPlanVarianceEvidence(
   input: TeamShiftPlanVarianceSummary,
 ): OwnerReviewEvidence | null {
@@ -3192,6 +3254,10 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
       return evidence ? [evidence] : [];
     })(),
     ...(input.team ? [teamEvidence(input.team)] : []),
+    ...(() => {
+      const evidence = learningAdoptionEvidence(input.learningAdoptionFocus);
+      return evidence ? [evidence] : [];
+    })(),
     ...(fieldContext ? [fieldContextEvidence(fieldContext)] : []),
     ...(operationalProof ? [operationalProofEvidence(operationalProof)] : []),
     ...(() => {
@@ -3257,6 +3323,7 @@ export function buildOwnerReview(input: BuildOwnerReviewInput): OwnerReview {
         ownerActionFromCommunication(operationalProof),
         ownerActionFromFieldMemoryQuality(fieldContext, fieldMemoryReadiness),
         ownerActionFromFieldContext(fieldContext),
+        ownerActionFromLearningAdoption(input.learningAdoptionFocus),
         ownerActionFromLaborMargin({
           labor: input.labor,
           margin: input.margin,

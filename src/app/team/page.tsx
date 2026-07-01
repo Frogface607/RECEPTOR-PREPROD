@@ -79,11 +79,11 @@ import {
   type TeamLearningMemberSummary,
 } from "@/lib/team/team-learning-progress";
 import {
+  buildTeamLearningAdoptionRows,
   buildTeamLearningAdoptionNextMove,
-  buildTeamLearningAdoptionSignal,
-  buildTeamLearningAdoptionTaskDraft,
-  findOpenLearningAdoptionTask,
+  pickTeamLearningAdoptionFocus,
   type TeamLearningAdoptionNextMove,
+  type TeamLearningAdoptionRow,
   type TeamLearningAdoptionSignal,
   type TeamLearningAdoptionStatus,
   type TeamLearningAdoptionTaskDraft,
@@ -173,13 +173,7 @@ const ROLE_PARAM_VALUES = new Set<TeamRoleId>(
   TEAM_ROLES.map((role) => role.id),
 );
 
-type LearningAdoptionRow = {
-  summary: TeamLearningMemberSummary;
-  signal: TeamLearningAdoptionSignal;
-  draft: TeamLearningAdoptionTaskDraft | null;
-  existingTask: TeamTask | null;
-  move: TeamLearningAdoptionNextMove | null;
-};
+type LearningAdoptionRow = TeamLearningAdoptionRow;
 
 function parseRole(value: string | string[] | undefined): TeamRoleId {
   const raw = Array.isArray(value) ? value[0] : value;
@@ -216,20 +210,6 @@ function teamHref(
 function dashboardHref(venueId: string, period: Period): string {
   const params = new URLSearchParams(periodToSearchParams(period));
   return `/dashboard/${encodeURIComponent(venueId)}?${params.toString()}`;
-}
-
-function pickLearningAdoptionFocus(
-  rows: LearningAdoptionRow[],
-): LearningAdoptionRow | null {
-  return (
-    rows.find((row) => row.move?.action === "assign_fact") ??
-    rows.find(
-      (row) =>
-        row.signal.status === "needs_memory" &&
-        row.move?.label === "Факт назначен",
-    ) ??
-    null
-  );
 }
 
 function learningAdoptionWorkflowFocus(
@@ -313,35 +293,18 @@ export default async function TeamPage({
     workspace.learningProgress,
     workspace.learningStandards,
   );
-  const learningAdoptionRows: LearningAdoptionRow[] = learningSummaries.map(
-    (summary) => {
-      const signal = buildTeamLearningAdoptionSignal({
-        summary,
-        progress: workspace.learningProgress,
-        comments: workspace.comments,
-      });
-      const draft = buildTeamLearningAdoptionTaskDraft(summary, signal);
-      const existingTask = draft
-        ? findOpenLearningAdoptionTask(workspace.tasks, draft)
-        : null;
-      const move = buildTeamLearningAdoptionNextMove({
-        signal,
-        taskExists: Boolean(existingTask),
-      });
-
-      return {
-        summary,
-        signal,
-        draft,
-        existingTask,
-        move,
-      };
-    },
-  );
+  const learningAdoptionRows: LearningAdoptionRow[] =
+    buildTeamLearningAdoptionRows({
+      summaries: learningSummaries,
+      progress: workspace.learningProgress,
+      comments: workspace.comments,
+      tasks: workspace.tasks,
+    });
   const learningAdoptionByMember = new Map(
     learningAdoptionRows.map((row) => [row.summary.member.id, row] as const),
   );
-  const learningAdoptionFocus = pickLearningAdoptionFocus(learningAdoptionRows);
+  const learningAdoptionFocus =
+    pickTeamLearningAdoptionFocus(learningAdoptionRows);
   const learningOverview = summarizeTeamLearning(learningSummaries);
   const learningRolePlans = buildTeamLearningRolePlans(
     learningSummaries,

@@ -49,6 +49,14 @@ export type TeamLearningAdoptionNextMove = {
   actionLabel: string | null;
 };
 
+export type TeamLearningAdoptionRow = {
+  summary: TeamLearningMemberSummary;
+  signal: TeamLearningAdoptionSignal;
+  draft: TeamLearningAdoptionTaskDraft | null;
+  existingTask: TeamTask | null;
+  move: TeamLearningAdoptionNextMove | null;
+};
+
 const OPEN_TASK_STATUSES = new Set<TeamTask["status"]>([
   "new",
   "accepted",
@@ -196,6 +204,51 @@ export function buildTeamLearningAdoptionNextMove(input: {
     action: "none",
     actionLabel: null,
   };
+}
+
+export function buildTeamLearningAdoptionRows(input: {
+  summaries: TeamLearningMemberSummary[];
+  progress: TeamLearningProgress[];
+  comments: TeamTaskComment[];
+  tasks: TeamTask[];
+}): TeamLearningAdoptionRow[] {
+  return input.summaries.map((summary) => {
+    const signal = buildTeamLearningAdoptionSignal({
+      summary,
+      progress: input.progress,
+      comments: input.comments,
+    });
+    const draft = buildTeamLearningAdoptionTaskDraft(summary, signal);
+    const existingTask = draft
+      ? findOpenLearningAdoptionTask(input.tasks, draft)
+      : null;
+    const move = buildTeamLearningAdoptionNextMove({
+      signal,
+      taskExists: Boolean(existingTask),
+    });
+
+    return {
+      summary,
+      signal,
+      draft,
+      existingTask,
+      move,
+    };
+  });
+}
+
+export function pickTeamLearningAdoptionFocus<
+  T extends Pick<TeamLearningAdoptionRow, "signal" | "move">,
+>(rows: T[]): T | null {
+  return (
+    rows.find((row) => row.move?.action === "assign_fact") ??
+    rows.find(
+      (row) =>
+        row.signal.status === "needs_memory" &&
+        row.move?.label === "Факт назначен",
+    ) ??
+    null
+  );
 }
 
 function normalizeTaskTitle(value: string): string {

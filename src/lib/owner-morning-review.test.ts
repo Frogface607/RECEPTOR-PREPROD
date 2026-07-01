@@ -206,4 +206,25 @@ describe("buildOwnerMorningReviewRows", () => {
     );
     expect(rows).toHaveLength(3);
   });
+
+  test("keeps standard adoption visible in the owner morning rows", () => {
+    const review = baseReview();
+    review.evidence.push({
+      label: "Стандарт",
+      value: "Нужен факт",
+      detail:
+        "Маша: стандарт сдан, но нужен итог смены, где его применили.",
+      tone: "risk",
+    });
+
+    const rows = buildOwnerMorningReviewRows({ review });
+
+    expect(rows[2]).toMatchObject({
+      label: "Стандарт",
+      value: "Нужен факт",
+      detail: expect.stringContaining("Маша"),
+      tone: "risk",
+    });
+    expect(rows).toHaveLength(4);
+  });
 });

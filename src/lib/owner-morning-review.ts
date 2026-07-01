@@ -170,6 +170,18 @@ function fieldActionRow(
   };
 }
 
+function learningAdoptionRow(review: OwnerReview): OwnerMorningReviewRow | null {
+  const standard = review.evidence.find((item) => item.label === "Стандарт");
+  if (!standard) return null;
+
+  return {
+    label: "Стандарт",
+    value: standard.value,
+    detail: standard.detail,
+    tone: standard.tone,
+  };
+}
+
 function actionRow(
   review: OwnerReview,
   mainAction: OwnerReviewAction | null,
@@ -214,7 +226,14 @@ export function buildOwnerMorningReviewRows({
 }): OwnerMorningReviewRow[] {
   const bi = primaryBiRow(review);
   const bridge = bridgeRow(review, bi);
+  const learning = learningAdoptionRow(review);
   const action = fieldActionRow(review, bi) ?? actionRow(review, mainAction);
 
-  return [bi, fieldRow(review), ...(bridge ? [bridge] : []), action];
+  return [
+    bi,
+    fieldRow(review),
+    ...(learning ? [learning] : []),
+    ...(bridge ? [bridge] : []),
+    action,
+  ];
 }
