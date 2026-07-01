@@ -95,6 +95,7 @@ export type MemberSecondBrainFact = {
 export type MemberSecondBrainMemoryLink = {
   label: string;
   detail: string;
+  reason: string;
   href: string;
   action: string;
   tone: MemberSecondBrainTone;
@@ -655,6 +656,8 @@ function memberMemoryLink(input: {
       detail: input.nextLearning
         ? `Закрывает пробел в памяти роли: ${input.nextLearning.title}.`
         : "Закрывает пробел допуска в памяти сотрудника.",
+      reason:
+        "Без допуска советник видит человека в команде, но не может считать его готовым к смене.",
       href: "#learning-progress",
       action: "Открыть обучение",
       tone: "risk",
@@ -665,6 +668,8 @@ function memberMemoryLink(input: {
     return {
       label: "Связать задачу",
       detail: `Срочная задача станет частью памяти смены: ${input.urgentTasks[0].title}.`,
+      reason:
+        "Так утренний разбор увидит не только проблему, но и кто уже забрал ее в работу.",
       href: "#team-actions",
       action: "Открыть задачу",
       tone: "risk",
@@ -676,6 +681,8 @@ function memberMemoryLink(input: {
       label: "Собрать итог",
       detail:
         "После смены этот итог свяжет человека, событие и утренний разбор.",
+      reason:
+        "Без итога смены у владельца есть цифры, но нет причины, почему день прошел именно так.",
       href: "#shift-summary",
       action: "Записать итог",
       tone: "setup",
@@ -686,6 +693,8 @@ function memberMemoryLink(input: {
     return {
       label: "Дополнить итог",
       detail: `Чтобы память стала полезной, добавьте: ${input.fieldMemory.bestMissing.join(", ")}.`,
+      reason:
+        "Советнику нужен факт, контекст, масштаб и следующий шаг, иначе он будет давать общие советы.",
       href: "#shift-summary",
       action: "Дополнить",
       tone: "setup",
@@ -696,6 +705,8 @@ function memberMemoryLink(input: {
     return {
       label: "Связать задачу",
       detail: `Следующий шаг по задаче попадет в рабочий контекст: ${input.openTasks[0].title}.`,
+      reason:
+        "Закрытый следующий шаг покажет, что изменилось после смены, а не просто сохранит задачу.",
       href: "#team-actions",
       action: "Открыть задачу",
       tone: "work",
@@ -706,6 +717,8 @@ function memberMemoryLink(input: {
     label: "Память связана",
     detail:
       "Роль, обучение, задачи и итог смены уже дают советнику рабочий контекст.",
+    reason:
+      "Теперь любое новое наблюдение усилит картину смены, людей и утренних решений.",
     href: "#shift-summary",
     action: "Добавить наблюдение",
     tone: "ready",

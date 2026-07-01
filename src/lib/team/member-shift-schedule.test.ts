@@ -475,6 +475,7 @@ describe("buildMemberShiftSchedule", () => {
       nextQuestion: "Что мешает пройти стандарт «Как рекомендовать блюдо» до смены?",
       memoryLink: {
         label: "Связать обучение",
+        reason: expect.stringContaining("Без допуска"),
         href: "#learning-progress",
         action: "Открыть обучение",
         tone: "risk",
@@ -518,6 +519,7 @@ describe("buildMemberShiftSchedule", () => {
     expect(profile.nextQuestion).toContain("Что произошло на последней смене");
     expect(profile.memoryLink).toMatchObject({
       label: "Собрать итог",
+      reason: expect.stringContaining("есть цифры, но нет причины"),
       href: "#shift-summary",
       action: "Записать итог",
       tone: "setup",
@@ -557,6 +559,7 @@ describe("buildMemberShiftSchedule", () => {
     expect(profile.nextQuestion).toContain("В итоге смены не хватает");
     expect(profile.memoryLink).toMatchObject({
       label: "Дополнить итог",
+      reason: expect.stringContaining("факт, контекст, масштаб"),
       href: "#shift-summary",
       action: "Дополнить",
       tone: "setup",
@@ -590,6 +593,7 @@ describe("buildMemberShiftSchedule", () => {
 
     expect(profile.memoryLink).toMatchObject({
       label: "Связать задачу",
+      reason: expect.stringContaining("что изменилось после смены"),
       href: "#team-actions",
       action: "Открыть задачу",
       tone: "work",

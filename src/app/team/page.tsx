@@ -2055,6 +2055,10 @@ function MemberSecondBrainCard({
           <span className="mt-1 line-clamp-2 block text-xs leading-relaxed opacity-80">
             {profile.memoryLink.detail}
           </span>
+          <span className="mt-2 block text-xs leading-relaxed opacity-90">
+            <span className="font-medium">Почему это важно:</span>{" "}
+            {profile.memoryLink.reason}
+          </span>
         </span>
         <span className="inline-flex w-fit items-center gap-1.5 rounded-md border border-current/25 px-2 py-1 text-[10px] uppercase tracking-[0.12em]">
           {profile.memoryLink.action}
