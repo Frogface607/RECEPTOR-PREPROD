@@ -1,8 +1,9 @@
-import type { TeamTaskComment } from "./team-os";
+import type { TeamTask, TeamTaskComment } from "./team-os";
 import type {
   TeamLearningMemberSummary,
   TeamLearningProgress,
 } from "./team-learning-progress";
+import { buildTeamLearningShiftCard } from "./team-learning-shift-card";
 import { isLikelySameTeamMemberName } from "./team-member-match";
 
 export type TeamLearningAdoptionStatus =
@@ -18,6 +19,27 @@ export type TeamLearningAdoptionSignal = {
   moduleTitle: string | null;
   memoryCommentId: string | null;
 };
+
+export type TeamLearningAdoptionTaskDraft = {
+  title: string;
+  priority: "high" | "medium";
+  audienceType: "member";
+  audienceMemberId: string;
+  memberName: string;
+  moduleId: string | null;
+  moduleTitle: string;
+  checklistTitle: string;
+  practiceAction: string;
+  memoryPrompt: string;
+  contextNote: string;
+  dueLabel: string;
+};
+
+const OPEN_TASK_STATUSES = new Set<TeamTask["status"]>([
+  "new",
+  "accepted",
+  "in_progress",
+]);
 
 function normalizeText(value: string): string {
   return value
@@ -110,4 +132,69 @@ export function buildTeamLearningAdoptionSignal(input: {
     moduleTitle,
     memoryCommentId: null,
   };
+}
+
+function normalizeTaskTitle(value: string): string {
+  return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("ru-RU");
+}
+
+export function buildTeamLearningAdoptionTaskDraft(
+  summary: TeamLearningMemberSummary,
+  signal: TeamLearningAdoptionSignal,
+): TeamLearningAdoptionTaskDraft | null {
+  if (signal.status !== "needs_memory") return null;
+
+  const item = summary.items.find(
+    (candidate) => candidate.id === signal.moduleId,
+  );
+  const moduleTitle = signal.moduleTitle ?? item?.title ?? "стандарт";
+  const checklistTitle = "Если стандарт сдан, но нет факта смены";
+  const shiftCard = item
+    ? buildTeamLearningShiftCard(item, checklistTitle)
+    : {
+        action:
+          "На смене применить сданный стандарт в одной реальной ситуации.",
+        fieldNote:
+          "После смены оставить факт: что применил, где помогло, что мешало и что проверить утром.",
+      };
+  const contextNote = [
+    `Проверка: ${summary.member.name} сдал(а) стандарт "${moduleTitle}", но в памяти смены нет факта применения.`,
+    `В смене: ${shiftCard.action}`,
+    `В память: ${shiftCard.fieldNote}`,
+    "Зачем: обучение становится операционной ценностью только когда стандарт возвращается живым фактом с поля.",
+    `Стандарт: ${moduleTitle}.`,
+    `Чеклист: ${checklistTitle}.`,
+  ].join("\n");
+
+  return {
+    title: `Вернуть факт смены: ${summary.member.name} — ${moduleTitle}`,
+    priority: summary.canWorkShift ? "medium" : "high",
+    audienceType: "member",
+    audienceMemberId: summary.member.id,
+    memberName: summary.member.name,
+    moduleId: signal.moduleId,
+    moduleTitle,
+    checklistTitle,
+    practiceAction: shiftCard.action,
+    memoryPrompt: shiftCard.fieldNote,
+    contextNote,
+    dueLabel: "после ближайшей смены",
+  };
+}
+
+export function findOpenLearningAdoptionTask(
+  tasks: TeamTask[],
+  draft: TeamLearningAdoptionTaskDraft,
+): TeamTask | null {
+  const draftTitle = normalizeTaskTitle(draft.title);
+
+  return (
+    tasks.find(
+      (task) =>
+        OPEN_TASK_STATUSES.has(task.status) &&
+        task.audience.type === "member" &&
+        task.audience.memberId === draft.audienceMemberId &&
+        normalizeTaskTitle(task.title) === draftTitle,
+    ) ?? null
+  );
 }

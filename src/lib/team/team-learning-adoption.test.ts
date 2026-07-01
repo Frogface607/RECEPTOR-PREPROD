@@ -1,6 +1,10 @@
 import { describe, expect, test } from "vitest";
-import type { StaffMember, TeamTaskComment } from "./team-os";
-import { buildTeamLearningAdoptionSignal } from "./team-learning-adoption";
+import type { StaffMember, TeamTask, TeamTaskComment } from "./team-os";
+import {
+  buildTeamLearningAdoptionSignal,
+  buildTeamLearningAdoptionTaskDraft,
+  findOpenLearningAdoptionTask,
+} from "./team-learning-adoption";
 import {
   buildTeamLearningSummaries,
   type TeamLearningProgress,
@@ -96,6 +100,58 @@ describe("team learning adoption", () => {
       status: "not_ready",
       moduleId: "kitchen-stop-list",
       memoryCommentId: null,
+    });
+  });
+
+  test("builds a task draft to return a passed standard to shift memory", () => {
+    const [summary] = buildTeamLearningSummaries(staff, [serviceProgress]);
+    const signal = buildTeamLearningAdoptionSignal({
+      summary,
+      progress: [serviceProgress],
+      comments: [],
+    });
+
+    const draft = buildTeamLearningAdoptionTaskDraft(summary, signal);
+
+    expect(draft).toMatchObject({
+      title:
+        "Вернуть факт смены: Маша — Как рекомендовать блюдо без давления",
+      audienceType: "member",
+      audienceMemberId: "service-1",
+      moduleId: "service-recommendation",
+      checklistTitle: "Если стандарт сдан, но нет факта смены",
+      dueLabel: "после ближайшей смены",
+    });
+    expect(draft?.contextNote).toContain("нет факта применения");
+    expect(draft?.contextNote).toContain("В память:");
+  });
+
+  test("finds an existing open adoption task for the same member and standard", () => {
+    const [summary] = buildTeamLearningSummaries(staff, [serviceProgress]);
+    const signal = buildTeamLearningAdoptionSignal({
+      summary,
+      progress: [serviceProgress],
+      comments: [],
+    });
+    const draft = buildTeamLearningAdoptionTaskDraft(summary, signal);
+    expect(draft).not.toBeNull();
+
+    const tasks: TeamTask[] = [
+      {
+        id: "task-1",
+        title:
+          "Вернуть факт смены: Маша — Как рекомендовать блюдо без давления",
+        source: "manager",
+        priority: "medium",
+        status: "in_progress",
+        venueId: "venue-1",
+        audience: { type: "member", memberId: "service-1" },
+        dueLabel: "после ближайшей смены",
+      },
+    ];
+
+    expect(findOpenLearningAdoptionTask(tasks, draft!)).toMatchObject({
+      id: "task-1",
     });
   });
 });

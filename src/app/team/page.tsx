@@ -26,6 +26,7 @@ import { TeamActionsPanel } from "./team-actions-panel";
 import { TeamCommunicationPanel } from "./team-communication-panel";
 import { TeamFollowUpTaskButton } from "./team-followup-task-button";
 import { LearningAdmissionTaskButton } from "./learning-admission-task-button";
+import { LearningAdoptionTaskButton } from "./learning-adoption-task-button";
 import { TeamShiftPlanPanel } from "./team-shift-plan-panel";
 import { saveTeamLearningStandardAction } from "./actions";
 import {
@@ -79,8 +80,11 @@ import {
 } from "@/lib/team/team-learning-progress";
 import {
   buildTeamLearningAdoptionSignal,
+  buildTeamLearningAdoptionTaskDraft,
+  findOpenLearningAdoptionTask,
   type TeamLearningAdoptionSignal,
   type TeamLearningAdoptionStatus,
+  type TeamLearningAdoptionTaskDraft,
 } from "@/lib/team/team-learning-adoption";
 import {
   buildLearningAdmissionTaskDraft,
@@ -263,14 +267,26 @@ export default async function TeamPage({
     workspace.learningStandards,
   );
   const learningAdoptionByMember = new Map(
-    learningSummaries.map((summary) => [
-      summary.member.id,
-      buildTeamLearningAdoptionSignal({
+    learningSummaries.map((summary) => {
+      const signal = buildTeamLearningAdoptionSignal({
         summary,
         progress: workspace.learningProgress,
         comments: workspace.comments,
-      }),
-    ]),
+      });
+      const draft = buildTeamLearningAdoptionTaskDraft(summary, signal);
+      const existingTask = draft
+        ? findOpenLearningAdoptionTask(workspace.tasks, draft)
+        : null;
+
+      return [
+        summary.member.id,
+        {
+          signal,
+          draft,
+          existingTask,
+        },
+      ] as const;
+    }),
   );
   const learningOverview = summarizeTeamLearning(learningSummaries);
   const learningRolePlans = buildTeamLearningRolePlans(
@@ -808,15 +824,22 @@ export default async function TeamPage({
                   </p>
                 </div>
                 <div className="mt-5 grid gap-3">
-                  {learningSummaries.map((summary) => (
-                    <LearningSummaryRow
-                      key={summary.member.id}
-                      summary={summary}
-                      adoption={learningAdoptionByMember.get(
-                        summary.member.id,
-                      )}
-                    />
-                  ))}
+                  {learningSummaries.map((summary) => {
+                    const adoption = learningAdoptionByMember.get(
+                      summary.member.id,
+                    );
+
+                    return (
+                      <LearningSummaryRow
+                        key={summary.member.id}
+                        venueId={workspace.venueId}
+                        summary={summary}
+                        adoption={adoption?.signal}
+                        adoptionTaskDraft={adoption?.draft}
+                        adoptionTaskExists={Boolean(adoption?.existingTask)}
+                      />
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -3249,11 +3272,17 @@ function formatLearningDate(value: string): string {
 }
 
 function LearningSummaryRow({
+  venueId,
   summary,
   adoption,
+  adoptionTaskDraft,
+  adoptionTaskExists,
 }: {
+  venueId: string;
   summary: TeamLearningMemberSummary;
   adoption?: TeamLearningAdoptionSignal;
+  adoptionTaskDraft?: TeamLearningAdoptionTaskDraft | null;
+  adoptionTaskExists?: boolean;
 }) {
   const role = getTeamRole(summary.member.roleId);
 
@@ -3308,6 +3337,15 @@ function LearningSummaryRow({
               <p className="mt-0.5 leading-relaxed text-muted-foreground">
                 {adoption.detail}
               </p>
+              {adoptionTaskDraft ? (
+                <div className="mt-2">
+                  <LearningAdoptionTaskButton
+                    venueId={venueId}
+                    draft={adoptionTaskDraft}
+                    existingTask={Boolean(adoptionTaskExists)}
+                  />
+                </div>
+              ) : null}
             </div>
           </div>
         ) : null}
