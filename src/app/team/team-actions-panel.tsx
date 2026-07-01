@@ -554,7 +554,7 @@ export function TeamActionsPanel({
           >
             <div className="flex items-center gap-3">
               <UserPlus className="size-5 text-brand" />
-              <h3 className="text-lg font-medium">Добавить сотрудника</h3>
+              <h3 className="text-lg font-medium">Добавить человека в смену</h3>
             </div>
             {prefillMemberName ? (
               <p className="mt-3 rounded-lg border border-brand/25 bg-brand/10 px-3 py-2 text-[12px] leading-relaxed text-brand">
@@ -562,6 +562,10 @@ export function TeamActionsPanel({
                 точным ФОТ.
               </p>
             ) : null}
+            <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
+              Для старта достаточно имени и роли. Логин, пароль и оплату можно
+              заполнить сразу или вернуться к ним в настройке команды ниже.
+            </p>
             <div className="mt-5 space-y-3">
               <FieldLabel label="Имя">
                 <input
@@ -572,7 +576,7 @@ export function TeamActionsPanel({
                   required
                 />
               </FieldLabel>
-              <FieldLabel label="Email">
+              <FieldLabel label="Email для доступа">
                 <input
                   value={memberEmail}
                   onChange={(event) => setMemberEmail(event.target.value)}
@@ -582,7 +586,7 @@ export function TeamActionsPanel({
                 />
               </FieldLabel>
               <div className="grid gap-3 sm:grid-cols-2">
-                <FieldLabel label="Логин">
+                <FieldLabel label="Вход в кабинет">
                   <input
                     value={memberLogin}
                     onChange={(event) => setMemberLogin(event.target.value)}
@@ -591,7 +595,7 @@ export function TeamActionsPanel({
                     autoComplete="off"
                   />
                 </FieldLabel>
-                <FieldLabel label="Пароль">
+                <FieldLabel label="Временный пароль">
                   <div className="flex gap-2">
                     <input
                       value={memberPassword}
@@ -639,7 +643,7 @@ export function TeamActionsPanel({
                 />
               </FieldLabel>
               <div className="grid gap-3 sm:grid-cols-3">
-                <FieldLabel label="₽ / час">
+                <FieldLabel label="Оплата за час">
                   <input
                     value={memberHourlyRate}
                     onChange={(event) =>
@@ -650,7 +654,7 @@ export function TeamActionsPanel({
                     placeholder="350"
                   />
                 </FieldLabel>
-                <FieldLabel label="₽ / смена">
+                <FieldLabel label="Оплата за смену">
                   <input
                     value={memberShiftPay}
                     onChange={(event) => setMemberShiftPay(event.target.value)}
@@ -659,7 +663,7 @@ export function TeamActionsPanel({
                     placeholder="4000"
                   />
                 </FieldLabel>
-                <FieldLabel label="% продаж">
+                <FieldLabel label="Бонус с продаж">
                   <input
                     value={memberRevenueBonusPct}
                     onChange={(event) =>
@@ -673,11 +677,12 @@ export function TeamActionsPanel({
               </div>
             </div>
             <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
-              Формат входа: login@staff.receptorai.pro.
+              Если указан только логин без email, Receptor сделает формат
+              login@staff.receptorai.pro.
             </p>
             <Button type="submit" className="mt-5 w-full" disabled={pending}>
               <Plus className="size-4" />
-              Добавить
+              Добавить в команду
             </Button>
           </form>
 
@@ -1158,12 +1163,13 @@ export function TeamActionsPanel({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-                Доступы
+                Настройка команды
               </p>
-              <h3 className="mt-2 text-xl font-medium">Команда</h3>
+              <h3 className="mt-2 text-xl font-medium">Люди, роли и оплата</h3>
             </div>
             <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
-              Логины, роли, статусы, пароли и ставки для ФОТ.
+              Сначала закрываем реальных людей и ставки, чтобы смены, ФОТ и
+              поручения считались без ручной расшифровки.
             </p>
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2">
