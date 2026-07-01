@@ -122,27 +122,22 @@ export function buildTeamLearningOperatingStandard(
     label: "Операционный стандарт роли",
     title: item.title,
     promise:
-      "Коротко понять правило, попробовать его в реальной смене и оставить один итог в память ресторана.",
+      "Один стандарт должен закончиться действием в смене и коротким итогом в память ресторана.",
     steps: [
       {
         label: "01",
-        title: "Понять правило",
+        title: "Прочитать правило",
         detail: item.description,
       },
       {
         label: "02",
-        title: "Применить в смене",
+        title: "Попробовать в смене",
         detail: shiftCard.action,
       },
       {
         label: "03",
-        title: "Оставить итог",
+        title: "Написать короткий итог",
         detail: shiftCard.fieldNote,
-      },
-      {
-        label: "04",
-        title: "Закрыть проверку",
-        detail: `Ответить на короткую проверку и набрать ${item.passPercentage}% или больше.`,
       },
     ],
   };

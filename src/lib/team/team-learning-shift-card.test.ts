@@ -46,17 +46,15 @@ describe("team learning shift card", () => {
       label: "Операционный стандарт роли",
       title: "Как рекомендовать блюдо без давления",
     });
-    expect(standard.promise).toContain("реальной смене");
+    expect(standard.promise).toContain("действием в смене");
     expect(standard.promise).toContain("память ресторана");
     expect(standard.steps.map((step) => step.title)).toEqual([
-      "Понять правило",
-      "Применить в смене",
-      "Оставить итог",
-      "Закрыть проверку",
+      "Прочитать правило",
+      "Попробовать в смене",
+      "Написать короткий итог",
     ]);
     expect(standard.steps[1]?.detail).toContain("предложи");
     expect(standard.steps[2]?.detail).toContain("После смены");
-    expect(standard.steps[3]?.detail).toContain("80%");
   });
 
   test("explains iiko learning as data discipline", () => {

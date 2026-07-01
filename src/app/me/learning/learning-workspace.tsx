@@ -163,15 +163,6 @@ export function LearningWorkspace({
   const completedCount = items.filter(
     (item) => (progress[item.id]?.bestPercentage ?? 0) >= item.passPercentage,
   ).length;
-  const averageScore =
-    items.length > 0
-      ? Math.round(
-          items.reduce(
-            (sum, item) => sum + (progress[item.id]?.bestPercentage ?? 0),
-            0,
-          ) / items.length,
-        )
-      : 0;
   const admission = useMemo(
     () => buildTeamLearningAdmission({ items, progress }),
     [items, progress],
@@ -282,6 +273,7 @@ export function LearningWorkspace({
   }
 
   const activeProgress = progress[activeItem.id];
+  const nextStandardTitle = admission.nextItem?.title ?? "все закрыты";
   const activeChecklistNormalized = normalizedTitle(activeChecklistTitle);
   const checklistExists =
     activeChecklistNormalized.length > 0 &&
@@ -302,18 +294,19 @@ export function LearningWorkspace({
         <aside className="space-y-4">
         <div className="rounded-lg border border-border/60 bg-card/50 p-5">
           <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-            Прогресс роли
+            Роль в смене
           </p>
           <div className="mt-4 grid grid-cols-3 gap-2">
             <Metric
-              label="стандарты"
+              label="сдано"
               value={`${completedCount}/${items.length}`}
             />
-            <Metric label="средний" value={`${averageScore}%`} />
+            <Metric label="следующий" value={nextStandardTitle} compact />
             <Metric label="роль" value={roleTitle} compact />
           </div>
           <p className="mt-4 text-[12px] leading-relaxed text-muted-foreground">
-            {memberName} · {venueName}
+            {memberName} · {venueName}. Открой один стандарт, попробуй его в
+            смене и оставь итог.
           </p>
         </div>
 
@@ -375,7 +368,7 @@ export function LearningWorkspace({
               <div className="flex flex-wrap items-center gap-2">
                 {operatingStandard ? (
                   <Badge variant="outline" className="border-brand/30 text-brand">
-                    {operatingStandard.label}
+                    стандарт на смену
                   </Badge>
                 ) : null}
                 <Badge variant="outline" className="border-brand/30 text-brand">
@@ -414,23 +407,29 @@ export function LearningWorkspace({
           </div>
 
           {operatingStandard ? (
-            <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              {operatingStandard.steps.map((step) => (
-                <div
-                  key={`${step.label}-${step.title}`}
-                  className="rounded-lg border border-border/45 bg-background/35 p-3"
-                >
-                  <p className="text-[10px] uppercase tracking-[0.16em] text-brand">
-                    {step.label}
-                  </p>
-                  <p className="mt-2 text-sm font-medium text-foreground">
-                    {step.title}
-                  </p>
-                  <p className="mt-2 line-clamp-4 text-[12px] leading-relaxed text-muted-foreground">
-                    {step.detail}
-                  </p>
-                </div>
-              ))}
+            <div className="mt-5 rounded-lg border border-border/45 bg-background/30 p-3">
+              <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                <BookOpenCheck className="size-3.5 text-brand" />
+                Маршрут стандарта
+              </div>
+              <div className="mt-3 grid gap-3 md:grid-cols-3">
+                {operatingStandard.steps.map((step) => (
+                  <div
+                    key={`${step.label}-${step.title}`}
+                    className="rounded-lg border border-border/45 bg-card/35 p-3"
+                  >
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-brand">
+                      {step.label}
+                    </p>
+                    <p className="mt-2 text-sm font-medium text-foreground">
+                      {step.title}
+                    </p>
+                    <p className="mt-2 line-clamp-4 text-[12px] leading-relaxed text-muted-foreground">
+                      {step.detail}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : null}
 
@@ -439,7 +438,7 @@ export function LearningWorkspace({
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.16em] text-brand">
-                    Практика на сегодня
+                    Попробовать в смене
                   </p>
                   <h3 className="mt-1 text-sm font-medium text-foreground">
                     {shiftCard.title}
@@ -468,7 +467,7 @@ export function LearningWorkspace({
                 <div className="rounded-lg border border-border/45 bg-background/35 p-3">
                   <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                     <MessageSquareText className="size-3.5 text-brand" />
-                    Что запомнит ресторан
+                    Потом написать в итог
                   </div>
                   <p className="mt-2 text-sm leading-relaxed text-foreground/85">
                     {shiftCard.fieldNote}
@@ -479,7 +478,7 @@ export function LearningWorkspace({
                 <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
                   <div className="min-w-0">
                     <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                      Шаблон итога смены
+                      3 строки после смены
                     </p>
                     <p className="mt-2 text-sm leading-relaxed text-foreground/85">
                       {shiftCard.fieldNoteTemplate}
@@ -547,10 +546,11 @@ export function LearningWorkspace({
             <div>
               <div className="flex items-center gap-2">
                 <ListChecks className="size-5 text-brand" />
-                <h2 className="text-xl font-medium">Проверка</h2>
+                <h2 className="text-xl font-medium">Проверка правила</h2>
               </div>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Ответь на вопросы. Проходной балл: {activeItem.passPercentage}%.
+                Быстро проверь, что правило понятно. После этого важно
+                применить его в смене и оставить итог.
               </p>
             </div>
             <span className="rounded-md border border-border/50 bg-background/45 px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
@@ -645,7 +645,7 @@ export function LearningWorkspace({
                     </p>
                     <p className="mt-1 text-[12px] text-muted-foreground">
                       {submittedScore.passed
-                        ? "Стандарт подтвержден. Теперь примените его в смене и верните один живой факт в память ресторана."
+                        ? "Правило понятно. Теперь попробуйте его в смене и верните один живой факт в память ресторана."
                         : "Нужно повторить материал и пересдать."}
                       {activeProgress?.completedAt
                         ? ` Последняя попытка: ${formatProgressDate(
