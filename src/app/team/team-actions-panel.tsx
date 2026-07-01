@@ -478,9 +478,9 @@ export function TeamActionsPanel({
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-[11px] uppercase tracking-[0.18em] text-brand">
-              Операции
+              Смена
             </p>
-            <h2 className="mt-2 text-2xl font-medium">Доступы и задачи</h2>
+            <h2 className="mt-2 text-2xl font-medium">Сменные поручения</h2>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <span className="rounded-full border border-border/55 bg-background/45 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                 период: {laborSource.periodLabel}
@@ -496,7 +496,8 @@ export function TeamActionsPanel({
             </div>
           </div>
           <p className="max-w-md text-sm text-muted-foreground">
-            Быстрые действия управляющего в том же периоде, который открыт в BI.
+            Кто делает, что сделать в смене и какой короткий итог вернуть
+            руководителю.
           </p>
         </div>
 
@@ -703,15 +704,15 @@ export function TeamActionsPanel({
           >
             <div className="flex items-center gap-3">
               <Send className="size-5 text-brand" />
-              <h3 className="text-lg font-medium">Создать задачу</h3>
+              <h3 className="text-lg font-medium">Поручить смене</h3>
             </div>
             <div className="mt-5 space-y-3">
-              <FieldLabel label="Задача">
+              <FieldLabel label="Что сделать">
                 <textarea
                   value={taskTitle}
                   onChange={(event) => setTaskTitle(event.target.value)}
                   className={`${FIELD_CLASS} min-h-24 resize-none`}
-                  placeholder="Что нужно сделать?"
+                  placeholder="Например: проверить стоп-лист перед вечерней посадкой и написать, что закончилось."
                   required
                 />
               </FieldLabel>
@@ -795,7 +796,7 @@ export function TeamActionsPanel({
             </div>
             <Button type="submit" className="mt-5 w-full" disabled={pending}>
               <Plus className="size-4" />
-              Создать
+              Поручить
             </Button>
           </form>
 
@@ -819,24 +820,24 @@ export function TeamActionsPanel({
           >
             <div className="flex items-center gap-3">
               <Send className="size-5 text-brand" />
-              <h3 className="text-lg font-medium">Обновить статус</h3>
+              <h3 className="text-lg font-medium">Довести до результата</h3>
             </div>
             {focusedTask ? (
               <p className="mt-3 rounded-lg border border-brand/25 bg-brand/10 px-3 py-2 text-[12px] leading-relaxed text-brand">
-                Открыта задача из экрана владельца: «{focusedTask.title}».
+                Открыто поручение из экрана владельца: «{focusedTask.title}».
               </p>
             ) : null}
 
             <div className="mt-4 grid grid-cols-3 gap-2">
               <TeamMetric
-                label="Открыто"
+                label="Сделать"
                 value={`${taskQueue.openCount}`}
-                detail="в работе"
+                detail="в очереди"
               />
               <TeamMetric
-                label="Сейчас"
+                label="Делают"
                 value={`${taskQueue.inProgressCount}`}
-                detail="исполняется"
+                detail="сейчас"
               />
               <TeamMetric
                 label="Срочно"
@@ -948,7 +949,12 @@ export function TeamActionsPanel({
                           {task.title}
                         </p>
                         <p className="mt-1 text-[11px] text-muted-foreground">
-                          {taskAudienceLabel(task, staff)} · {task.dueLabel}
+                          Кому: {taskAudienceLabel(task, staff)} · когда:{" "}
+                          {task.dueLabel}
+                        </p>
+                        <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                          Итог: коротко написать, что сделано и что проверить
+                          утром.
                         </p>
                         {hasContextBrief ? (
                           <div className="mt-2 space-y-1 rounded-md border border-border/40 bg-card/35 px-3 py-2 text-[12px] leading-relaxed">
@@ -1098,8 +1104,8 @@ export function TeamActionsPanel({
                 })
               ) : (
                 <p className="rounded-lg border border-border/45 bg-background/35 p-3 text-sm leading-relaxed text-muted-foreground">
-                  Открытых задач нет. Новые задачи из панели владельца появятся
-                  здесь, чтобы управляющий сразу вел их до результата.
+                  Открытых поручений нет. Новые поручения из панели владельца
+                  появятся здесь, чтобы управляющий сразу вел их до результата.
                 </p>
               )}
             </div>
