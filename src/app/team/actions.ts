@@ -1585,8 +1585,8 @@ export async function createTeamTaskAction(
           mode: "saved",
           taskId: existingTask.id,
           message: existingTaskContextUpdated
-            ? "Задача уже есть, контекст обновлен."
-            : "Задача уже есть.",
+            ? "Поручение уже есть, контекст обновлен."
+            : "Поручение уже есть.",
         };
       }
     } catch (error) {

@@ -99,7 +99,7 @@ describe("runMockChatTurn — routing", () => {
     expect(text?.text).toContain("Память смены:");
     expect(text?.text).toContain("Добор памяти смены");
     expect(text?.text).toContain("Обучить в первую очередь");
-    expect(text?.text).toContain("Попросить итог по стандарту");
+    expect(text?.text).toContain("Поручить итог по стандарту");
     expect(text?.text).toContain("Стандарт сдан, но нужен итог смены");
     expect(text?.text).toContain("Из чего делаю вывод");
     expect(text?.text).toContain("итога смены");
@@ -133,7 +133,7 @@ describe("runMockChatTurn — routing", () => {
 
     const ev = await collect("Что делать сегодня?", memoryWithoutTask);
     const text = ev.find((e) => e.type === "text");
-    expect(text?.text).toContain("Вопрос для брифа");
+    expect(text?.text).toContain("Что спросить");
     expect(text?.text).toContain("Почему это повлияло");
   });
 });

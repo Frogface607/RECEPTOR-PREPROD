@@ -424,7 +424,7 @@ export function formatRestaurantAdvisorMemoryForAnswer(
       ? `• Следующий вопрос для брифа: ${memory.fieldMemoryFollowUpQuestions[0]}`
       : null,
     memory.learningAdoptionGaps[0]
-      ? `• Попросить итог по стандарту: ${memory.learningAdoptionGaps[0]}.`
+      ? `• Поручить итог по стандарту: ${memory.learningAdoptionGaps[0]}.`
       : null,
     memory.closedStandardFollowUps?.[0]
       ? `• Стандарт сдан, но нужен итог смены: ${memory.closedStandardFollowUps[0]}.`

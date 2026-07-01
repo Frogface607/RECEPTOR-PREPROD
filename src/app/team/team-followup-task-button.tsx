@@ -75,16 +75,16 @@ export function TeamFollowUpTaskButton({
       {saved ? (
         <>
           <CheckCircle2 className="size-3.5" />
-          создано
+          поручено
         </>
       ) : isPending ? (
         <>
           <Loader2 className="size-3.5 animate-spin" />
-          пишу
+          поручаю
         </>
       ) : (
         <>
-          <Plus className="size-3.5" /> в задачу
+          <Plus className="size-3.5" /> Поручить
         </>
       )}
     </Button>

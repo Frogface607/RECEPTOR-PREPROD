@@ -256,11 +256,11 @@ function fieldSource({
       ? "ready"
       : "work";
   const actionLabel = answerTask && !answerTask.done
-    ? "Открыть задачу"
+    ? "Открыть поручение"
     : followUpTask
-    ? "Открыть задачу"
+    ? "Открыть поручение"
     : !digest || noteReadiness.complete === 0
-      ? "Поставить задачу"
+      ? "Поручить"
       : "Открыть";
 
   return {

@@ -671,7 +671,7 @@ function memberMemoryLink(input: {
       reason:
         "Так утренний разбор увидит не только проблему, но и кто уже забрал ее в работу.",
       href: "#team-actions",
-      action: "Открыть задачу",
+      action: "Открыть поручение",
       tone: "risk",
     };
   }
@@ -708,7 +708,7 @@ function memberMemoryLink(input: {
       reason:
         "Закрытый следующий шаг покажет, что изменилось после смены, а не просто сохранит задачу.",
       href: "#team-actions",
-      action: "Открыть задачу",
+      action: "Открыть поручение",
       tone: "work",
     };
   }

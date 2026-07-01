@@ -153,7 +153,7 @@ describe("team learning adoption", () => {
     ).toMatchObject({
       label: "Нужен короткий итог",
       action: "assign_fact",
-      actionLabel: "Попросить итог",
+      actionLabel: "Поручить итог",
     });
     expect(
       buildTeamLearningAdoptionNextMove({

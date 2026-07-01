@@ -595,7 +595,7 @@ describe("buildMemberShiftSchedule", () => {
       label: "Связать задачу",
       reason: expect.stringContaining("что изменилось после смены"),
       href: "#team-actions",
-      action: "Открыть задачу",
+      action: "Открыть поручение",
       tone: "work",
     });
     expect(profile.memoryLink.detail).toContain("Проверить стоп-лист");

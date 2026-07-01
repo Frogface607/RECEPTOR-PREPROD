@@ -278,7 +278,7 @@ function brainMemoryGraphTargetHref(
 }
 
 function actionCta(action: OwnerReviewAction): string {
-  if (action.existingTaskId) return "Открыть задачу";
+  if (action.existingTaskId) return "Открыть поручение";
   if (action.target === "margin-risk") return "Разобрать";
   if (action.target === "iiko-settings") return "Открыть iiko";
   if (action.target === "labor-member" && action.memberId) return "Открыть";
@@ -767,7 +767,7 @@ export function OwnerCommandPanel({
                       </span>
                     ) : brainReadiness.fieldMemory.nextQuestion ? (
                       <span className="mt-2 block text-[12px] leading-relaxed text-amber-100">
-                        Вопрос для брифа:{" "}
+                        Что спросить:{" "}
                         {brainReadiness.fieldMemory.nextQuestion}
                       </span>
                     ) : null}
@@ -874,7 +874,7 @@ export function OwnerCommandPanel({
                   variant="outline"
                   className="h-8 shrink-0 px-3 text-[12px]"
                 >
-                  {nextTeamTask ? "Открыть задачу" : "Открыть команду"}
+                  {nextTeamTask ? "Открыть поручение" : "Открыть команду"}
                   <ArrowRight className="size-3.5" />
                 </LinkButton>
               </div>
@@ -882,7 +882,7 @@ export function OwnerCommandPanel({
               {!nextTeamTask ? (
                 <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
                   Если владелец создаст действие из рекомендаций, оно появится в
-                  задачах команды и будет видно здесь.
+                  поручениях команды и будет видно здесь.
                 </p>
               ) : null}
               {teamTaskQueue.openContours.length > 0 ? (

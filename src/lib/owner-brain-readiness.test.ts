@@ -93,7 +93,7 @@ describe("owner brain readiness", () => {
     expect(readiness.fieldMemory).toMatchObject({
       status: "missing",
       title: "Итог смены еще не собран",
-      actionLabel: "Поставить задачу",
+      actionLabel: "Поручить",
       nextQuestion: "Что конкретно произошло в смене?",
     });
     expect(readiness.snapshot).toMatchObject([
@@ -312,7 +312,7 @@ describe("owner brain readiness", () => {
       status: "work",
       title: "Итог смены нужно уточнить",
       value: "0/1",
-      actionLabel: "Поставить задачу",
+      actionLabel: "Поручить",
       nextQuestion: "Почему это повлияло на гостей, продажи или команду?",
       followUpQuestions: [
         "Почему это повлияло на гостей, продажи или команду?",
@@ -375,7 +375,7 @@ describe("owner brain readiness", () => {
 
     expect(readiness.fieldMemory).toMatchObject({
       status: "work",
-      actionLabel: "Открыть задачу",
+      actionLabel: "Открыть поручение",
       nextQuestion: null,
       followUpTask: {
         title: "Уточнить итог смены: контекст/причина, когда/сколько",

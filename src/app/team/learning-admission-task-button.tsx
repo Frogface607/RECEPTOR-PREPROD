@@ -53,7 +53,7 @@ export function LearningAdmissionTaskButton({
         }}
       >
         <Plus className="size-3.5" />
-        {pending ? "Создаем" : "Создать задачу"}
+        {pending ? "Поручаю" : "Поручить стандарт"}
       </Button>
       <div className="max-w-[280px] space-y-1 text-left text-[11px] leading-snug text-muted-foreground sm:text-right">
         <p>

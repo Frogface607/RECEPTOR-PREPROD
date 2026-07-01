@@ -337,7 +337,7 @@ describe("restaurant advisor memory", () => {
     expect(text).toContain("Добор памяти уже в работе");
     expect(text).toContain("Почему совет будет точнее");
     expect(text).toContain("Из чего делаю вывод");
-    expect(text).toContain("Попросить итог по стандарту");
+    expect(text).toContain("Поручить итог по стандарту");
     expect(text).toContain("Стандарт сдан, но нужен итог смены");
     expect(text).toContain("Первый учебный пробел");
     expect(text).not.toContain("Сигналы с поля");

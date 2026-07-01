@@ -231,7 +231,7 @@ describe("buildOwnerReview", () => {
     expect(review.hypotheses).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          title: "ФОТ выше целевой нормы",
+          title: "Команда стоит выше целевой нормы",
           tone: "risk",
           role: "manager",
         }),
@@ -563,7 +563,7 @@ describe("buildOwnerReview", () => {
     expect(review.tasks).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          title: expect.stringContaining("права на OLAP смены"),
+          title: expect.stringContaining("права iiko на смены"),
           sourceLabel: "Данные iiko",
           learningModuleId: "iiko-cash-discipline",
           learningModuleTitle: "iiko и кассовая дисциплина на смене",
@@ -2094,7 +2094,7 @@ describe("buildOwnerReview", () => {
       score: 95,
       tone: "watch",
       action: {
-        label: "Открыть задачи",
+        label: "Открыть поручения",
         target: "team-actions",
       },
     });
@@ -3561,7 +3561,7 @@ describe("buildOwnerReview", () => {
     expect(review.actions).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          title: "Попросить итог по стандарту",
+          title: "Поручить итог по стандарту",
           target: "team-learning",
           sourceLabel: "Стандарт команды",
           memberId: "service-1",

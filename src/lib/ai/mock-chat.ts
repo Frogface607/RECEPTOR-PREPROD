@@ -327,13 +327,13 @@ function memoryBriefLines(memory: RestaurantAdvisorMemory | undefined): string[]
       ? `Добор памяти смены: ${memory.fieldMemoryTaskStatus}.`
       : null,
     !memory.fieldMemoryTaskStatus && memory.fieldMemoryFollowUpQuestions[0]
-      ? `Вопрос для брифа: ${memory.fieldMemoryFollowUpQuestions[0]}`
+      ? `Что спросить: ${memory.fieldMemoryFollowUpQuestions[0]}`
       : null,
     memory.learningGaps[0]
       ? `Обучить в первую очередь: ${memory.learningGaps[0]}.`
       : null,
     memory.learningAdoptionGaps[0]
-      ? `Попросить итог по стандарту: ${memory.learningAdoptionGaps[0]}.`
+      ? `Поручить итог по стандарту: ${memory.learningAdoptionGaps[0]}.`
       : null,
     memory.closedStandardFollowUps?.[0]
       ? `Стандарт сдан, но нужен итог смены: ${memory.closedStandardFollowUps[0]}.`

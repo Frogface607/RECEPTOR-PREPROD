@@ -174,7 +174,7 @@ describe("buildTeamDailyWorkflow", () => {
         },
       ],
       learningAdoptionFocus: {
-        title: "Попросить итог по стандарту",
+          title: "Поручить итог по стандарту",
         detail:
           "Маша: Как рекомендовать блюдо без давления — назначьте один итог смены после практики.",
         reason:
@@ -186,7 +186,7 @@ describe("buildTeamDailyWorkflow", () => {
     });
 
     expect(steps[1]).toMatchObject({
-      title: "Попросить итог по стандарту",
+      title: "Поручить итог по стандарту",
       detail:
         "Маша: Как рекомендовать блюдо без давления — назначьте один итог смены после практики.",
       href: "#learning-progress",

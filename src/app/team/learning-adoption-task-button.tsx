@@ -25,7 +25,7 @@ export function LearningAdoptionTaskButton({
     return (
       <p className="inline-flex items-center gap-1.5 text-[11px] font-medium text-brand">
         <CheckCircle2 className="size-3.5" />
-        Задача уже есть
+        Поручение уже есть
       </p>
     );
   }
@@ -64,7 +64,7 @@ export function LearningAdoptionTaskButton({
         }}
       >
         <Plus className="size-3.5" />
-        {pending ? "Создаем" : "Попросить итог"}
+        {pending ? "Поручаю" : "Поручить итог"}
       </Button>
       {message ? (
         <p

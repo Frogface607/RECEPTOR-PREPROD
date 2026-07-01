@@ -900,7 +900,7 @@ const LEARNING_CATALOG: TeamLearningItem[] = [
     id: "guest-feedback",
     title: "Отзывы и повторные визиты",
     description:
-      "Как собрать обратную связь и превратить ее в задачу для зала, кухни или маркетинга.",
+      "Как собрать обратную связь и превратить ее в поручение для зала, кухни или маркетинга.",
     timeLabel: "8 минут",
     status: "ready",
     roles: ["marketing", "venue_manager", "service"],

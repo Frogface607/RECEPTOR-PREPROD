@@ -219,7 +219,7 @@ function learningAdoptionWorkflowFocus(
     row.move.action === "assign_fact" ? "#learning-progress" : "#team-actions";
   const title =
     row.move.action === "assign_fact"
-      ? "Попросить итог по стандарту"
+      ? "Поручить итог по стандарту"
       : "Итог по стандарту уже в работе";
 
   return {
@@ -2598,7 +2598,7 @@ function TeamShiftMemorySection({
                   {primaryFollowUpQuestion ? (
                     <div className="mt-2 rounded-md border border-amber-300/20 bg-background/30 px-2 py-1.5">
                       <span className="block text-[10px] uppercase tracking-[0.14em] text-amber-200/80">
-                        Вопрос для брифа
+                        Что спросить
                       </span>
                       <span className="mt-1 block text-foreground">
                         {primaryFollowUpQuestion}
@@ -2636,7 +2636,7 @@ function TeamShiftMemorySection({
               {primaryFollowUpQuestion ? (
                 <div className="rounded-md border border-border/50 bg-background/35 px-2.5 py-2 text-[12px] leading-relaxed text-muted-foreground">
                   <span className="block text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                    Вопрос для брифа
+                    Что спросить
                   </span>
                   <span className="mt-1 block text-foreground">
                     {primaryFollowUpQuestion}
@@ -2691,7 +2691,7 @@ function TeamShiftMemorySection({
                 {adoptionMove.action === "none" &&
                 adoptionFocus.existingTask ? (
                   <LinkButton href="#team-actions" variant="outline">
-                    Открыть задачу
+                    Открыть поручение
                     <ArrowRight className="size-4" />
                   </LinkButton>
                 ) : null}
@@ -2718,7 +2718,7 @@ function TeamShiftMemorySection({
               />
             ) : null}
             <LinkButton href="#team-actions" variant="outline">
-              Открыть задачи и заметки
+              Открыть поручения и заметки
               <ArrowRight className="size-4" />
             </LinkButton>
             <LinkButton href="#learning-progress" variant="outline">
@@ -3321,7 +3321,7 @@ function LearningRolePlanCard({
             className="inline-flex items-center gap-2 rounded-md border border-brand/25 bg-brand/10 px-3 py-2 text-xs font-medium text-brand transition hover:border-brand/45 hover:bg-brand/15"
           >
             <CheckCircle2 className="size-3.5" />
-            <span>Задача уже есть</span>
+            <span>Поручение уже есть</span>
             <span className="text-muted-foreground">
               {statusLabel(existingTask.status)}
             </span>

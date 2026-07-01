@@ -194,7 +194,7 @@ export function buildTeamLearningAdoptionNextMove(input: {
       label: "Нужен короткий итог",
       detail: `${title}: попросите сотрудника попробовать стандарт в смене и оставить короткий итог.`,
       action: "assign_fact",
-      actionLabel: "Попросить итог",
+      actionLabel: "Поручить итог",
     };
   }
 

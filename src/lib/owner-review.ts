@@ -1237,7 +1237,7 @@ function operationalPulse(
       openTaskContours: proof.openTaskContours,
       closedLoops: proof.closedLoops,
       recentEvents: proof.recentEvents,
-      action: { label: "Открыть задачи", target: "team-actions" },
+      action: { label: "Открыть поручения", target: "team-actions" },
     };
   }
 
@@ -1583,14 +1583,14 @@ function buildProfitReadiness(input: {
 
   if (!input.operationalProof) {
     missing.push("закрытые контуры задач");
-    setAction({ label: "Открыть задачи", target: "team-actions" });
+    setAction({ label: "Открыть поручения", target: "team-actions" });
   } else if (input.operationalProof.urgentOpenTasks > 0) {
     missing.push(urgentTasksLabel(input.operationalProof.urgentOpenTasks));
-    setAction({ label: "Открыть задачи", target: "team-actions" });
+    setAction({ label: "Открыть поручения", target: "team-actions" });
   } else if (input.operationalProof.openTasks > 0) {
     score += 5;
     missing.push(openTasksLabel(input.operationalProof.openTasks));
-    setAction({ label: "Открыть задачи", target: "team-actions" });
+    setAction({ label: "Открыть поручения", target: "team-actions" });
   } else if (input.operationalProof.unreadImportantAnnouncements > 0) {
     score += 5;
     missing.push(
@@ -2366,7 +2366,7 @@ function ownerActionFromLearningAdoption(
   return {
     title: isAssigned
       ? "Проверить итог по стандарту"
-      : "Попросить итог по стандарту",
+      : "Поручить итог по стандарту",
     detail: `${memberName}: ${row.move.detail} Тест уже сдан, но владельцу нужен живой пример из смены.`,
     role: "manager",
     tone: isAssigned ? "watch" : "risk",

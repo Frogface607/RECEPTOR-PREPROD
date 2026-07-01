@@ -436,7 +436,7 @@ export async function submitFieldNoteAction(
   }
 
   if (!taskId) {
-    return { ok: false, error: "Не удалось создать задачу для заметок." };
+    return { ok: false, error: "Не удалось создать поручение для заметок." };
   }
 
   const { data: comment, error: commentError } = await admin
