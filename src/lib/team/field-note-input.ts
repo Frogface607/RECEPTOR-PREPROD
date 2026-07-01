@@ -54,6 +54,12 @@ export const FIELD_NOTE_SAVED_MEMORY_COPY: FieldNoteSavedMemoryCopy = {
     "Управляющий и владелец увидят эту связь в разборе, а советник будет опираться на нее в задачах, обучении и цифрах.",
 };
 
+export const FIELD_NOTE_CLOSED_LOOP_COPY: FieldNoteSavedMemoryCopy = {
+  title: "Задача менеджера закрыта.",
+  detail:
+    "Итог смены подтвердил стандарт в реальной работе. Управляющий увидит, что обучение вернулось в память ресторана.",
+};
+
 export const FIELD_NOTE_MEMORY_PROMPTS: FieldNotePrompt[] = [
   {
     label: "Факт",
@@ -196,6 +202,12 @@ export function getFieldNoteReadiness(value: string): FieldNoteReadiness {
 
 export function hasMeaningfulFieldNoteBody(value: string): boolean {
   return getFieldNoteReadiness(value).hasFact;
+}
+
+export function isFieldNoteClosedLearningAdoptionMessage(
+  value: string | null | undefined,
+): boolean {
+  return /задач[аи]\s+внедрения\s+стандарта\s+закрыт/iu.test(value ?? "");
 }
 
 export function fieldNoteReadinessHint(readiness: FieldNoteReadiness): string {

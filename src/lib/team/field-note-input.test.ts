@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import {
+  FIELD_NOTE_CLOSED_LOOP_COPY,
   FIELD_NOTE_MEMORY_LINK_COPY,
   FIELD_NOTE_MEMORY_PROMPTS,
   FIELD_NOTE_SAVED_MEMORY_COPY,
@@ -9,6 +10,7 @@ import {
   fieldNoteReadinessHint,
   getFieldNoteReadiness,
   hasMeaningfulFieldNoteBody,
+  isFieldNoteClosedLearningAdoptionMessage,
   summarizeFieldNoteReadiness,
 } from "./field-note-input";
 
@@ -26,6 +28,23 @@ describe("field note input", () => {
     expect(FIELD_NOTE_SAVED_MEMORY_COPY.detail).toContain("задачах");
     expect(FIELD_NOTE_SAVED_MEMORY_COPY.detail).toContain("обучении");
     expect(FIELD_NOTE_SAVED_MEMORY_COPY.detail).toContain("цифрах");
+    expect(FIELD_NOTE_CLOSED_LOOP_COPY.title).toContain("Задача менеджера");
+    expect(FIELD_NOTE_CLOSED_LOOP_COPY.detail).toContain("стандарт");
+    expect(FIELD_NOTE_CLOSED_LOOP_COPY.detail).toContain("память ресторана");
+  });
+
+  test("detects when a saved shift note closed a learning adoption loop", () => {
+    expect(
+      isFieldNoteClosedLearningAdoptionMessage(
+        "Заметка смены сохранена. Задача внедрения стандарта закрыта.",
+      ),
+    ).toBe(true);
+
+    expect(
+      isFieldNoteClosedLearningAdoptionMessage(
+        "Заметка смены сохранена. Receptor учтет ее в советах.",
+      ),
+    ).toBe(false);
   });
 
   test("rejects empty guided templates", () => {

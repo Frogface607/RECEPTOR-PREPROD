@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { submitFieldNoteAction, type OwnTaskStatusResult } from "./actions";
 import {
+  FIELD_NOTE_CLOSED_LOOP_COPY,
   FIELD_NOTE_MEMORY_LINK_COPY,
   FIELD_NOTE_MEMORY_PROMPTS,
   FIELD_NOTE_SAVED_MEMORY_COPY,
@@ -19,6 +20,7 @@ import {
   fieldNoteReadinessHint,
   getFieldNoteReadiness,
   hasMeaningfulFieldNoteBody,
+  isFieldNoteClosedLearningAdoptionMessage,
 } from "@/lib/team/field-note-input";
 
 type SpeechRecognitionAlternativeLike = {
@@ -79,6 +81,10 @@ export function FieldNoteForm() {
   const readiness = getFieldNoteReadiness(body);
   const readinessHint = fieldNoteReadinessHint(readiness);
   const canSubmit = hasMeaningfulFieldNoteBody(body) && !pending;
+  const closedLearningLoop = isFieldNoteClosedLearningAdoptionMessage(message);
+  const savedMemoryCopy = closedLearningLoop
+    ? FIELD_NOTE_CLOSED_LOOP_COPY
+    : FIELD_NOTE_SAVED_MEMORY_COPY;
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -361,11 +367,16 @@ export function FieldNoteForm() {
           <div className="flex items-start gap-2">
             <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-brand" />
             <div>
+              {closedLearningLoop ? (
+                <p className="mb-1 text-[10px] uppercase tracking-[0.16em] text-brand">
+                  Петля закрыта
+                </p>
+              ) : null}
               <p className="text-sm font-medium text-foreground">
-                {FIELD_NOTE_SAVED_MEMORY_COPY.title}
+                {savedMemoryCopy.title}
               </p>
               <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
-                {FIELD_NOTE_SAVED_MEMORY_COPY.detail}
+                {savedMemoryCopy.detail}
               </p>
             </div>
           </div>
