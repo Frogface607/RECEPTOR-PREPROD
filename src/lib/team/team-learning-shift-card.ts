@@ -9,6 +9,19 @@ export type TeamLearningShiftCard = {
   checklistLabel: string | null;
 };
 
+export type TeamLearningOperatingStandardStep = {
+  label: string;
+  title: string;
+  detail: string;
+};
+
+export type TeamLearningOperatingStandard = {
+  label: string;
+  title: string;
+  promise: string;
+  steps: TeamLearningOperatingStandardStep[];
+};
+
 type LearningShiftCardRule = {
   match: (item: TeamLearningItem) => boolean;
   reason: string;
@@ -96,5 +109,41 @@ export function buildTeamLearningShiftCard(
       "После смены оставь короткий факт: что получилось, что мешало и что проверить утром.",
     fieldNoteTemplate: `Итог смены по стандарту "${item.title}": факт - ...; контекст - ...; когда/сколько - ...; что проверить - ...`,
     checklistLabel,
+  };
+}
+
+export function buildTeamLearningOperatingStandard(
+  item: TeamLearningItem,
+  checklistTitle?: string,
+): TeamLearningOperatingStandard {
+  const shiftCard = buildTeamLearningShiftCard(item, checklistTitle);
+
+  return {
+    label: "Операционный стандарт роли",
+    title: item.title,
+    promise:
+      "Коротко понять правило, применить его в реальной смене и вернуть один факт в память ресторана.",
+    steps: [
+      {
+        label: "01",
+        title: "Понять правило",
+        detail: item.description,
+      },
+      {
+        label: "02",
+        title: "Применить в смене",
+        detail: shiftCard.action,
+      },
+      {
+        label: "03",
+        title: "Вернуть факт",
+        detail: shiftCard.fieldNote,
+      },
+      {
+        label: "04",
+        title: "Закрыть проверку",
+        detail: `Ответить на короткую проверку и набрать ${item.passPercentage}% или больше.`,
+      },
+    ],
   };
 }

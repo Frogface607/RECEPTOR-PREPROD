@@ -24,7 +24,10 @@ import {
   buildTeamLearningAdmission,
   type TeamLearningAdmission,
 } from "@/lib/team/team-learning-admission";
-import { buildTeamLearningShiftCard } from "@/lib/team/team-learning-shift-card";
+import {
+  buildTeamLearningOperatingStandard,
+  buildTeamLearningShiftCard,
+} from "@/lib/team/team-learning-shift-card";
 import type { TeamLearningProgressSnapshot } from "@/lib/team/team-learning-progress";
 import { saveLearningProgressAction } from "./actions";
 
@@ -180,6 +183,13 @@ export function LearningWorkspace({
         : null,
     [activeItem, activeChecklistTitle],
   );
+  const operatingStandard = useMemo(
+    () =>
+      activeItem
+        ? buildTeamLearningOperatingStandard(activeItem, activeChecklistTitle)
+        : null,
+    [activeItem, activeChecklistTitle],
+  );
   const shiftSummaryHref = shiftCard
     ? `/me?fieldNoteTemplate=${encodeURIComponent(
         shiftCard.fieldNoteTemplate,
@@ -296,7 +306,7 @@ export function LearningWorkspace({
           </p>
           <div className="mt-4 grid grid-cols-3 gap-2">
             <Metric
-              label="модули"
+              label="стандарты"
               value={`${completedCount}/${items.length}`}
             />
             <Metric label="средний" value={`${averageScore}%`} />
@@ -310,7 +320,7 @@ export function LearningWorkspace({
         <div className="rounded-lg border border-border/60 bg-card/50 p-3">
           <div className="mb-2 flex items-center gap-2 px-2 py-1">
             <BookOpenCheck className="size-4 text-brand" />
-            <p className="text-sm font-medium">Материалы</p>
+            <p className="text-sm font-medium">Стандарты роли</p>
           </div>
           <div className="grid gap-2">
             {items.map((item) => {
@@ -363,6 +373,11 @@ export function LearningWorkspace({
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="flex flex-wrap items-center gap-2">
+                {operatingStandard ? (
+                  <Badge variant="outline" className="border-brand/30 text-brand">
+                    {operatingStandard.label}
+                  </Badge>
+                ) : null}
                 <Badge variant="outline" className="border-brand/30 text-brand">
                   {activeItem.timeLabel}
                 </Badge>
@@ -377,7 +392,7 @@ export function LearningWorkspace({
                 {activeItem.title}
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                {activeItem.description}
+                {operatingStandard?.promise ?? activeItem.description}
               </p>
               {checklistExists ? (
                 <div className="mt-3 inline-flex items-center gap-2 rounded-md border border-brand/30 bg-brand/10 px-3 py-1.5 text-[12px] leading-relaxed text-brand">
@@ -397,6 +412,27 @@ export function LearningWorkspace({
               </div>
             ) : null}
           </div>
+
+          {operatingStandard ? (
+            <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              {operatingStandard.steps.map((step) => (
+                <div
+                  key={`${step.label}-${step.title}`}
+                  className="rounded-lg border border-border/45 bg-background/35 p-3"
+                >
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-brand">
+                    {step.label}
+                  </p>
+                  <p className="mt-2 text-sm font-medium text-foreground">
+                    {step.title}
+                  </p>
+                  <p className="mt-2 line-clamp-4 text-[12px] leading-relaxed text-muted-foreground">
+                    {step.detail}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : null}
 
           {shiftCard ? (
             <div className="mt-5 rounded-lg border border-brand/25 bg-brand/[0.06] p-4">
@@ -697,7 +733,6 @@ function LearningAdmissionPanel({
   roleTitle: string;
   onOpenNext: (moduleId: string) => void;
 }) {
-  const ready = admission.status === "admitted";
   const nextItem = admission.nextItem;
 
   return (
@@ -736,7 +771,7 @@ function LearningAdmissionPanel({
               onClick={() => onOpenNext(nextItem.id)}
               className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-lg bg-brand px-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-brand-hover"
             >
-              {ready ? "Продолжить обучение" : "Открыть следующий стандарт"}
+              Открыть следующий стандарт
             </button>
           ) : null}
         </div>

@@ -15,8 +15,8 @@ import { getPersonalTeamWorkspace } from "@/lib/team/team-store";
 import { LearningWorkspace } from "./learning-workspace";
 
 export const metadata: Metadata = {
-  title: "Обучение — RECEPTOR",
-  description: "Материалы, стандарты и тесты сотрудника в Receptor.",
+  title: "Стандарты роли — RECEPTOR",
+  description: "Операционные стандарты, практика смены и проверка сотрудника.",
 };
 
 function parseParam(value: string | string[] | undefined): string {
@@ -68,13 +68,13 @@ export default async function EmployeeLearningPage({
         <main className="flex-1">
           <section className="mx-auto max-w-3xl px-6 py-20">
             <Badge variant="outline" className="border-brand/30 text-brand">
-              Обучение
+              Стандарты роли
             </Badge>
             <h1 className="mt-6 text-4xl font-medium">
-              Для обучения нужна роль в заведении.
+              Для стандартов нужна роль в заведении.
             </h1>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Попросите владельца или управляющего добавить сотрудника в Team OS
+              Попросите владельца или управляющего добавить сотрудника в команду
               и выдать доступ.
             </p>
             <Link
@@ -108,7 +108,7 @@ export default async function EmployeeLearningPage({
       activeHref="/me"
       venueId={workspace.venueId}
       venueName={workspace.venueName}
-      venueMeta="Обучение"
+      venueMeta="Стандарты роли"
     >
       <main className="flex-1">
         <section className="border-b border-border/40">
@@ -127,27 +127,28 @@ export default async function EmployeeLearningPage({
                     variant="outline"
                     className="border-brand/30 text-brand"
                   >
-                    Обучение
+                    Стандарты роли
                   </Badge>
                   <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
                     {role.title}
                   </span>
                 </div>
                 <h1 className="mt-5 max-w-3xl text-balance text-[clamp(2rem,4vw,3.25rem)] font-medium leading-[1.04]">
-                  Стандарты смены и короткие тесты.
+                  Стандарты роли для реальной смены.
                 </h1>
                 <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                  {workspace.member.name} · {workspace.venueName}. Материалы
-                  привязаны к роли и ежедневным задачам.
+                  {workspace.member.name} · {workspace.venueName}. Каждый
+                  стандарт ведет к действию на смене и факту в память ресторана.
                 </p>
               </div>
               <div className="rounded-lg border border-border/60 bg-card/50 p-4">
                 <div className="flex items-center gap-3">
                   <GraduationCap className="size-5 text-brand" />
                   <div>
-                    <p className="text-sm font-medium">Допуск к стандарту</p>
+                    <p className="text-sm font-medium">Готовность к смене</p>
                     <p className="mt-1 text-[12px] text-muted-foreground">
-                      Проходной балл указан внутри каждого материала.
+                      Стандарт засчитывается после короткой проверки и факта из
+                      смены.
                     </p>
                   </div>
                 </div>
