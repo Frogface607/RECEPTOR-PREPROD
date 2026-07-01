@@ -92,9 +92,9 @@ type LaborSource = {
 };
 
 const TASK_STATUSES: Array<{ value: TeamTask["status"]; label: string }> = [
-  { value: "new", label: "новая" },
-  { value: "accepted", label: "принята" },
-  { value: "in_progress", label: "в работе" },
+  { value: "new", label: "ждет" },
+  { value: "accepted", label: "приняли" },
+  { value: "in_progress", label: "делают" },
   { value: "done", label: "сделано" },
   { value: "verified", label: "проверено" },
 ];
@@ -825,7 +825,7 @@ export function TeamActionsPanel({
           >
             <div className="flex items-center gap-3">
               <Send className="size-5 text-brand" />
-              <h3 className="text-lg font-medium">Довести до результата</h3>
+              <h3 className="text-lg font-medium">Провести поручение</h3>
             </div>
             {focusedTask ? (
               <p className="mt-3 rounded-lg border border-brand/25 bg-brand/10 px-3 py-2 text-[12px] leading-relaxed text-brand">
@@ -837,7 +837,7 @@ export function TeamActionsPanel({
               <TeamMetric
                 label="Сделать"
                 value={`${taskQueue.openCount}`}
-                detail="в очереди"
+                detail="ждет старта"
               />
               <TeamMetric
                 label="Делают"
@@ -847,7 +847,7 @@ export function TeamActionsPanel({
               <TeamMetric
                 label="Срочно"
                 value={`${taskQueue.urgentOpenCount}`}
-                detail="в очереди"
+                detail="важно сегодня"
               />
             </div>
 
@@ -1038,7 +1038,7 @@ export function TeamActionsPanel({
                                 {shiftMemoryQuestion}
                               </p>
                               <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
-                                Ответ сохранится как комментарий к задаче и
+                                Ответ сохранится внутри поручения и
                                 попадет в утренний разбор владельца.
                               </p>
                             </div>
@@ -1063,7 +1063,7 @@ export function TeamActionsPanel({
                               Сохранить в память
                             </button>
                             <span className="self-center text-[11px] text-muted-foreground">
-                              После ответа можно закрыть задачу как сделанную.
+                              После ответа можно отметить поручение сделанным.
                             </span>
                           </div>
                         </div>
@@ -1092,7 +1092,7 @@ export function TeamActionsPanel({
                             }
                             className="inline-flex h-8 items-center justify-center rounded-lg border border-border/60 bg-background/50 px-3 text-xs font-medium text-foreground transition-colors hover:border-brand/35 hover:text-brand disabled:opacity-45"
                           >
-                            В работу
+                            Начали делать
                           </button>
                         ) : null}
                         <button
@@ -1101,7 +1101,7 @@ export function TeamActionsPanel({
                           onClick={() => updateTaskStatus(task.id, "done")}
                           className="inline-flex h-8 items-center justify-center rounded-lg border border-brand/35 bg-brand/10 px-3 text-xs font-medium text-brand transition-colors hover:bg-brand/15 disabled:opacity-45"
                         >
-                          Сделано
+                          Отметить сделанным
                         </button>
                       </div>
                     </div>
@@ -1116,7 +1116,7 @@ export function TeamActionsPanel({
             </div>
 
             <div className="mt-5 space-y-3">
-              <FieldLabel label="Задача">
+              <FieldLabel label="Поручение">
                 <select
                   value={statusTaskId}
                   onChange={(event) => setStatusTaskId(event.target.value)}
@@ -1130,7 +1130,7 @@ export function TeamActionsPanel({
                   ))}
                 </select>
               </FieldLabel>
-              <FieldLabel label="Новый статус">
+              <FieldLabel label="Что происходит">
                 <select
                   value={nextStatus}
                   onChange={(event) =>
@@ -1151,7 +1151,7 @@ export function TeamActionsPanel({
               className="mt-5 w-full"
               disabled={pending || tasks.length === 0}
             >
-              Обновить
+              Сохранить движение
             </Button>
           </form>
         </div>
