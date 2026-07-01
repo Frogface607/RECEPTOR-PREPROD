@@ -3016,17 +3016,18 @@ function LearningFocusPanel({ items }: { items: TeamLearningFocusItem[] }) {
           <GraduationCap className="mt-0.5 size-5 text-brand" />
           <div>
             <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-              Стандарты на смену
+              На ближайшую смену
             </p>
-            <h2 className="mt-2 text-xl font-medium">Фокус стандартов</h2>
+            <h2 className="mt-2 text-xl font-medium">Что закрепить сегодня</h2>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              Один простой путь: понять правило, попробовать в смене и оставить
-              короткий итог. Дальше Receptor сам покажет, что усилить.
+              Выберите одно правило, дайте человеку понятное действие и
+              попросите короткий итог после смены. Так стандарт превращается в
+              привычку, а не остается теорией.
             </p>
           </div>
         </div>
         <Badge variant="outline">
-          {formatInteger(items.length)} приоритета
+          {formatInteger(items.length)} фокуса
         </Badge>
       </div>
 
@@ -3041,10 +3042,7 @@ function LearningFocusPanel({ items }: { items: TeamLearningFocusItem[] }) {
 
 function LearningFocusCard({ item }: { item: TeamLearningFocusItem }) {
   return (
-    <Link
-      href={item.href}
-      className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-4 transition-colors hover:border-brand/40 hover:bg-background/55"
-    >
+    <div className="grid gap-3 rounded-lg border border-border/45 bg-background/35 p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -3062,41 +3060,52 @@ function LearningFocusCard({ item }: { item: TeamLearningFocusItem }) {
             {item.reason}
           </p>
         </div>
-        <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
-      </div>
-
-      <div className="rounded-lg border border-border/35 bg-card/40 p-3">
-        <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-          Стандарт роли
-        </p>
-        <p className="mt-1 text-sm font-medium text-foreground">
-          {item.moduleTitle}
-        </p>
-        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-          {item.detail}
-        </p>
+        <Link
+          href={item.href}
+          className="inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-border/45 bg-card/45 text-muted-foreground transition-colors hover:border-brand/35 hover:text-brand"
+          aria-label="Открыть правило"
+        >
+          <ArrowRight className="size-4" />
+        </Link>
       </div>
 
       <div className="rounded-lg border border-brand/20 bg-brand/[0.06] p-3">
         <p className="text-[10px] uppercase tracking-[0.16em] text-brand">
-          Попробовать в смене
+          Что сделать в смене
         </p>
         <p className="mt-1 text-xs leading-relaxed text-foreground/90">
           {item.practiceAction}
         </p>
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-          Короткий итог: {item.memoryPrompt}
+          После смены: {item.memoryPrompt}
         </p>
       </div>
-    </Link>
+
+      <details className="group rounded-lg border border-border/35 bg-card/35 p-3">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">
+          <span>Какое правило закрепляем</span>
+          <span className="text-[10px] uppercase tracking-[0.12em]">
+            подробнее
+          </span>
+        </summary>
+        <div className="mt-3 border-t border-border/30 pt-3">
+          <p className="text-sm font-medium text-foreground">
+            {item.moduleTitle}
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+            {item.detail}
+          </p>
+        </div>
+      </details>
+    </div>
   );
 }
 
 function learningFocusToneLabel(tone: TeamLearningFocusTone): string {
-  if (tone === "risk") return "допуск";
-  if (tone === "field") return "поле";
-  if (tone === "setup") return "стандарт";
-  return "развитие";
+  if (tone === "risk") return "до смены";
+  if (tone === "field") return "ждем итог";
+  if (tone === "setup") return "дать правило";
+  return "закрепить";
 }
 
 function learningFocusToneClass(tone: TeamLearningFocusTone): string {
@@ -3126,12 +3135,13 @@ function LearningRolePlanGrid({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-            Библиотека стандартов
+            Правила по ролям
           </p>
-          <h2 className="mt-2 text-xl font-medium">Стандарты по ролям</h2>
+          <h2 className="mt-2 text-xl font-medium">Кого готовить к смене</h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            Не каталог курсов, а настройка смены: какая роль, какой стандарт,
-            кому назначить и какой итог потом дождаться.
+            Для каждой роли видно: кто готов, кому дать правило и какой итог
+            потом дождаться. Настройки спрятаны ниже, чтобы не мешать сменной
+            работе.
           </p>
         </div>
         <Badge variant="outline">{visiblePlans.length} ролей</Badge>
@@ -3184,7 +3194,7 @@ function LearningRolePlanCard({
             <Badge variant="outline">{formatInteger(plan.members)} чел.</Badge>
           </div>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            {formatInteger(plan.totalItems)} стандартов · обязательных{" "}
+            {formatInteger(plan.totalItems)} правил · обязательных{" "}
             {formatInteger(plan.requiredItems)}
             {plan.customStandards > 0
               ? ` · настроено ${formatInteger(plan.customStandards)}`
@@ -3204,12 +3214,12 @@ function LearningRolePlanCard({
       <div className="mt-4 grid gap-2">
         <RoleStandardStep
           index="01"
-          label="Кого проверить"
+          label="Кого подготовить"
           title={blockedLabel}
           detail={
             blockedCount > 0
-              ? "Этих людей нужно провести через обязательный стандарт до смены."
-              : "Обязательные стандарты роли не блокируют смену."
+              ? "Этим людям нужно дать обязательное правило до ближайшей смены."
+              : "По обязательным правилам роль готова к смене."
           }
         />
         <RoleStandardStep
@@ -3218,8 +3228,8 @@ function LearningRolePlanCard({
           title={plan.nextItem ? plan.nextItem.title : "Роль закрыта"}
           detail={
             plan.nextItem
-              ? "Один стандарт, одно действие в смене, без лишней теории."
-              : "Можно позже добавить стандарт под конкретную боль заведения."
+              ? "Одно правило, одно действие в смене, без лишней теории."
+              : "Можно позже добавить правило под конкретную боль заведения."
           }
         />
         <RoleStandardStep
@@ -3235,7 +3245,7 @@ function LearningRolePlanCard({
 
       <details className="group mt-3 border-t border-border/35 pt-3">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">
-          <span>Настройка стандарта роли</span>
+          <span>Настроить правила роли</span>
           <span className="rounded-md border border-border/45 bg-card/45 px-2 py-1 text-[10px] uppercase tracking-[0.14em]">
             {plan.customStandards > 0
               ? `${formatInteger(plan.customStandards)} измен.`
@@ -3261,7 +3271,7 @@ function LearningRolePlanCard({
                   </Badge>
                 </div>
                 <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-                  {item.timeLabel} · проходной {item.passPercentage}%
+                  {item.timeLabel} · проверка {item.passPercentage}%
                 </p>
               </div>
               <form
@@ -3280,7 +3290,7 @@ function LearningRolePlanCard({
                     item.status === "required",
                   )}
                 >
-                  Допуск
+                  Обязательно
                 </button>
                 <button
                   type="submit"
@@ -3291,7 +3301,7 @@ function LearningRolePlanCard({
                     item.status === "ready",
                   )}
                 >
-                  Развитие
+                  Позже
                 </button>
               </form>
             </div>
