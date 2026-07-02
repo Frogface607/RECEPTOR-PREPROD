@@ -78,7 +78,8 @@ export function AuthForm({
     if (!supabase) {
       setState({
         status: "error",
-        message: "Auth is not configured in this environment.",
+        message:
+          "Вход по email сейчас недоступен. Используйте логин и пароль или откройте маршрут показа.",
       });
       return;
     }
@@ -266,11 +267,12 @@ export function AuthForm({
       {developerMode ? (
         <details className="mt-7 border-t border-border/40 pt-5">
           <summary className="cursor-pointer text-[12px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground">
-            Служебный вход
+            Быстрый просмотр
           </summary>
           <p className="mt-4 text-[13px] leading-relaxed text-muted-foreground">
-            Для внутренней проверки интерфейса. Для рабочего пилота используйте
-            обычный вход: так сохраняются профиль, iiko и команда.
+            Откройте тестовый кабинет без письма, чтобы показать роли и основной
+            маршрут. Реальное заведение, iiko и команда сохраняются после входа
+            по логину и паролю.
           </p>
           <form action="/api/auth/dev" method="post" className="mt-4 space-y-3">
             <input type="hidden" name="next" value={safeNextPath(nextPath)} />
@@ -279,7 +281,7 @@ export function AuthForm({
               <input
                 type="password"
                 name="accessKey"
-                placeholder="Служебный ключ"
+                placeholder="Ключ просмотра"
                 required
                 className="w-full rounded-lg border border-border/60 bg-background/60 py-2.5 pl-10 pr-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-brand/50 focus:outline-none"
               />
@@ -288,12 +290,12 @@ export function AuthForm({
               type="submit"
               className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border/60 bg-background/60 px-4 text-sm text-foreground transition-colors hover:border-brand/40 hover:bg-card"
             >
-              Войти в тестовый кабинет
+              Открыть тестовый кабинет
               <ArrowRight className="size-4 text-brand" />
             </button>
             {developerError ? (
               <p className="text-[13px] text-destructive">
-                Ключ не подошел. Проверьте служебный доступ.
+                Ключ не подошел. Проверьте код доступа.
               </p>
             ) : null}
           </form>
@@ -301,11 +303,12 @@ export function AuthForm({
       ) : demoMode ? (
         <div className="mt-7 border-t border-border/40 pt-6">
           <p className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
-            Режим предпросмотра
+            Маршрут показа
           </p>
           <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
-            Авторизация еще не подключена в этом окружении. Можно открыть пример
-            кабинета и пройти основной сценарий.
+            Можно открыть пример кабинета и пройти путь владельца без настройки
+            доступа. Реальное заведение сохраняется после входа по логину и
+            паролю.
           </p>
           <Link
             href="/dashboard/dev-venue"

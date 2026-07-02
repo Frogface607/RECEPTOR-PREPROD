@@ -17,7 +17,10 @@ function errorResponse(message: string, status = 400) {
 
 export async function POST(request: NextRequest) {
   if (!isSupabaseConfigured()) {
-    return errorResponse("Auth is not configured in this environment.", 503);
+    return errorResponse(
+      "Вход по логину сейчас недоступен. Откройте маршрут показа или повторите позже.",
+      503,
+    );
   }
 
   let payload: unknown;

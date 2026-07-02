@@ -739,8 +739,8 @@ export function getDemoTeamWorkspace(venueId = "dev-venue"): TeamWorkspace {
   return {
     mode: "sandbox",
     venueId,
-    venueName: "Demo Restaurant",
-    venueMeta: "Иркутск · restaurant",
+    venueName: "Тестовый ресторан",
+    venueMeta: "Город · ресторан",
     staff: DEMO_STAFF.filter((member) => member.venueId === "dev-venue"),
     tasks: DEMO_TEAM_TASKS.filter((task) => task.venueId === "dev-venue"),
     comments: DEMO_TASK_COMMENTS.filter(
@@ -1035,7 +1035,7 @@ function getDemoPersonalWorkspace(): PersonalTeamWorkspace {
     ok: true,
     mode: "sandbox",
     venueId: "dev-venue",
-    venueName: "Demo Restaurant",
+    venueName: "Тестовый ресторан",
     member,
     tasks: listTasksForMember(member.id),
     comments: DEMO_TASK_COMMENTS,

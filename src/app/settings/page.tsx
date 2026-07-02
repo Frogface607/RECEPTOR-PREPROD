@@ -294,7 +294,7 @@ export default async function SettingsPage() {
             <div className="mb-8 flex items-start gap-3 rounded-xl border border-[color:var(--pro)]/30 bg-[color:var(--pro)]/8 p-4">
               <AlertCircle className="mt-0.5 size-4 shrink-0 text-[color:var(--pro)]" />
               <p className="text-[13px] leading-relaxed text-foreground/85">
-                Тестовый доступ.{" "}
+                Режим просмотра.{" "}
                 {configured ? "Войдите" : "Настройте рабочий вход"},
                 чтобы сохранять профиль, заведения, iiko и команду.
               </p>
@@ -311,9 +311,9 @@ export default async function SettingsPage() {
                   label="Статус"
                   value={
                     user?.isDeveloper
-                      ? "Служебный доступ"
+                      ? "Режим просмотра"
                       : user?.isDemo
-                        ? "Тестовый доступ"
+                        ? "Режим просмотра"
                         : "Авторизован"
                   }
                 />

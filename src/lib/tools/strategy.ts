@@ -252,7 +252,7 @@ export const TOOL_WORKFLOWS: ToolWorkflow[] = [
     id: "compliance",
     title: "Санитария и контроль",
     description:
-      "HACCP и санитарные вопросы как черновик для внутренней проверки.",
+      "HACCP и санитарные вопросы как черновик для проверки управляющим.",
     promise:
       "Помощник подсвечивает риски и чеклисты, но не заменяет юридическую или санитарную экспертизу.",
     toolIds: ["haccp-generator", "sanpin-check", "ad-legal-check"],

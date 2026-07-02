@@ -29,9 +29,9 @@ export type ResolvedVenue = {
 const SANDBOX_VENUE: ResolvedVenue = {
   id: "dev-venue",
   name: SANDBOX_ORG.name,
-  city: "Иркутск",
+  city: "Город",
   type: "restaurant",
-  timezone: SANDBOX_ORG.timezone ?? "Asia/Irkutsk",
+  timezone: SANDBOX_ORG.timezone ?? "Europe/Moscow",
   intelligence: DEMO_RESTAURANT_INTELLIGENCE,
   context: DEMO_CONTEXT_ANSWERS,
   iiko: {

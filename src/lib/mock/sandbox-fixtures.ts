@@ -19,7 +19,7 @@ import type {
 export const SANDBOX_VENUE: Organization = {
   id: "sandbox-restaurant",
   name: "Тестовый ресторан",
-  timezone: "Asia/Irkutsk",
+  timezone: "Europe/Moscow",
 };
 
 /** Menu category split — must sum to 1.0 so category stats reconcile with revenue. */

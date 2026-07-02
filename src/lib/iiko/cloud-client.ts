@@ -294,7 +294,7 @@ export class CloudIikoClient implements IikoClient {
       }
       if (res.status === 401) {
         throw new Error(
-          "iiko Cloud не принял API ключ. Скопируйте полный ключ кнопкой рядом с полем «API ключ» в iiko Web; имя интеграции вроде EdisonCraft и значение со звёздочками не подойдут.",
+          "iiko Cloud не принял API ключ. Скопируйте полный ключ кнопкой рядом с полем «API ключ» в iiko Web; имя интеграции и значение со звёздочками не подойдут.",
         );
       }
       throw new Error(

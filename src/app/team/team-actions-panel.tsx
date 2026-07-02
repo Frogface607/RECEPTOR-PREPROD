@@ -679,7 +679,7 @@ export function TeamActionsPanel({
                 Как работает доступ
               </summary>
               <p className="mt-2 text-[12px] leading-relaxed text-muted-foreground">
-                Если указан только логин без email, Receptor сделает служебный
+                Если указан только логин без email, Receptor сделает рабочий
                 адрес вида login@staff.receptorai.pro.
               </p>
             </details>
