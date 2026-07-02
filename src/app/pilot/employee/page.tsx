@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { SiteHeader } from "@/components/marketing/site-header";
+import { PilotNextStep } from "@/components/marketing/pilot-next-step";
 import { LinkButton } from "@/components/ui/link-button";
 
 export const metadata: Metadata = {
@@ -229,6 +230,12 @@ export default function PilotEmployeePage() {
             </div>
           </div>
         </section>
+        <PilotNextStep
+          title="Теперь можно открыть рабочий кабинет."
+          text="Публичный маршрут объяснил роли. Следующий шаг в демо: зайти в реальный рабочий экран сотрудника и показать, как это выглядит в продукте."
+          primaryHref="/team?role=service&venueId=dev-venue"
+          primaryLabel="Открыть кабинет"
+        />
       </main>
       <SiteFooter />
     </>

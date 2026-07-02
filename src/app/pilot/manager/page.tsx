@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { SiteHeader } from "@/components/marketing/site-header";
+import { PilotNextStep } from "@/components/marketing/pilot-next-step";
 import { LinkButton } from "@/components/ui/link-button";
 
 export const metadata: Metadata = {
@@ -235,6 +236,12 @@ export default function PilotManagerPage() {
             </div>
           </div>
         </section>
+        <PilotNextStep
+          title="Теперь показать экран сотрудника."
+          text="После маршрута управляющего видно, что линейному сотруднику не нужно читать весь кабинет: только смена, стандарт, поручение и короткий итог."
+          primaryHref="/pilot/employee"
+          primaryLabel="Показать сотрудника"
+        />
       </main>
       <SiteFooter />
     </>

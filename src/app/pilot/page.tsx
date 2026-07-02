@@ -240,10 +240,10 @@ export default function PilotPage() {
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <LinkButton
-                  href="/team?role=venue_manager&venueId=dev-venue"
+                  href="/pilot/owner"
                   className="bg-brand text-primary-foreground hover:bg-brand-hover"
                 >
-                  Показать управляющего
+                  Начать с владельца
                   <ArrowRight className="size-4" />
                 </LinkButton>
                 <LinkButton href="/platform" variant="outline">
