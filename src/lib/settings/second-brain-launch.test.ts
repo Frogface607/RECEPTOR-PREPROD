@@ -12,7 +12,7 @@ describe("second brain launch path", () => {
     expect(path.totalCount).toBe(5);
     expect(path.focus).toMatchObject({
       id: "context",
-      title: "Память ресторана",
+      title: "Профиль ресторана",
       href: "/onboarding?new=1",
     });
     expect(path.items.map((item) => item.id)).toEqual([
@@ -39,7 +39,7 @@ describe("second brain launch path", () => {
     expect(path.readyCount).toBe(2);
     expect(path.focus).toMatchObject({
       id: "field_note",
-      status: "память пустая",
+      status: "нет итогов",
       action: "Оставить итог",
     });
   });

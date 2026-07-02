@@ -42,9 +42,9 @@ const ProbeInput = z.object({
 });
 
 const ProbeRmsInput = z.object({
-  host: z.string().trim().min(1, "Адрес iiko RMS обязателен"),
-  login: z.string().trim().min(1, "Логин iiko RMS обязателен"),
-  password: z.string().min(1, "Пароль iiko RMS обязателен"),
+  host: z.string().trim().min(1, "Адрес iiko Server обязателен"),
+  login: z.string().trim().min(1, "Логин iiko обязателен"),
+  password: z.string().min(1, "Пароль iiko обязателен"),
 });
 
 type ServerSupabaseClient = NonNullable<
@@ -158,7 +158,7 @@ export async function probeRmsOrganizationsAction(
 ): Promise<ProbeIikoResult> {
   const parsed = ProbeRmsInput.safeParse(raw);
   if (!parsed.success) {
-    return { ok: false, error: "Введите host, логин и пароль iiko RMS." };
+    return { ok: false, error: "Введите адрес сервера, логин и пароль iiko." };
   }
 
   try {
@@ -174,7 +174,7 @@ export async function probeRmsOrganizationsAction(
     return {
       ok: false,
       error:
-        err instanceof Error ? err.message : "Не удалось проверить iiko RMS.",
+        err instanceof Error ? err.message : "Не удалось проверить iiko Server.",
     };
   }
 }
@@ -227,7 +227,7 @@ export async function createVenueAction(
     !parsed.data.rmsLogin ||
     !parsed.data.rmsPassword
   ) {
-    return { ok: false, error: "Введите host, логин и пароль iiko RMS." };
+    return { ok: false, error: "Введите адрес сервера, логин и пароль iiko." };
   }
 
   try {

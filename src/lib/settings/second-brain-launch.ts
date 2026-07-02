@@ -54,11 +54,11 @@ export function buildSecondBrainLaunchPath({
     {
       id: "context",
       step: "01",
-      title: "Память ресторана",
+      title: "Профиль ресторана",
       detail: "Формат, боли, правила, стандарты и красные линии для советника.",
-      status: contextReady ? "контекст готов" : `${memoryPercentage}% памяти`,
+      status: contextReady ? "профиль готов" : `${memoryPercentage}% профиля`,
       href: venue ? `/context${venueQuery}` : onboardingHref,
-      action: contextReady ? "Проверить память" : "Ответить на вопросы",
+      action: contextReady ? "Проверить профиль" : "Ответить на вопросы",
       ready: contextReady,
     },
     {
@@ -76,9 +76,9 @@ export function buildSecondBrainLaunchPath({
       step: "03",
       title: "Итог смены",
       detail: "Живые факты: гости, погода, стоп-лист, конфликты и что проверить утром.",
-      status: fieldNoteReady ? `${fieldNotesCount} заметок` : "память пустая",
+      status: fieldNoteReady ? `${fieldNotesCount} заметок` : "нет итогов",
       href: "/me#shift-summary",
-      action: fieldNoteReady ? "Смотреть память" : "Оставить итог",
+      action: fieldNoteReady ? "Смотреть итоги" : "Оставить итог",
       ready: fieldNoteReady,
     },
     {
@@ -86,7 +86,7 @@ export function buildSecondBrainLaunchPath({
       step: "04",
       title: "Советник владельца",
       detail: "Утренний разбор объединяет контекст, команду, смену и факты iiko.",
-      status: advisorReady ? "можно спрашивать" : "ждет память",
+      status: advisorReady ? "можно спрашивать" : "ждет основу",
       href: `${firstVenueHref}${firstVenueHref.includes("?") ? "&" : "?"}chat=1`,
       action: advisorReady ? "Открыть советника" : "Собрать основу",
       ready: advisorReady,
@@ -95,7 +95,7 @@ export function buildSecondBrainLaunchPath({
       id: "iiko",
       step: "05",
       title: "Факты iiko",
-      detail: "Продажи, смены и меню становятся доказательным слоем поверх памяти.",
+      detail: "Продажи, смены и меню становятся фактическим слоем системы.",
       status: iikoReady ? "подключено" : "нужен ключ",
       href: iikoReady ? firstVenueHref : onboardingHref,
       action: iikoReady ? "Открыть BI" : "Подключить",
@@ -111,8 +111,8 @@ export function buildSecondBrainLaunchPath({
     totalCount: items.length,
     headline:
       readyCount === items.length
-        ? "Второй мозг ресторана готов к рабочему дню."
-        : "Соберите основу, чтобы советник стал полезным.",
+        ? "Рабочий кабинет готов к запуску."
+        : "Соберите основу, чтобы советы стали полезными.",
     focus,
     items,
   };

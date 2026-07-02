@@ -269,8 +269,8 @@ export function AuthForm({
             Служебный вход
           </summary>
           <p className="mt-4 text-[13px] leading-relaxed text-muted-foreground">
-            Для просмотра интерфейса без email-ссылки. Реальные подключения и
-            заведения сохраняются только при обычном входе.
+            Для внутренней проверки интерфейса. Для рабочего пилота используйте
+            обычный вход: так сохраняются профиль, iiko и команда.
           </p>
           <form action="/api/auth/dev" method="post" className="mt-4 space-y-3">
             <input type="hidden" name="next" value={safeNextPath(nextPath)} />

@@ -39,7 +39,7 @@ const VENUE_TYPES: { id: VenueType; label: string }[] = [
 
 const STEPS = [
   { icon: Store, label: "Заведение" },
-  { icon: Plug, label: "Подключение iiko" },
+  { icon: Plug, label: "iiko" },
   { icon: Rocket, label: "Готово" },
 ];
 
@@ -325,7 +325,8 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                 Расскажите о заведении
               </h2>
               <p className="mt-2 text-[14px] text-muted-foreground">
-                С этого начнём — потом подключим данные.
+                Начнем с названия, города и короткого контекста. Остальное можно
+                заполнить позже.
               </p>
             </div>
 
@@ -371,12 +372,12 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-[13px] font-medium text-foreground">
-                    Профиль заведения для советника
+                    Контекст для советника
                   </p>
                   <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
-                    Receptor исследует публичный контекст, отзывы и
-                    позиционирование, а затем соберёт профиль: концепцию,
-                    сильные стороны, риски и правила для советника.
+                    Receptor изучит публичные данные, отзывы и позиционирование,
+                    а затем соберет профиль: концепцию, сильные стороны, риски
+                    и правила работы.
                   </p>
                 </div>
                 {researchProviderLabel(
@@ -446,17 +447,17 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                 Подключение iiko
               </h2>
               <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
-                Выберите Cloud API или прямой iiko RMS. Доступы хранятся
-                зашифрованно и используются только для BI и операционного
-                контура.
+                Если есть ключ iiko Cloud API, вставьте его. Если работаете
+                через iiko Server, выберите доступ по адресу сервера, логину и
+                паролю.
               </p>
             </div>
 
             <div className="grid grid-cols-2 rounded-lg border border-border/60 bg-background/50 p-1">
               {(
                 [
-                  ["cloud", "Cloud API"],
-                  ["rms", "RMS server"],
+                  ["cloud", "Cloud API ключ"],
+                  ["rms", "iiko Server"],
                 ] as const
               ).map(([id, label]) => (
                 <button
@@ -495,7 +496,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
               </Field>
             ) : (
               <div className="grid gap-4">
-                <Field label="RMS host">
+                <Field label="Адрес iiko Server">
                   <input
                     value={rmsHost}
                     onChange={(e) => {
@@ -508,7 +509,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                   />
                 </Field>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Логин RMS">
+                  <Field label="Логин iiko">
                     <input
                       value={rmsLogin}
                       onChange={(e) => {
@@ -520,7 +521,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                       className="input-base"
                     />
                   </Field>
-                  <Field label="Пароль RMS">
+                  <Field label="Пароль iiko">
                     <input
                       value={rmsPassword}
                       onChange={(e) => {
@@ -598,8 +599,8 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                   </p>
                 ) : (
                   <p>
-                    RMS проверяется через сервер `/resto/api/auth`, а dashboard
-                    читает продажи через `/resto/api/v2/reports/olap`.
+                    Проверим, что сервер отвечает и у пользователя есть доступ к
+                    отчетам. Адрес обычно выглядит как `company.iiko.it`.
                   </p>
                 )}
                 {demoMode ? (
@@ -613,9 +614,9 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                 ) : null}
                 {demoMode ? (
                   <p className="text-[12px] text-[color:var(--pro)]">
-                    В тестовом режиме Receptor может проверить ключ iiko, но
-                    заведение и подключение не сохраняются. Для рабочего
-                    подключения войдите по email и паролю.
+                    В режиме просмотра можно проверить сценарий, но подключение
+                    не сохранится. Для рабочего пилота войдите по логину и
+                    паролю.
                   </p>
                 ) : null}
               </div>
@@ -631,8 +632,8 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
             </h2>
             <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">
               {demoMode
-                ? "Тестовый режим не сохраняет подключение iiko. Войдите по email и паролю, чтобы создать заведение и открыть BI на реальных данных."
-                : "Создадим заведение, сохраним выбранную организацию iiko и откроем BI на живых данных."}
+                ? "Режим просмотра не сохраняет подключение iiko. Войдите по логину и паролю, чтобы создать заведение и открыть реальные данные."
+                : "Создадим заведение, сохраним выбранную организацию iiko и откроем кабинет на живых данных."}
             </p>
             {error ? (
               <p className="text-[13px] text-destructive">{error}</p>
@@ -705,7 +706,7 @@ function ResearchProfilePreview({
             </h3>
           </div>
           <span className="rounded-md border border-brand/30 bg-brand/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-brand">
-            Готово для советника
+            Готово к работе
           </span>
         </div>
         <p className="mt-3 text-[14px] leading-relaxed text-foreground/85">

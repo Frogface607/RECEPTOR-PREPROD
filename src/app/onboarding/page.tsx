@@ -77,10 +77,10 @@ export default async function OnboardingPage({
         </Link>
 
         <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-          Настройка · 1 минута
+          Настройка · 3 шага
         </p>
         <h1 className="mt-3 mb-9 text-balance text-3xl font-medium tracking-[-0.02em]">
-          Давайте подключим ваш ресторан
+          Подключим ресторан к рабочему кабинету
         </h1>
 
         <OnboardingWizard demoMode={previewMode} />

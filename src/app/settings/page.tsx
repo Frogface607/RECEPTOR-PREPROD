@@ -295,8 +295,8 @@ export default async function SettingsPage() {
               <AlertCircle className="mt-0.5 size-4 shrink-0 text-[color:var(--pro)]" />
               <p className="text-[13px] leading-relaxed text-foreground/85">
                 Тестовый доступ.{" "}
-                {configured ? "Войдите" : "Подключите Supabase и войдите"},
-                чтобы сохранять профиль, заведения и подключения.
+                {configured ? "Войдите" : "Настройте рабочий вход"},
+                чтобы сохранять профиль, заведения, iiko и команду.
               </p>
             </div>
           ) : null}
@@ -475,7 +475,7 @@ function LaunchChecklist({
               <ListChecks className="size-4" />
             </span>
             <h2 className="text-[12px] uppercase tracking-[0.18em] text-muted-foreground">
-              Запуск второго мозга
+              План запуска
             </h2>
           </div>
           <p className="mt-3 text-lg font-medium leading-snug text-foreground">
@@ -483,8 +483,8 @@ function LaunchChecklist({
           </p>
           <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted-foreground">
             Receptor становится полезным, когда знает заведение, людей и живую
-            смену. iiko добавляет факты сверху, но не заменяет операционный
-            контекст.
+            смену. iiko добавляет факты продаж, но не заменяет ежедневный
+            контекст команды.
           </p>
         </div>
 
@@ -583,14 +583,15 @@ function IikoConnectionCenter({ venues }: { venues: SettingsVenue[] }) {
     <Section icon={Plug} title="iiko">
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h3 className="text-lg font-medium">Подключение данных</h3>
+          <h3 className="text-lg font-medium">iiko и данные продаж</h3>
           <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
-            Ключ хранится в Supabase. BI включается после прав Cloud API.
+            Доступ сохраняется в кабинете и используется для продаж, меню,
+            смен и управленческих отчетов.
           </p>
         </div>
         <StatusPill
           tone={connectedCount > 0 ? "ok" : "warn"}
-          label={connectedCount > 0 ? `${connectedCount} активн.` : "нет ключа"}
+          label={connectedCount > 0 ? `${connectedCount} активн.` : "не подключено"}
         />
       </div>
 
@@ -626,17 +627,17 @@ function IikoConnectionCenter({ venues }: { venues: SettingsVenue[] }) {
               <div className="mt-4 grid gap-2 sm:grid-cols-3">
                 <DiagnosticItem
                   icon={KeyRound}
-                  title="API login"
+                  title="Ключ iiko"
                   text={venue.iikoConnected ? "сохранён" : "не подключён"}
                   tone={venue.iikoConnected ? "ok" : "warn"}
                 />
                 <DiagnosticItem
                   icon={CheckCircle2}
-                  title="Организация"
+                  title="Точка продаж"
                   text={
                     venue.iikoConnected
                       ? venue.iikoChannel === "rms"
-                        ? "RMS server"
+                        ? "сервер подключен"
                         : "выбрана"
                       : "ожидает ключ"
                   }
@@ -644,12 +645,12 @@ function IikoConnectionCenter({ venues }: { venues: SettingsVenue[] }) {
                 />
                 <DiagnosticItem
                   icon={Activity}
-                  title="BI reports"
+                  title="Отчеты"
                   text={
                     venue.iikoConnected
                       ? venue.iikoChannel === "rms"
-                        ? "OLAP доступен"
-                        : "нужны OLAP-права"
+                        ? "продажи доступны"
+                        : "нужны права отчетов"
                       : "после ключа"
                   }
                   tone={
