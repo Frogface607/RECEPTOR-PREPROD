@@ -2,7 +2,7 @@ import { ArrowRight } from "lucide-react";
 import { LinkButton } from "@/components/ui/link-button";
 
 export function PilotNextStep({
-  eyebrow = "Дальше в демо",
+  eyebrow = "Следующий шаг",
   title,
   text,
   primaryHref,

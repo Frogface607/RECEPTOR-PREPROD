@@ -18,7 +18,7 @@ import { LinkButton } from "@/components/ui/link-button";
 export const metadata: Metadata = {
   title: "Пилот Receptor — показать ресторану",
   description:
-    "Короткий маршрут для демонстрации Receptor: подключение ресторана, экран владельца, управляющий, сотрудник, итог смены и советник.",
+    "Короткий маршрут показа Receptor: подключение ресторана, экран владельца, управляющий, сотрудник, итог смены и советник.",
 };
 
 const demoRoute = [
@@ -80,7 +80,7 @@ const pitchBeats = [
 
 const pilotChecklist = [
   "Владелец получил логин и вошел в кабинет.",
-  "Заведение создано без демо-адресов и внутренних подсказок.",
+  "Заведение создано чисто: название, формат, роли, первый контекст.",
   "iiko подключается через Cloud API ключ или iiko Server.",
   "Управляющий видит поручения, стандарты и итог смены.",
   "Сотрудник понимает свой минимум: смена, стандарт, поручение, итог.",
@@ -96,15 +96,15 @@ export default function PilotPage() {
           <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 lg:grid-cols-[0.92fr_1.08fr] lg:py-18">
             <div className="self-center">
               <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-                Public pilot
+                Маршрут показа
               </p>
               <h1 className="mt-5 max-w-3xl text-balance text-[clamp(2.4rem,5vw,4.6rem)] font-medium leading-[0.98]">
                 Показать ресторану, как работает Receptor.
               </h1>
               <p className="mt-6 max-w-xl text-[16px] leading-relaxed text-muted-foreground">
-                Это не презентация и не набор внутренних экранов. Это короткий
-                маршрут для пилота: подключили заведение, показали владельца,
-                управляющего, сотрудника и ежедневный советник.
+                Это короткий маршрут для первого разговора: подключили
+                заведение, показали владельца, управляющего, сотрудника и
+                ежедневный советник.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <LinkButton
@@ -124,14 +124,14 @@ export default function PilotPage() {
               <div className="flex items-center justify-between border-b border-border/45 pb-4">
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                    Демо за 7 минут
+                    Показ за 7 минут
                   </p>
                   <h2 className="mt-2 text-2xl font-medium">
                     Четыре двери в продукт
                   </h2>
                 </div>
                 <span className="rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-brand">
-                  pilot ready
+                  маршрут собран
                 </span>
               </div>
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -207,10 +207,10 @@ export default function PilotPage() {
           <div className="mx-auto grid max-w-7xl gap-8 px-6 py-14 lg:grid-cols-[1fr_0.9fr]">
             <div>
               <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-                Pilot checklist
+                Перед пилотом
               </p>
               <h2 className="mt-4 text-3xl font-medium">
-                Что должно быть готово перед подключением Премьеры.
+                Что должно быть готово перед первым рестораном.
               </h2>
               <div className="mt-8 grid gap-2">
                 {pilotChecklist.map((item) => (

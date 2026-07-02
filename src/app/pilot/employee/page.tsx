@@ -81,7 +81,7 @@ export default function PilotEmployeePage() {
           <div className="mx-auto grid max-w-7xl gap-8 px-6 py-12 lg:grid-cols-[0.86fr_1.14fr] lg:py-16">
             <div className="self-center">
               <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-                Employee preview
+                Экран сотрудника
               </p>
               <h1 className="mt-5 max-w-3xl text-balance text-[clamp(2.35rem,5vw,4.7rem)] font-medium leading-[0.98]">
                 Сотруднику понятно, что делать.
@@ -116,7 +116,7 @@ export default function PilotEmployeePage() {
                   </h2>
                 </div>
                 <span className="rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-brand">
-                  demo data
+                  пример смены
                 </span>
               </div>
 
@@ -232,7 +232,7 @@ export default function PilotEmployeePage() {
         </section>
         <PilotNextStep
           title="Теперь можно открыть рабочий кабинет."
-          text="Публичный маршрут объяснил роли. Следующий шаг в демо: зайти в реальный рабочий экран сотрудника и показать, как это выглядит в продукте."
+          text="Публичный маршрут объяснил роли. Следующий шаг: зайти в рабочий экран сотрудника и показать, как это выглядит в продукте."
           primaryHref="/team?role=service&venueId=dev-venue"
           primaryLabel="Открыть кабинет"
         />
