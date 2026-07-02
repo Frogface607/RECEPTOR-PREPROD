@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft, GraduationCap, LogOut } from "lucide-react";
+import { ArrowLeft, ArrowRight, GraduationCap, LogOut } from "lucide-react";
 import { AppShell } from "@/components/dashboard/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -68,23 +68,33 @@ export default async function EmployeeLearningPage({
         <main className="flex-1">
           <section className="mx-auto max-w-3xl px-6 py-20">
             <Badge variant="outline" className="border-brand/30 text-brand">
-              Стандарты роли
+              Стандарты команды
             </Badge>
             <h1 className="mt-6 text-4xl font-medium">
-              Для стандартов нужна роль в заведении.
+              Сначала подключите ресторан и роли команды.
             </h1>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Попросите владельца или управляющего добавить сотрудника в команду
-              и выдать доступ.
+              Стандарты становятся полезными после запуска кабинета: заведение,
+              iiko, роли и первые поручения. После этого каждому сотруднику
+              откроется свой набор обучения.
             </p>
-            <Link
-              href="/auth/signout"
-              prefetch={false}
-              className="mt-8 inline-flex h-10 items-center gap-2 rounded-lg border border-border/60 bg-card/50 px-4 text-sm text-foreground transition-colors hover:border-brand/40"
-            >
-              <LogOut className="size-4" />
-              Выйти
-            </Link>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/settings"
+                className="inline-flex h-10 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-brand-hover"
+              >
+                Запустить ресторан
+                <ArrowRight className="size-4" />
+              </Link>
+              <Link
+                href="/auth/signout"
+                prefetch={false}
+                className="inline-flex h-10 items-center gap-2 rounded-lg border border-border/60 bg-card/50 px-4 text-sm text-foreground transition-colors hover:border-brand/40"
+              >
+                <LogOut className="size-4" />
+                Выйти
+              </Link>
+            </div>
           </section>
         </main>
       </AppShell>

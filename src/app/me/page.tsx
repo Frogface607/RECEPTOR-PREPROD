@@ -214,23 +214,33 @@ export default async function MyCabinetPage({
         <main className="flex-1">
           <section className="mx-auto max-w-3xl px-6 py-20">
             <Badge variant="outline" className="border-brand/30 text-brand">
-              Мой кабинет
+              Запуск ресторана
             </Badge>
             <h1 className="mt-6 text-4xl font-medium">
-              Для этого пользователя пока нет роли в заведении.
+              Кабинет готов. Осталось подключить ресторан или добавить команду.
             </h1>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Попросите владельца или управляющего добавить сотрудника в команду
-              и выдать логин.
+              Если вы владелец, начните запуск: создайте заведение, подключите
+              iiko и добавьте роли. Если вы сотрудник, попросите управляющего
+              выдать доступ в команде.
             </p>
-            <Link
-              href="/auth/signout"
-              prefetch={false}
-              className="mt-8 inline-flex h-10 items-center gap-2 rounded-lg border border-border/60 bg-card/50 px-4 text-sm text-foreground transition-colors hover:border-brand/40"
-            >
-              <LogOut className="size-4" />
-              Выйти
-            </Link>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/settings"
+                className="inline-flex h-10 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-brand-hover"
+              >
+                Запустить ресторан
+                <ArrowRight className="size-4" />
+              </Link>
+              <Link
+                href="/auth/signout"
+                prefetch={false}
+                className="inline-flex h-10 items-center gap-2 rounded-lg border border-border/60 bg-card/50 px-4 text-sm text-foreground transition-colors hover:border-brand/40"
+              >
+                <LogOut className="size-4" />
+                Выйти
+              </Link>
+            </div>
           </section>
         </main>
       </AppShell>
