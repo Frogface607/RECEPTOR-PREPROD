@@ -53,12 +53,12 @@ export function Hero() {
               <ArrowRight className="ml-1 size-4" />
             </LinkButton>
             <LinkButton
-              href="/platform"
+              href="/pilot"
               size="lg"
               variant="ghost"
               className="press h-12 px-6 text-base text-foreground/80 hover:bg-transparent hover:text-foreground"
             >
-              Смотреть платформу
+              Смотреть пилот
               <ArrowRight className="ml-1 size-4 opacity-60" />
             </LinkButton>
           </div>

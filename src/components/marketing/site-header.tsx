@@ -34,16 +34,10 @@ export function SiteHeader() {
             Платформа
           </Link>
           <Link
-            href="/team"
+            href="/pilot"
             className="hidden transition-colors hover:text-foreground lg:inline"
           >
-            Команда
-          </Link>
-          <Link
-            href="/context"
-            className="hidden transition-colors hover:text-foreground lg:inline"
-          >
-            Контекст
+            Пилот
           </Link>
           <Link
             href="/#pricing"

@@ -6,21 +6,21 @@ const AREAS = [
     label: "Core",
     tagline: "Ежедневный бриф, KPI, риски и действия владельца в одном кабинете.",
     metric: "Ежедневный бриф",
-    href: "/dashboard/dev-venue",
+    href: "/pilot#demo-route",
   },
   {
     title: "Память заведения",
     label: "Memory",
     tagline: "Анкета превращает ресторан в понятный контекст для AI, отчетов и задач.",
     metric: "Память заведения",
-    href: "/context",
+    href: "/pilot#demo-route",
   },
   {
     title: "Команда",
     label: "Operations",
     tagline: "Роли, доступы, задачи и коммуникация для управляющих, кухни и зала.",
     metric: "Командный слой",
-    href: "/team",
+    href: "/pilot#demo-route",
   },
 ] as const;
 
