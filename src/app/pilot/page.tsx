@@ -16,9 +16,9 @@ import { SiteHeader } from "@/components/marketing/site-header";
 import { LinkButton } from "@/components/ui/link-button";
 
 export const metadata: Metadata = {
-  title: "Пилот Receptor — показать ресторану",
+  title: "Пилот Receptor — как работает ресторан",
   description:
-    "Короткий маршрут показа Receptor: подключение ресторана, экран владельца, управляющий, сотрудник, итог смены и советник.",
+    "Короткий маршрут Receptor: запуск ресторана, утро владельца, смена управляющего, экран сотрудника, итог смены и советник.",
 };
 
 const showRoute = [
@@ -26,7 +26,7 @@ const showRoute = [
     id: "setup",
     icon: KeyRound,
     step: "01",
-    title: "Подключить ресторан",
+    title: "Запустить ресторан",
     text: "Владелец входит, создает заведение, добавляет контекст и подключает iiko, когда доступы готовы.",
     href: "/auth?next=/onboarding%3Fnew%3D1",
     action: "Начать подключение",
@@ -35,28 +35,28 @@ const showRoute = [
     id: "owner",
     icon: MonitorCheck,
     step: "02",
-    title: "Показать владельца",
+    title: "Утро владельца",
     text: "Один утренний экран: что проверить, кому поручить, какие факты уже учтены и где открыть советника.",
     href: "/pilot/owner",
-    action: "Открыть превью",
+    action: "Смотреть экран",
   },
   {
     id: "team",
     icon: UserRoundCog,
     step: "03",
-    title: "Показать управляющего",
+    title: "Смена управляющего",
     text: "Управляющий видит смену, срочные поручения, стандарты, людей и что собрать после рабочего дня.",
     href: "/pilot/manager",
-    action: "Открыть превью",
+    action: "Смотреть экран",
   },
   {
     id: "employee",
     icon: UsersRound,
     step: "04",
-    title: "Показать сотрудника",
+    title: "День сотрудника",
     text: "У сотрудника только свое: смена, стандарт, поручение и короткий итог, который попадет в память заведения.",
     href: "/pilot/employee",
-    action: "Открыть превью",
+    action: "Смотреть экран",
   },
 ];
 
@@ -96,26 +96,26 @@ export default function PilotPage() {
           <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 lg:grid-cols-[0.92fr_1.08fr] lg:py-18">
             <div className="self-center">
               <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-                Маршрут показа
+                Маршрут пилота
               </p>
               <h1 className="mt-5 max-w-3xl text-balance text-[clamp(2.4rem,5vw,4.6rem)] font-medium leading-[0.98]">
-                Показать ресторану, как работает Receptor.
+                Как Receptor работает в ресторане.
               </h1>
               <p className="mt-6 max-w-xl text-[16px] leading-relaxed text-muted-foreground">
-                Это короткий маршрут для первого разговора: подключили
-                заведение, показали владельца, управляющего, сотрудника и
-                ежедневный советник.
+                Это короткий маршрут для первого разговора: запустить
+                заведение, открыть утро владельца, смену управляющего, день
+                сотрудника и ежедневного советника.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <LinkButton
                   href="/auth?next=/onboarding%3Fnew%3D1"
                   className="bg-brand text-primary-foreground hover:bg-brand-hover"
                 >
-                  Подключить ресторан
+                  Запустить ресторан
                   <ArrowRight className="size-4" />
                 </LinkButton>
                 <LinkButton href="#show-route" variant="outline">
-                  Смотреть маршрут
+                  Пройти маршрут
                 </LinkButton>
               </div>
             </div>
@@ -124,10 +124,10 @@ export default function PilotPage() {
               <div className="flex items-center justify-between border-b border-border/45 pb-4">
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                    Показ за 7 минут
+                    Разбор за 7 минут
                   </p>
                   <h2 className="mt-2 text-2xl font-medium">
-                    Четыре двери в продукт
+                    Четыре рабочих момента
                   </h2>
                 </div>
                 <span className="rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-brand">
@@ -171,7 +171,7 @@ export default function PilotPage() {
             <div className="grid gap-8 lg:grid-cols-[0.7fr_1.3fr]">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-                  Что показать
+                  Что видно
                 </p>
                 <h2 className="mt-4 text-3xl font-medium">
                   Не экраны ради экранов, а ежедневная система.

@@ -18,7 +18,7 @@ import { LinkButton } from "@/components/ui/link-button";
 export const metadata: Metadata = {
   title: "Пилот Receptor — экран управляющего",
   description:
-    "Публичное превью рабочего утра управляющего Receptor: смена, поручения, стандарты и итог смены.",
+    "Рабочее утро управляющего Receptor: смена, поручения, стандарты и итог смены.",
 };
 
 const managerFacts = [
@@ -94,10 +94,10 @@ export default function PilotManagerPage() {
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <LinkButton
-                  href="/team?role=venue_manager&venueId=dev-venue"
+                  href="/auth?next=/settings"
                   className="bg-brand text-primary-foreground hover:bg-brand-hover"
                 >
-                  Открыть рабочее управление
+                  Запустить свой ресторан
                   <ArrowRight className="size-4" />
                 </LinkButton>
                 <LinkButton href="/pilot" variant="outline">
@@ -117,7 +117,7 @@ export default function PilotManagerPage() {
                   </h2>
                 </div>
                 <span className="rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-brand">
-                  пример смены
+                  живая смена
                 </span>
               </div>
 
@@ -237,10 +237,10 @@ export default function PilotManagerPage() {
           </div>
         </section>
         <PilotNextStep
-          title="Теперь показать экран сотрудника."
+          title="Теперь открыть экран сотрудника."
           text="После маршрута управляющего видно, что линейному сотруднику не нужно читать весь кабинет: только смена, стандарт, поручение и короткий итог."
           primaryHref="/pilot/employee"
-          primaryLabel="Показать сотрудника"
+          primaryLabel="Открыть сотрудника"
         />
       </main>
       <SiteFooter />

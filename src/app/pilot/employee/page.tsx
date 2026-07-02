@@ -17,7 +17,7 @@ import { LinkButton } from "@/components/ui/link-button";
 export const metadata: Metadata = {
   title: "Пилот Receptor — экран сотрудника",
   description:
-    "Публичное превью личного кабинета сотрудника Receptor: смена, стандарт, поручение и короткий итог.",
+    "Личный экран сотрудника Receptor: смена, стандарт, поручение и короткий итог.",
 };
 
 const employeeFacts = [
@@ -93,10 +93,10 @@ export default function PilotEmployeePage() {
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <LinkButton
-                  href="/team?role=service&venueId=dev-venue"
+                  href="/auth?next=/settings"
                   className="bg-brand text-primary-foreground hover:bg-brand-hover"
                 >
-                  Открыть рабочий кабинет
+                  Запустить свой ресторан
                   <ArrowRight className="size-4" />
                 </LinkButton>
                 <LinkButton href="/pilot" variant="outline">
@@ -116,7 +116,7 @@ export default function PilotEmployeePage() {
                   </h2>
                 </div>
                 <span className="rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-brand">
-                  пример смены
+                  живая смена
                 </span>
               </div>
 
@@ -231,10 +231,10 @@ export default function PilotEmployeePage() {
           </div>
         </section>
         <PilotNextStep
-          title="Теперь можно открыть рабочий кабинет."
-          text="Публичный маршрут объяснил роли. Следующий шаг: зайти в рабочий экран сотрудника и показать, как это выглядит в продукте."
-          primaryHref="/team?role=service&venueId=dev-venue"
-          primaryLabel="Открыть кабинет"
+          title="Теперь можно запускать ресторан."
+          text="Маршрут объяснил роли. Следующий шаг: создать заведение, собрать контекст и подключить iiko, когда доступы готовы."
+          primaryHref="/auth?next=/settings"
+          primaryLabel="Запустить ресторан"
         />
       </main>
       <SiteFooter />

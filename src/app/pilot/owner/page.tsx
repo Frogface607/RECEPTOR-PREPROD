@@ -17,7 +17,7 @@ import { LinkButton } from "@/components/ui/link-button";
 export const metadata: Metadata = {
   title: "Пилот Receptor — экран владельца",
   description:
-    "Публичное превью утреннего экрана владельца Receptor: решение дня, поручения, итог смены и советник.",
+    "Утренний экран владельца Receptor: решение дня, поручения, итог смены и советник.",
 };
 
 const morningChecks = [
@@ -72,10 +72,10 @@ export default function PilotOwnerPage() {
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <LinkButton
-                  href="/auth?next=/dashboard/dev-venue"
+                  href="/auth?next=/settings"
                   className="bg-brand text-primary-foreground hover:bg-brand-hover"
                 >
-                  Открыть рабочий кабинет
+                  Запустить свой ресторан
                   <ArrowRight className="size-4" />
                 </LinkButton>
                 <LinkButton href="/pilot" variant="outline">
@@ -95,7 +95,7 @@ export default function PilotOwnerPage() {
                   </h2>
                 </div>
                 <span className="rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-brand">
-                  пример смены
+                  живая смена
                 </span>
               </div>
 
@@ -224,10 +224,10 @@ export default function PilotOwnerPage() {
           </div>
         </section>
         <PilotNextStep
-          title="Теперь показать работу управляющего."
+          title="Теперь открыть работу управляющего."
           text="После решения владельца логично открыть смену: кто отвечает, какие поручения закрыть и какой итог вернуть наверх."
           primaryHref="/pilot/manager"
-          primaryLabel="Показать управляющего"
+          primaryLabel="Открыть управляющего"
         />
       </main>
       <SiteFooter />
