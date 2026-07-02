@@ -37,7 +37,7 @@ import { calculateContextCompletion } from "@/lib/venues/context-questionnaire";
 import { listKnownVenues } from "@/lib/venues/get-venue";
 
 export const metadata: Metadata = {
-  title: "Настройки — RECEPTOR",
+  title: "Запуск ресторана — RECEPTOR",
 };
 
 export const dynamic = "force-dynamic";
@@ -268,22 +268,26 @@ export default async function SettingsPage() {
           <div className="mx-auto flex min-h-16 max-w-6xl flex-wrap items-center gap-3 px-6 py-4">
             <div>
               <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                Рабочее пространство
+                Первый запуск
               </p>
-              <h1 className="mt-1 text-xl font-medium">Настройки</h1>
+              <h1 className="mt-1 text-xl font-medium">Запуск ресторана</h1>
+              <p className="mt-1 max-w-xl text-[13px] leading-relaxed text-muted-foreground">
+                Доведите кабинет до первого рабочего разбора: профиль, iiko,
+                команда, итог смены и понятное действие для владельца.
+              </p>
             </div>
             <div className="ml-auto flex flex-wrap items-center gap-2">
               <Link
                 href={firstVenueHref}
                 className="inline-flex h-9 items-center rounded-lg border border-border/60 bg-card/55 px-3 text-sm text-foreground transition-colors hover:bg-card"
               >
-                Открыть панель
+                Открыть разбор
               </Link>
               <Link
                 href="/onboarding?new=1"
                 className="inline-flex h-9 items-center rounded-lg bg-brand px-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-brand-hover"
               >
-                Добавить заведение
+                Подключить ресторан
               </Link>
             </div>
           </div>
@@ -366,7 +370,7 @@ export default async function SettingsPage() {
                   href="/onboarding?new=1"
                   className="mt-3 inline-block text-[13px] text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  + Добавить заведение
+                  + Подключить ресторан
                 </Link>
               </Section>
             </div>
