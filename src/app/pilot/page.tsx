@@ -46,8 +46,8 @@ const demoRoute = [
     step: "03",
     title: "Показать управляющего",
     text: "Управляющий видит смену, срочные поручения, стандарты, людей и что собрать после рабочего дня.",
-    href: "/team?role=venue_manager&venueId=dev-venue",
-    action: "Открыть управление",
+    href: "/pilot/manager",
+    action: "Открыть превью",
   },
   {
     id: "employee",
