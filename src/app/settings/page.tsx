@@ -482,9 +482,9 @@ function LaunchChecklist({
             {launchPath.headline}
           </p>
           <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted-foreground">
-            Receptor становится полезным, когда знает заведение, людей и живую
-            смену. iiko добавляет факты продаж, но не заменяет ежедневный
-            контекст команды.
+            Сначала сохраняем ресторан и iiko, затем добавляем роли, итог смены
+            и первый разбор для владельца. Так кабинет сразу становится рабочим,
+            а не превращается в набор отдельных отчетов.
           </p>
         </div>
 
@@ -620,7 +620,7 @@ function IikoConnectionCenter({ venues }: { venues: SettingsVenue[] }) {
                   }
                   className="inline-flex h-8 items-center justify-center rounded-md border border-border/60 bg-card/55 px-3 text-[13px] text-foreground transition-colors hover:bg-card"
                 >
-                  {venue.iikoConnected ? "Проверить BI" : "Подключить"}
+                  {venue.iikoConnected ? "Открыть разбор" : "Подключить"}
                 </Link>
               </div>
 
