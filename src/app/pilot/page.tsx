@@ -37,8 +37,8 @@ const demoRoute = [
     step: "02",
     title: "Показать владельца",
     text: "Один утренний экран: что проверить, кому поручить, какие факты уже учтены и где открыть советника.",
-    href: "/auth?next=/dashboard/dev-venue",
-    action: "Открыть кабинет",
+    href: "/pilot/owner",
+    action: "Открыть превью",
   },
   {
     id: "team",
