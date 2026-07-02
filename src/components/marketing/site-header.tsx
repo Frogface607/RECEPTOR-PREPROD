@@ -10,7 +10,7 @@ export function SiteHeader() {
             RECEPTOR
           </span>
           <span className="hidden text-[12px] uppercase tracking-[0.16em] text-muted-foreground transition-colors group-hover:text-foreground sm:inline">
-            restaurant AI OS
+            restaurant OS
           </span>
         </Link>
 
@@ -52,12 +52,12 @@ export function SiteHeader() {
             Войти
           </Link>
           <LinkButton
-            href="/auth?next=/onboarding"
+            href="/pilot"
             size="sm"
             className="bg-brand text-primary-foreground hover:bg-brand-hover"
           >
-            <span className="hidden sm:inline">Начать бесплатно</span>
-            <span className="sm:hidden">Начать</span>
+            <span className="hidden sm:inline">Смотреть показ</span>
+            <span className="sm:hidden">Показ</span>
           </LinkButton>
         </nav>
       </div>

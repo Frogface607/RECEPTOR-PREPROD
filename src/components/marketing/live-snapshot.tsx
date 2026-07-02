@@ -11,7 +11,7 @@ const KPIS = [
   },
   {
     label: "Продажи по меню",
-    value: "OLAP",
+    value: "меню",
     note: "По блюдам, категориям и сменам",
   },
   {
@@ -46,7 +46,7 @@ export function LiveSnapshot() {
               02 · Рабочий кабинет
             </p>
             <h2 className="mt-4 text-balance text-4xl font-medium leading-[1.05] sm:text-[44px]">
-              BI, который выглядит как система управления.
+              Данные, которые сразу ведут к действию.
             </h2>
           </div>
           <p className="max-w-sm text-[14px] leading-relaxed text-muted-foreground">

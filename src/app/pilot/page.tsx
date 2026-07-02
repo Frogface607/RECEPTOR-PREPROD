@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     "Короткий маршрут показа Receptor: подключение ресторана, экран владельца, управляющий, сотрудник, итог смены и советник.",
 };
 
-const demoRoute = [
+const showRoute = [
   {
     id: "setup",
     icon: KeyRound,
@@ -114,7 +114,7 @@ export default function PilotPage() {
                   Подключить ресторан
                   <ArrowRight className="size-4" />
                 </LinkButton>
-                <LinkButton href="#demo-route" variant="outline">
+                <LinkButton href="#show-route" variant="outline">
                   Смотреть маршрут
                 </LinkButton>
               </div>
@@ -135,7 +135,7 @@ export default function PilotPage() {
                 </span>
               </div>
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                {demoRoute.map((item) => (
+                {showRoute.map((item) => (
                   <a
                     key={item.id}
                     href={item.href}
@@ -166,7 +166,7 @@ export default function PilotPage() {
           </div>
         </section>
 
-        <section id="demo-route" className="border-b border-border/40">
+        <section id="show-route" className="border-b border-border/40">
           <div className="mx-auto max-w-7xl px-6 py-14">
             <div className="grid gap-8 lg:grid-cols-[0.7fr_1.3fr]">
               <div>

@@ -3,24 +3,24 @@ import Link from "next/link";
 const AREAS = [
   {
     title: "Панель владельца",
-    label: "Core",
+    label: "Ядро",
     tagline: "Ежедневный бриф, KPI, риски и действия владельца в одном кабинете.",
     metric: "Ежедневный бриф",
-    href: "/pilot#demo-route",
+    href: "/pilot#show-route",
   },
   {
     title: "Память заведения",
-    label: "Memory",
-    tagline: "Анкета превращает ресторан в понятный контекст для AI, отчетов и задач.",
+    label: "Память",
+    tagline: "Анкета превращает ресторан в понятный контекст для советника, отчетов и поручений.",
     metric: "Память заведения",
-    href: "/pilot#demo-route",
+    href: "/pilot#show-route",
   },
   {
     title: "Команда",
-    label: "Operations",
-    tagline: "Роли, доступы, задачи и коммуникация для управляющих, кухни и зала.",
+    label: "Смена",
+    tagline: "Роли, доступы, поручения и коммуникация для управляющих, кухни и зала.",
     metric: "Командный слой",
-    href: "/pilot#demo-route",
+    href: "/pilot#show-route",
   },
 ] as const;
 

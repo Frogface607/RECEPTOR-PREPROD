@@ -323,7 +323,7 @@ export default function PricingPage() {
               </p>
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 {[
-                  "iiko live/demo контур",
+                  "iiko или тестовый контур",
                   "контекстная анкета заведения",
                   "первый утренний бриф",
                   "модульный план подписки",

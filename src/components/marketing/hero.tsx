@@ -25,7 +25,7 @@ export function Hero() {
       <div className="mx-auto grid max-w-7xl gap-16 px-6 pb-28 pt-20 lg:grid-cols-12 lg:gap-12 lg:pb-36 lg:pt-28">
         <div className="lg:col-span-7">
           <div className="inline-flex items-center border-l border-brand/50 pl-3 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-            AI operating system для ресторана
+            Операционная система ресторана
           </div>
 
           <h1 className="mt-8 text-balance text-[clamp(3rem,7vw,6rem)] font-medium leading-[0.96]">
@@ -35,39 +35,38 @@ export function Hero() {
           </h1>
 
           <p className="mt-8 max-w-xl text-balance text-[17px] leading-[1.55] text-muted-foreground">
-            Receptor подключается к iiko и собирает BI, AI-помощника,
-            техкарты, меню, команду и ежедневные решения в одну рабочую
-            систему.{" "}
+            Receptor собирает данные из iiko, меню, команду, стандарты, итоги
+            смен и советника в одну рабочую систему.{" "}
             <span className="text-foreground/85">
-              Не еще один отчет, а операционный контур владельца.
+              Не еще один отчет, а понятный маршрут ежедневного управления.
             </span>
           </p>
 
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <LinkButton
-              href="/auth?next=/onboarding"
+              href="/pilot"
               size="lg"
               className="press h-12 bg-brand px-6 text-base text-primary-foreground shadow-none transition-colors hover:bg-brand-hover"
             >
-              Начать бесплатно
+              Смотреть показ
               <ArrowRight className="ml-1 size-4" />
             </LinkButton>
             <LinkButton
-              href="/pilot"
+              href="/auth?next=/onboarding"
               size="lg"
               variant="ghost"
               className="press h-12 px-6 text-base text-foreground/80 hover:bg-transparent hover:text-foreground"
             >
-              Смотреть пилот
+              Подключить ресторан
               <ArrowRight className="ml-1 size-4 opacity-60" />
             </LinkButton>
           </div>
 
           <div className="mt-12 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px] uppercase tracking-[0.14em] text-muted-foreground">
             <span>iiko Cloud</span>
-            <span>BI</span>
-            <span>AI-помощник</span>
-            <span>Tech Cards</span>
+            <span>Данные</span>
+            <span>Советник</span>
+            <span>Техкарты</span>
             <span>Команда</span>
           </div>
         </div>
