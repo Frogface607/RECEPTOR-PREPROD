@@ -431,7 +431,7 @@ export default async function SettingsPage() {
                       Free
                     </span>
                     <span className="text-[13px] text-muted-foreground">
-                      1 заведение · базовый дашборд
+                      1 заведение · базовый разбор
                     </span>
                   </div>
                   <Link

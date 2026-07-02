@@ -674,7 +674,7 @@ export function OnboardingWizard({ demoMode }: { demoMode: boolean }) {
                 </>
               ) : (
                 <>
-                  Открыть дашборд <ArrowRight className="size-4" />
+                  Открыть первый разбор <ArrowRight className="size-4" />
                 </>
               )}
             </button>
