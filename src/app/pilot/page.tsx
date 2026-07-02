@@ -55,8 +55,8 @@ const demoRoute = [
     step: "04",
     title: "Показать сотрудника",
     text: "У сотрудника только свое: смена, стандарт, поручение и короткий итог, который попадет в память заведения.",
-    href: "/team?role=service&venueId=dev-venue",
-    action: "Открыть сотрудника",
+    href: "/pilot/employee",
+    action: "Открыть превью",
   },
 ];
 
