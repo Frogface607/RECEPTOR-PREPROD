@@ -135,7 +135,7 @@ describe("buildTeamManagerFollowUp", () => {
     });
     expect(followUp.items[0]).toMatchObject({
       id: "urgent-tasks",
-      title: "Закрыть срочные задачи",
+      title: "Закрыть срочные поручения",
       href: "#team-actions",
       tone: "risk",
     });
@@ -196,7 +196,7 @@ describe("buildTeamManagerFollowUp", () => {
       id: "urgent-tasks",
       detail: expect.stringContaining("Разобрать дорогую смену"),
       taskDraft: expect.objectContaining({
-        title: "Разобрать срочную задачу: Разобрать дорогую смену",
+        title: "Разобрать срочное поручение: Разобрать дорогую смену",
       }),
     });
   });

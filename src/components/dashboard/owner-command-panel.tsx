@@ -300,7 +300,23 @@ function actionCta(action: OwnerReviewAction): string {
 }
 
 function primaryAction(review: OwnerReview): OwnerReviewAction | null {
-  return review.actions[0] ?? null;
+  const operatingTargets: OwnerReviewAction["target"][] = [
+    "team-actions",
+    "team-learning",
+    "team-journal",
+  ];
+
+  return (
+    review.actions.find((action) => operatingTargets.includes(action.target)) ??
+    review.actions.find(
+      (action) =>
+        action.target !== "iiko-settings" &&
+        action.target !== "labor-member" &&
+        action.target !== "labor-rate",
+    ) ??
+    review.actions[0] ??
+    null
+  );
 }
 
 type OwnerMorningFocusRow = {

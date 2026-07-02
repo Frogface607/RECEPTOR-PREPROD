@@ -592,7 +592,7 @@ describe("buildMemberShiftSchedule", () => {
     });
 
     expect(profile.memoryLink).toMatchObject({
-      label: "Связать задачу",
+      label: "Связать поручение",
       reason: expect.stringContaining("что изменилось после смены"),
       href: "#team-actions",
       action: "Открыть поручение",

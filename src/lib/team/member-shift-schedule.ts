@@ -227,11 +227,11 @@ export function buildMemberOperationPlan(input: {
   if (urgentTask) {
     items.push({
       id: `task-${urgentTask.id}`,
-      title: "Закрыть срочную задачу",
+      title: "Закрыть срочное поручение",
       detail: urgentTask.title,
       href: "#team-actions",
       tone: "risk",
-      badge: urgentTask.dueLabel || "задача",
+      badge: urgentTask.dueLabel || "поручение",
       taskId: urgentTask.id,
     });
   }
@@ -257,11 +257,11 @@ export function buildMemberOperationPlan(input: {
   if (nextTask) {
     items.push({
       id: `task-${nextTask.id}`,
-      title: "Продвинуть задачу",
+      title: "Продвинуть поручение",
       detail: nextTask.title,
       href: "#team-actions",
       tone: "work",
-      badge: nextTask.dueLabel || "задача",
+      badge: nextTask.dueLabel || "поручение",
       taskId: nextTask.id,
     });
   }
@@ -293,7 +293,7 @@ export function buildMemberOperationPlan(input: {
     items.push({
       id: "ready",
       title: "Смена без блокеров",
-      detail: "Ставка, допуск и очередь задач не требуют срочного действия.",
+      detail: "Ставка, допуск и очередь поручений не требуют срочного действия.",
       href: "#shift-coverage",
       tone: "ready",
       badge: "готово",
@@ -365,16 +365,16 @@ export function buildMemberDailyRoute(input: {
     {
       id: "task",
       step: "03",
-      title: "Сделать задачу",
+      title: "Сделать поручение",
       detail: nextTask
         ? nextTask.title
-        : "Открытых задач на сотрудника или роль нет.",
+        : "Открытых поручений на сотрудника или роль нет.",
       href: "#team-actions",
       status: nextTask
         ? urgentTask
           ? "срочно"
           : `${openTasks.length} открыто`
-        : "нет задач",
+        : "нет поручений",
       action: nextTask ? "Открыть" : "Проверить",
       ready: !nextTask,
       tone: urgentTask ? "risk" : nextTask ? "work" : "ready",
@@ -402,8 +402,8 @@ export function buildMemberDailyRoute(input: {
     totalCount: items.length,
     headline:
       readyCount === items.length
-        ? "Смена закрыта: есть задача, стандарт и итог."
-        : "Минимум на смену: задача, стандарт и короткий итог.",
+        ? "Смена закрыта: есть поручение, стандарт и итог."
+        : "Минимум на смену: поручение, стандарт и короткий итог.",
     focus,
     items,
   };
@@ -453,7 +453,7 @@ export function buildMemberSecondBrainProfile(input: {
     title: `${input.member.name}: короткий бриф`,
     summary: primary
       ? `${primary.label}: ${primary.detail}`
-      : "Receptor собирает роль, стандарты, задачи и короткие итоги смены.",
+      : "Receptor собирает роль, стандарты, поручения и короткие итоги смены.",
     tags: [
       role.shortTitle,
       input.member.status === "active" ? "активен" : input.member.status,
@@ -560,20 +560,20 @@ function laborFact(
 function taskFact(openTasks: number, urgentTasks: number): MemberSecondBrainFact {
   if (urgentTasks > 0) {
     return {
-      label: "Задачи",
+      label: "Поручения",
       value: `${urgentTasks} срочно`,
-      detail: "Есть срочная задача, которую надо разобрать до смены.",
+      detail: "Есть срочное поручение, которое надо разобрать до смены.",
       tone: "risk",
     };
   }
 
   return {
-    label: "Задачи",
+    label: "Поручения",
     value: `${openTasks}`,
     detail:
       openTasks > 0
         ? "Есть открытые действия по роли или лично сотруднику."
-        : "Открытых задач нет.",
+        : "Открытых поручений нет.",
     tone: openTasks > 0 ? "work" : "ready",
   };
 }
@@ -628,7 +628,7 @@ function memberNextQuestion(input: {
     return "Какая ставка или схема оплаты должна быть у этого сотрудника?";
   }
   if (input.urgentTasks[0]) {
-    return `Что мешает закрыть срочную задачу «${input.urgentTasks[0].title}»?`;
+    return `Что мешает закрыть срочное поручение «${input.urgentTasks[0].title}»?`;
   }
   if (input.latestNote && input.fieldMemory.complete === 0) {
     return `В итоге смены не хватает: ${input.fieldMemory.bestMissing.join(", ")}. Что произошло, почему это важно, когда/сколько и что проверить утром?`;
@@ -637,7 +637,7 @@ function memberNextQuestion(input: {
     return "Что произошло на последней смене: гости, стоп-лист, конфликт, продажи или что проверить утром?";
   }
   if (input.openTasks[0]) {
-    return `Какой следующий шаг по задаче «${input.openTasks[0].title}»?`;
+    return `Какой следующий шаг по поручению «${input.openTasks[0].title}»?`;
   }
   return "Что сотрудник заметил на смене и какой один стандарт стоит усилить?";
 }
@@ -666,8 +666,8 @@ function memberMemoryLink(input: {
 
   if (input.urgentTasks[0]) {
     return {
-      label: "Связать задачу",
-      detail: `Срочная задача станет частью памяти смены: ${input.urgentTasks[0].title}.`,
+      label: "Связать поручение",
+      detail: `Срочное поручение станет частью памяти смены: ${input.urgentTasks[0].title}.`,
       reason:
         "Так утренний разбор увидит не только проблему, но и кто уже забрал ее в работу.",
       href: "#team-actions",
@@ -703,10 +703,10 @@ function memberMemoryLink(input: {
 
   if (input.openTasks[0]) {
     return {
-      label: "Связать задачу",
-      detail: `Следующий шаг по задаче попадет в разбор смены: ${input.openTasks[0].title}.`,
+      label: "Связать поручение",
+      detail: `Следующий шаг по поручению попадет в разбор смены: ${input.openTasks[0].title}.`,
       reason:
-        "Закрытый следующий шаг покажет, что изменилось после смены, а не просто сохранит задачу.",
+        "Закрытый следующий шаг покажет, что изменилось после смены, а не просто сохранит поручение.",
       href: "#team-actions",
       action: "Открыть поручение",
       tone: "work",
@@ -716,7 +716,7 @@ function memberMemoryLink(input: {
   return {
     label: "Все связано",
     detail:
-      "Роль, стандарты, задачи и итог смены уже дают руководителю живой контекст.",
+      "Роль, стандарты, поручения и итог смены уже дают руководителю живой контекст.",
     reason:
       "Теперь любое новое наблюдение усилит картину смены, людей и утренних решений.",
     href: "#shift-summary",

@@ -184,19 +184,19 @@ export function buildTeamManagerFollowUp(input: {
     const firstTask = urgentTasks[0];
     items.push({
       id: "urgent-tasks",
-      title: "Закрыть срочные задачи",
+      title: "Закрыть срочные поручения",
       detail: `${firstTask.title}${urgentTasks.length > 1 ? ` и еще ${urgentTasks.length - 1}` : ""}.`,
       tone: "risk",
       href: "#team-actions",
       metric: `${urgentTasks.length} срочно`,
       taskDraft: managerTaskDraft({
-        title: `Разобрать срочную задачу: ${firstTask.title}`,
+        title: `Разобрать срочное поручение: ${firstTask.title}`,
         priority: "high",
         dueLabel: firstTask.dueLabel,
         sourceLabel: "Контроль смены",
         impactLabel: `${urgentTasks.length} срочно`,
         contextNote:
-          "Проверка: задача уже срочная в Team OS. Вопрос: что мешает закрыть ее до смены. Зачем: владелец должен видеть не только BI, но и управляемое действие.",
+          "Проверка: поручение уже срочное. Вопрос: что мешает закрыть его до смены. Зачем: владелец должен видеть не только BI, но и управляемое действие.",
       }),
     });
   }
@@ -415,19 +415,19 @@ export function buildTeamManagerFollowUp(input: {
     const firstTask = openTasks[0];
     items.push({
       id: "open-tasks",
-      title: "Дожать открытые задачи",
+      title: "Дожать открытые поручения",
       detail: `${firstTask.title}${openTasks.length > 1 ? ` и еще ${openTasks.length - 1}` : ""}.`,
       tone: "watch",
       href: "#team-actions",
       metric: `${openTasks.length} открыто`,
       taskDraft: managerTaskDraft({
-        title: `Дожать открытую задачу: ${firstTask.title}`,
+        title: `Дожать открытое поручение: ${firstTask.title}`,
         priority: firstTask.priority,
         dueLabel: firstTask.dueLabel,
         sourceLabel: "Контроль смены",
         impactLabel: `${openTasks.length} открыто`,
         contextNote:
-          "Проверка: открытая задача держит управленческий контур незакрытым. Вопрос: кто следующий ответственный и какой статус нужен сегодня. Зачем: не копить задачи без владельца.",
+          "Проверка: открытое поручение держит работу незакрытой. Вопрос: кто следующий ответственный и какой статус нужен сегодня. Зачем: не копить поручения без владельца.",
       }),
     });
   }
@@ -439,7 +439,7 @@ export function buildTeamManagerFollowUp(input: {
       status: "ready",
       title: "Команда под контролем",
       detail:
-        "Срочных задач, ФОТ-блокеров, провалов допуска и план/факт риска не видно.",
+        "Срочных поручений, ФОТ-блокеров, провалов допуска и план/факт риска не видно.",
       openTasks: openTasks.length,
       urgentTasks: urgentTasks.length,
       blockedAdmissions: blockedAdmissions.length,
@@ -451,7 +451,7 @@ export function buildTeamManagerFollowUp(input: {
           id: "ready",
           title: "Поддерживать ритм",
           detail:
-            "Следующий шаг — обновлять план смен и закрывать задачи в день появления.",
+            "Следующий шаг — обновлять план смен и закрывать поручения в день появления.",
           tone: "good",
           href: "#shift-coverage",
           metric: "готово",
