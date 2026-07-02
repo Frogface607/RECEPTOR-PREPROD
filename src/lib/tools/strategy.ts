@@ -135,7 +135,7 @@ export const TOOL_STRATEGY: Record<string, ToolStrategy> = {
     role: "support",
     label: "Маркетинг",
     result: "идеи акций с механикой",
-    note: "Становится сильнее после подключения BI и истории продаж.",
+    note: "Становится сильнее после подключения iiko и истории продаж.",
   },
   "social-post": {
     role: "support",
@@ -171,7 +171,7 @@ export const TOOL_STRATEGY: Record<string, ToolStrategy> = {
     role: "core",
     label: "Команда",
     result: "брифинг смены на сегодня",
-    note: "Соединяет BI, стоп-лист, задачи и командный ритм.",
+    note: "Соединяет данные продаж, стоп-лист, задачи и командный ритм.",
   },
   "expense-optimizer": {
     role: "core",
@@ -210,7 +210,7 @@ export const TOOL_WORKFLOWS: ToolWorkflow[] = [
   },
   {
     id: "owner-operations",
-    title: "BI и операционка",
+    title: "Разбор и операционка",
     description:
       "Ежедневная картина для владельца: меню, расходы, стоп-лист, инвентаризация и брифинг смены.",
     promise:

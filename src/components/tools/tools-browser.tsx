@@ -134,7 +134,7 @@ function WorkflowView() {
               </p>
             </div>
             <h2 className="mt-3 max-w-3xl text-2xl font-medium tracking-[-0.02em] text-foreground">
-              Профиль заведения, BI-диагностика, затем техкарта или меню.
+              Профиль заведения, разбор данных, затем техкарта или меню.
             </h2>
             <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-muted-foreground">
               Сценарии подключаются к профилю заведения и операционным данным.
@@ -151,7 +151,7 @@ function WorkflowView() {
           </div>
           <div className="grid min-w-[260px] grid-cols-3 gap-2 text-center">
             <Metric label="контекст" value="Профиль" />
-            <Metric label="данные" value="BI" />
+            <Metric label="данные" value="Разбор" />
             <Metric label="действия" value="Задачи" />
           </div>
         </div>

@@ -6,7 +6,7 @@ import { ToolsBrowser } from "@/components/tools/tools-browser";
 export const metadata: Metadata = {
   title: "Инструменты — RECEPTOR",
   description:
-    "Рабочие AI-сценарии для ресторана: техкарты, меню, BI, зал, маркетинг и репутация в одном кабинете.",
+    "Рабочие AI-сценарии для ресторана: техкарты, меню, зал, маркетинг, репутация и ежедневные разборы в одном кабинете.",
 };
 
 export default function ToolsPage() {
@@ -31,12 +31,13 @@ export default function ToolsPage() {
             <p className="mt-7 max-w-xl text-[16px] leading-relaxed text-muted-foreground">
               Техкарты и себестоимость, меню, скрипты зала, отзывы, маркетинг,
               обучение команды и операционные брифинги. Инструменты сгруппированы
-              в сценарии, которые потом питаются профилем заведения, BI и iiko.
+              в сценарии, которые потом питаются профилем заведения, iiko и живым
+              контекстом смен.
             </p>
 
             <div className="mt-9 flex flex-wrap gap-x-7 gap-y-2 text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
               <span>Профиль заведения</span>
-              <span>BI и отчеты</span>
+              <span>Данные и разборы</span>
               <span>Техкарты</span>
               <span>Контекст AI-помощника</span>
             </div>
