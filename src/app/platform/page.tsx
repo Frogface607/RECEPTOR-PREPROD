@@ -34,12 +34,12 @@ const operatingFlow = [
   {
     icon: Plug,
     title: "Подключить данные",
-    text: "iiko Cloud/RMS, ручной импорт или тестовые данные для быстрого старта кабинета.",
+    text: "iiko, ручной импорт или режим просмотра для быстрого старта кабинета.",
   },
   {
     icon: BookOpenCheck,
     title: "Собрать контекст",
-    text: "Формат, цели владельца, команда, ограничения, правила принятия решений и тон AI.",
+    text: "Формат, цели владельца, команда, ограничения, правила решений и тон советника.",
   },
   {
     icon: ClipboardList,
@@ -67,7 +67,7 @@ const cockpitRows = [
     value: "QR, стоп-лист, техкарты",
   },
   {
-    label: "AI-помощник",
+    label: "Советник",
     value: "Ответы с памятью ресторана",
   },
 ];
@@ -79,7 +79,7 @@ const connectionSteps = [
   },
   {
     title: "Заполнить память",
-    text: "Анкета и ресерч собирают контекст для AI-помощника, брифов и задач.",
+    text: "Анкета и ресерч собирают контекст для советника, брифов и поручений.",
   },
   {
     title: "Подключить источники",
@@ -120,16 +120,16 @@ export default function PlatformPage() {
               </h1>
               <p className="mt-6 max-w-2xl text-[16px] leading-relaxed text-muted-foreground">
                 Receptor объединяет данные, меню, команду, задачи, гостей и
-                AI-помощника в один кабинет. Ресторан подключает ядро платформы
+                советника в один кабинет. Ресторан подключает ядро платформы
                 и включает нужные модули по подписке.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
                 <LinkButton
-                  href="/dashboard/dev-venue"
+                  href="/pilot"
                   className="bg-brand text-primary-foreground hover:bg-brand-hover"
                 >
-                  Открыть пример кабинета
+                  Открыть маршрут показа
                   <ArrowRight className="size-4" />
                 </LinkButton>
                 <LinkButton href="/pricing" variant="outline">
@@ -171,7 +171,7 @@ export default function PlatformPage() {
           <div className="mx-auto max-w-7xl px-6 py-14">
             <div className="max-w-3xl">
               <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-                Platform Core
+                Ядро платформы
               </p>
               <h2 className="mt-4 text-3xl font-medium">
                 Сначала ядро управления, затем модули под задачи ресторана.
@@ -195,7 +195,7 @@ export default function PlatformPage() {
           <div className="mx-auto max-w-7xl px-6 py-14">
             <div className="max-w-3xl">
               <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-                Operating Flow
+                Рабочий ритм
               </p>
               <h2 className="mt-4 text-3xl font-medium">
                 Receptor превращает данные в управленческий ритм.
@@ -226,12 +226,12 @@ export default function PlatformPage() {
                 Память заведения
               </p>
               <h2 className="mt-4 text-3xl font-medium">
-                AI отвечает не из пустоты, а из памяти ресторана.
+                Советник отвечает не из пустоты, а из памяти ресторана.
               </h2>
               <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
                 Анкета и ресерч собирают формат, аудиторию, экономику, команду,
                 системы, ограничения и правила решений. Этот контекст питает
-                AI-помощник, брифы, задачи и настройки модулей.
+                советника, брифы, поручения и настройки модулей.
               </p>
             </div>
 
@@ -255,7 +255,7 @@ export default function PlatformPage() {
           <div className="mx-auto max-w-7xl px-6 py-14">
             <div className="max-w-3xl">
               <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-                Module Map
+                Модули
               </p>
               <h2 className="mt-4 text-3xl font-medium">
                 Модульная подписка для ежедневной работы ресторана.
@@ -273,13 +273,13 @@ export default function PlatformPage() {
           <div className="mx-auto max-w-7xl px-6 py-14">
             <div className="max-w-3xl">
               <p className="text-[11px] uppercase tracking-[0.22em] text-brand">
-                Launch Flow
+                Запуск
               </p>
               <h2 className="mt-4 text-3xl font-medium">
                 Подключение начинается с кабинета, а не с долгого техпроекта.
               </h2>
               <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                Receptor можно показать на тестовых данных, затем добавить
+                Receptor можно показать в режиме просмотра, затем добавить
                 контекст конкретного ресторана и подключить реальные источники.
                 Для команды интерфейс остается тем же.
               </p>
