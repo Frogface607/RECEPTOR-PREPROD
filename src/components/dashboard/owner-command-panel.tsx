@@ -513,7 +513,7 @@ export function OwnerCommandPanel({
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-2 rounded-full border border-brand/35 bg-brand/10 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-brand">
               <GaugeCircle className="size-3.5" />
-              Утро владельца
+              Первый разбор
             </span>
             <span className="rounded-full border border-border/55 bg-background/45 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
               один вопрос · один факт · одно решение
@@ -585,7 +585,7 @@ export function OwnerCommandPanel({
                 )}
                 variant="outline"
               >
-                Открыть работу
+                Открыть следующий шаг
                 <ArrowRight className="size-4" />
               </LinkButton>
             ) : null}
@@ -593,7 +593,7 @@ export function OwnerCommandPanel({
 
           <details className="mt-4 rounded-lg border border-border/45 bg-background/25 px-3 py-2">
             <summary className="cursor-pointer select-none text-[11px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground">
-              Рабочие разделы
+              Если нужно глубже
             </summary>
             <div className="mt-3 grid gap-2 md:grid-cols-3">
               <Link
@@ -678,7 +678,7 @@ export function OwnerCommandPanel({
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                    Что уже известно
+                    На чем основан разбор
                   </p>
                   <h3 className="mt-2 text-lg font-medium text-foreground">
                     {brainReadiness.title}
